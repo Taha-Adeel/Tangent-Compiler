@@ -1,0 +1,40 @@
+family vehical
+(:
+	Var int wheels;
+	public:
+		Func int get_no_of_wheels<: :>
+		(:
+			send me>>wheels;
+		:)
+:)
+family car :: vehical
+(:
+	Var Colour paint_colour;
+	public:
+	
+	car<: :>
+	(:
+		me>>paint_colour := get_color_from_rgb(10,10,10);
+	:)
+:)
+
+main<: :>
+(:
+	var car my_car;
+	print(my_car>>get_no_of_wheels());
+
+	#first figure
+	Var Image I;
+	I.set_dimension(100,100);
+
+	Var Point A;
+	A := make_point(10,30);
+	I.draw(A);
+
+	Path P; 
+	P.add_point(A);
+	P.add_point(A + make_point(0,20));
+	I.draw(P);
+	
+	I.output("my_file.svg");
+:)
