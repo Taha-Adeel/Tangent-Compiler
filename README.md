@@ -12,6 +12,6 @@ Tangent is created the Compilers II project. Contributors :
 ### Aman Panwar - Project Manager
 ### Pranav Nayak - Language Guru
 ### Shambhu Kavir - Tester
-### Shreya Sharma - Tester
+### Shreya Kumar - Tester
 ### Taha Adeel Mohammed - System Architect
 ### Vikhyat Kothmasu - System Integrator
