@@ -26,3 +26,45 @@ taha:
 
     Punctuators:
 */
+
+enum keywords
+{
+    INT = 0,
+    FLOAT,
+    STRING,
+    BOOL,
+    VOID,
+    VAR,
+    FAMILY,
+    IF,
+    ELSE,
+    FOR,
+    WHILE,
+    SWITCH,
+    CASE,
+    BREAK,
+    CONTINUE,
+    TRUE,
+    FALSE,
+    SEND,
+    CONST,
+    ME,
+    PUBLIC,
+    PRIVATE,
+    POINT,
+    PATH,
+    IMAGE,
+    RECTANGLE,
+    CIRCLE,
+    ELLIPSE,
+    POLYGON,
+    CURVE,
+    FUNC,
+    PI,
+    COLOUR
+};
+
+enum identifiers
+{
+    IDENTIFIER = 100
+};
