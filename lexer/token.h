@@ -64,7 +64,38 @@ enum keywords
     COLOUR
 };
 
-enum identifiers
+enum operators
 {
-    IDENTIFIER = 100
+  ASSIGN=200,
+  EQ,
+  NOT_EQ,
+  LS_THAN,
+  LS_THAN_EQ,
+  GR_THAN,
+  GR_THAN_EQ,
+  LOGICAL_AND,
+  LOGICAL_OR,
+  PLUS,
+  MINUS,
+  STAR,
+  MODULO,
+  INCREMENT,
+  DECREMENT,
+};
+
+enum special_symbols
+{
+  DELIMITER=300,
+  OPEN_PAR,
+  CLOSE_PAR,
+  OPEN_BRACES,
+  CLOSE_BRACES,
+  OPEN_SQ_BRKT,
+  CLOSE_SQ_BRKT,
+  COMMA,
+};
+
+enum IDENTIFIER
+{
+  IDENTIFIER=400
 };
