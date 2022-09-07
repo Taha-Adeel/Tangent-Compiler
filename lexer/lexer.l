@@ -69,9 +69,6 @@ void count();
 "_sides"                {count(); return(POLYGON_SIZE);}
 "_side_len"             {count(); return(POLYGON_LENGTH);}
 "_ctrl_pts"             {count(); return(CURVE_POINTS);}
-"_r"                    {count(); return(RED);}
-"_b"                    {count(); return(BLUE);}
-"_g"                    {count(); return(GREEN);}
 "_get_x"                {count(); return(GET_X);}
 "_get_y"                {count(); return(GET_Y);}
 "_get_points"           {count(); return(GET_POINTS);}
