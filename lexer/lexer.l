@@ -50,7 +50,7 @@ void count();
 "var"                   {count(); return(VAR);}
 "void"                  {count(); return(VOID);}
 "while"                 {count(); return(WHILE);}
-
+"driver"                {count(); return(DRIVER);}
 
 
 "x"                    {count(); return(POINT_X);}

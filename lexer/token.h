@@ -34,7 +34,8 @@ enum keywords
   CURVE,
   FUNC,
   PI,
-  COLOUR
+  COLOUR,
+  DRIVER,
 };
 
 enum operators
