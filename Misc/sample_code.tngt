@@ -18,7 +18,7 @@ family car :: vehical
 	:)
 :)
 
-main<: :>
+driver<: :>
 (:
 	var car my_car;
 	print(my_car>>get_no_of_wheels());
