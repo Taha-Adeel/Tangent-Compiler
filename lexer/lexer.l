@@ -149,8 +149,10 @@ int yywrap()
 int main(int argc, char* argv[]){
         if(argc != 2)return -1; //number of input args
         yyin = fopen(argv[1], "r");
+        yyout = fopen("output.txt", "w");
         yylex();
         fclose(yyin);
+        fclose(yyout);
         return 0;
 }
 
