@@ -156,7 +156,7 @@ int main(int argc, char* argv[]){
 
 void comment(){
         char c;
-        while( (c = yyinput()) != '\n' ){
+        while( (c = input()) != '\n' ){
                 /* eats up any line starting with '#' */
         }
         return;
