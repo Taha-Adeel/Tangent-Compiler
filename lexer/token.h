@@ -1,30 +1,5 @@
 /*
 contains the tokens to be used in lexel.l
-
-aman:
-    Types of Tokens:
-    Keywords, Identifiers, literals(numeric, boolean and pointer), literals (strings), user-defined literals, operators, punctuators.
-
-    Keywords:
-    tokens,33 separate  find in the language specification
-
-taha:
-    Identifiers:
-    One grammar rule, one token
-
-    Numeric, boolean and pointer literals:
-    One grammar rule, one token
-
-    String literal:
-    One grammar rule, one token
-
-    User defined literal:
-    ??rules, one token
-
-    Operators:
-    17 rules and tokens
-
-    Punctuators:
 */
 
 enum keywords
@@ -106,4 +81,56 @@ enum literals
   FLOAT_LITERAL,
   STRING_LITERAL,
   BOOL_LITERAL,
+};
+enum language_specific_tokens
+{
+  CLEAR,
+  DRAW,
+  CEIL,
+  FLOOR,
+  PRINT,
+  TO_FLOAT,
+  POINTX,
+  POINTY,
+  IMGDIMS,   
+  IMGDRAWS,  
+  RECTLENGTH,
+  RECTBREADTH,
+  CENTER,
+  ROTATION,
+  RADIUS,
+  ELLIPSEA,
+  ELLIPSEB,
+  POLYGONSIZE,
+  POLYGONLENGTH,
+  CURVEPOINTS,
+  RED,
+  BLUE,
+  GREEN,
+  GETX,
+  GETY,
+  GETPOINTS,
+  GETWIDTH,
+  GETCENTER,
+  GETSIDES,
+  GETSIDES,
+  GETSIDELENGTH,
+  GETROTATION,
+  GETRADIUS,
+  GETCOLOUR,
+  GETBORDERCOLOUR,
+  SETX,
+  SETY,
+  SETPOINTS,
+  SETWIDTH,
+  SETLENGTH,
+  SETCENTER,
+  SETSIDES,
+  SETSIDELENGTH,
+  SETROTATION,
+  SETRADIUS,
+  SETCOLOUR,
+  SETBORDERCOLOUR,
+  ADDPOINT,
+  MAKEPOINT
 };
