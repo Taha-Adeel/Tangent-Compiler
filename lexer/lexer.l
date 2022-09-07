@@ -147,7 +147,7 @@ int yywrap()
 	return 1;
 }
 int main(int argc, char* argv[]){
-        if(argc != 1)return -1; //number of input args
+        if(argc != 2)return -1; //number of input args
         yyin = fopen(argv[1], "r");
         yylex();
         fclose(yyin);
