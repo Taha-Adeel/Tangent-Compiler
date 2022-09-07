@@ -4,7 +4,7 @@ contains the tokens to be used in lexel.l
 
 enum keywords
 {
-  INT = 0,
+  INT = 1,
   FLOAT,
   STRING,
   BOOL,

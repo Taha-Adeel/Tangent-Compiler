@@ -124,7 +124,7 @@ void count();
 
 \"([^\\\"]|\\.)*\"      {count(); return(STRING_LITERAL);}
 
-[ \t\v\n\f]             {count();}
+[ \t\v\n\f]*             {count();}
 .                       { }
 
 %%
