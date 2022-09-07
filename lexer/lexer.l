@@ -53,15 +53,15 @@ void count();
 
 
 
-"x"                    {count(); return(POINTX);}
-"y"                    {count(); return(POINT_Y);}
+"point_x"                    {count(); return(POINTX);}
+"point_y"                    {count(); return(POINT_Y);}
 "length"               {count(); return(RECT_LENGTH);}
 "breadth"              {count(); return(RECT_BREADTH);}
 "center"               {count(); return(CENTER);}
 "rotation"             {count(); return(ROTATION);}
 "radius"               {count(); return(RADIUS);}
-"a"                    {count(); return(ELLIPSE_A);}
-"b"                    {count(); return(ELLIPSE_B);}
+"axis_a"                    {count(); return(ELLIPSE_A);}
+"axis_b"                    {count(); return(ELLIPSE_B);}
 "sides"                {count(); return(POLYGON_SIZE);}
 "side_len"             {count(); return(POLYGON_LENGTH);}
 "ctrl_pts"             {count(); return(CURVE_POINTS);}
