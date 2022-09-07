@@ -1,7 +1,7 @@
 # Hello world program
 # lexer-test to check for comments
 
-void driver<: :>
+driver<: :>
 (:
     print("Hello World!\n");
 
