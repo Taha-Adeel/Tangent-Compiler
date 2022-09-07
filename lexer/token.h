@@ -1,30 +1,5 @@
 /*
 contains the tokens to be used in lexel.l
-
-aman:
-    Types of Tokens:
-    Keywords, Identifiers, literals(numeric, boolean and pointer), literals (strings), user-defined literals, operators, punctuators.
-
-    Keywords:
-    tokens,33 separate  find in the language specification
-
-taha:
-    Identifiers:
-    One grammar rule, one token
-
-    Numeric, boolean and pointer literals:
-    One grammar rule, one token
-
-    String literal:
-    One grammar rule, one token
-
-    User defined literal:
-    ??rules, one token
-
-    Operators:
-    17 rules and tokens
-
-    Punctuators:
 */
 
 enum keywords
@@ -106,4 +81,114 @@ enum literals
   FLOAT_LITERAL,
   STRING_LITERAL,
   BOOL_LITERAL,
+};
+enum language_specific_tokens
+{
+  CLEAR,
+  DRAW,
+  CEIL,
+  FLOOR,
+  PRINT,
+  TO_FLOAT,
+  POINTX,
+  POINTY,
+  IMGDIMS,   
+  IMGDRAWS,  
+  RECTLENGTH,
+  RECTBREADTH,
+  CENTER,
+  ROTATION,
+  RADIUS,
+  ELLIPSEA,
+  ELLIPSEB,
+  POLYGONSIZE,
+  POLYGONLENGTH,
+  CURVEPOINTS,
+  RED,
+  BLUE,
+  GREEN,
+  POINT_X,
+  POINT_Y,     
+
+  IMG_DIMS,    
+
+  IMG_DRAWS,   
+
+  RECT_LENGTH, 
+
+  RECT_BREADTH,
+
+  CENTER,      
+
+  ROTATION,    
+
+  RADIUS,
+
+  ELLIPSE_A,
+
+  ELLIPSE_B,
+
+  POLYGON_SIZE,
+
+  POLYGON_LENGTH,
+
+  CURVE_POINTS,
+
+  RED,
+
+  BLUE,
+
+  GREEN,
+
+  GET_X,
+
+  GET_Y,
+
+  GET_POINTS,
+
+  GET_WIDTH,
+
+  GET_CENTER,
+
+  GET_SIDES,
+
+  GET_SIDES,
+
+  GET_SIDE_LENGTH,
+
+  GET_ROTATION,
+
+  GET_RADIUS,
+
+  GET_COLOUR,
+
+  GET_BORDER_COLOUR,
+
+  SET_X,
+
+  SET_Y,
+
+  SET_POINTS,
+
+  SET_WIDTH,
+
+  SET_LENGTH,
+
+  SET_CENTER,
+
+  SET_SIDES,
+
+  SET_SIDE_LENGTH,
+
+  SET_ROTATION,
+
+  SET_RADIUS,
+
+  SET_COLOUR,
+
+  SET_BORDER_COLOUR,
+
+  ADD_POINT,
+
+  MAKE_POINT,
 };
