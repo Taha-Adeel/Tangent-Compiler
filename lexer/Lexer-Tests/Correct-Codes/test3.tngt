@@ -1,0 +1,27 @@
+# Program showing the use of looping statements
+
+driver <: :>
+(:
+    
+    # printing all even numbers from 1 to n using for loop
+
+    var int n := 10;
+    for(var int i := 2; i <= n; i := i + 2)
+    (:
+        print(to_string(i) + "\n");
+    :)
+
+    # Note : Even loops with single statements MUST be enclosed within (: :)
+
+    # printing odd indices of a string using while loop
+    var string s := "Compilers project";
+    var int length := len(s);
+
+    var int j := 1;
+    while(j < length)
+    (:
+        print(s[j] + "\n");
+        j := j + 2;
+    :)
+
+:)
