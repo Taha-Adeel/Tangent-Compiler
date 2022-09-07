@@ -7,4 +7,4 @@ lex.yy.c: lexer.l
 	$(LEX) lexer.l
 
 clean: 
-	rm lex.yy.c lexer *.o
+	rm lex.yy.c *.o
