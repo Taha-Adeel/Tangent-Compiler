@@ -44,8 +44,6 @@ enum keywords
     CASE,
     BREAK,
     CONTINUE,
-    TRUE,
-    FALSE,
     SEND,
     CONST,
     ME,
@@ -75,6 +73,7 @@ enum operators
   GR_THAN_EQ,
   LOGICAL_AND,
   LOGICAL_OR,
+  LOGICAL_NOT,
   PLUS,
   MINUS,
   STAR,
@@ -93,9 +92,18 @@ enum special_symbols
   OPEN_SQ_BRKT,
   CLOSE_SQ_BRKT,
   COMMA,
+  SCOPE_ACCESS,
 };
 
 enum IDENTIFIER
 {
   IDENTIFIER=400
 };
+
+enum literals
+{
+  INTEGER_LITERAL = 500,
+  FLOAT_LITERAL,
+  STRING_LITERAL,
+  BOOL_LITERAL,
+}
