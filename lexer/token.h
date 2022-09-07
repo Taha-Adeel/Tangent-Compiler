@@ -4,42 +4,42 @@ contains the tokens to be used in lexel.l
 
 enum keywords
 {
-    INT = 0,
-    FLOAT,
-    STRING,
-    BOOL,
-    VOID,
-    VAR,
-    FAMILY,
-    IF,
-    ELSE,
-    FOR,
-    WHILE,
-    SWITCH,
-    CASE,
-    BREAK,
-    CONTINUE,
-    SEND,
-    CONST,
-    ME,
-    PUBLIC,
-    PRIVATE,
-    POINT,
-    PATH,
-    IMAGE,
-    RECTANGLE,
-    CIRCLE,
-    ELLIPSE,
-    POLYGON,
-    CURVE,
-    FUNC,
-    PI,
-    COLOUR
+  INT = 0,
+  FLOAT,
+  STRING,
+  BOOL,
+  VOID,
+  VAR,
+  FAMILY,
+  IF,
+  ELSE,
+  FOR,
+  WHILE,
+  SWITCH,
+  CASE,
+  BREAK,
+  CONTINUE,
+  SEND,
+  CONST,
+  ME,
+  PUBLIC,
+  PRIVATE,
+  POINT,
+  PATH,
+  IMAGE,
+  RECTANGLE,
+  CIRCLE,
+  ELLIPSE,
+  POLYGON,
+  CURVE,
+  FUNC,
+  PI,
+  COLOUR
 };
 
 enum operators
 {
-  ASSIGN=200,
+  ASSIGN = 200,
   EQ,
   NOT_EQ,
   LS_THAN,
@@ -59,7 +59,7 @@ enum operators
 
 enum special_symbols
 {
-  DELIMITER=300,
+  DELIMITER = 300,
   OPEN_PAR,
   CLOSE_PAR,
   OPEN_BRACES,
@@ -72,7 +72,7 @@ enum special_symbols
 
 enum IDENTIFIER
 {
-  IDENTIFIER=400
+  IDENTIFIER = 400
 };
 
 enum literals
@@ -92,8 +92,8 @@ enum language_specific_tokens
   TO_FLOAT,
   POINTX,
   POINTY,
-  IMGDIMS,   
-  IMGDRAWS,  
+  IMGDIMS,
+  IMGDRAWS,
   RECTLENGTH,
   RECTBREADTH,
   CENTER,
@@ -108,87 +108,46 @@ enum language_specific_tokens
   BLUE,
   GREEN,
   POINT_X,
-  POINT_Y,     
-
-  IMG_DIMS,    
-
-  IMG_DRAWS,   
-
-  RECT_LENGTH, 
-
+  POINT_Y,
+  IMG_DIMS,
+  IMG_DRAWS,
+  RECT_LENGTH,
   RECT_BREADTH,
-
-  CENTER,      
-
-  ROTATION,    
-
+  CENTER,
+  ROTATION,
   RADIUS,
-
   ELLIPSE_A,
-
   ELLIPSE_B,
-
   POLYGON_SIZE,
-
   POLYGON_LENGTH,
-
   CURVE_POINTS,
-
   RED,
-
   BLUE,
-
   GREEN,
-
   GET_X,
-
   GET_Y,
-
   GET_POINTS,
-
   GET_WIDTH,
-
   GET_CENTER,
-
   GET_SIDES,
-
   GET_SIDES,
-
   GET_SIDE_LENGTH,
-
   GET_ROTATION,
-
   GET_RADIUS,
-
   GET_COLOUR,
-
   GET_BORDER_COLOUR,
-
   SET_X,
-
   SET_Y,
-
   SET_POINTS,
-
   SET_WIDTH,
-
   SET_LENGTH,
-
   SET_CENTER,
-
   SET_SIDES,
-
   SET_SIDE_LENGTH,
-
   SET_ROTATION,
-
   SET_RADIUS,
-
   SET_COLOUR,
-
   SET_BORDER_COLOUR,
-
   ADD_POINT,
-
-  MAKE_POINT,
+  MAKE_POINT
 };
