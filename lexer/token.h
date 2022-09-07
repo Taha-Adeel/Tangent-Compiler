@@ -106,4 +106,4 @@ enum literals
   FLOAT_LITERAL,
   STRING_LITERAL,
   BOOL_LITERAL,
-}
+};

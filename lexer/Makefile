@@ -8,3 +8,9 @@ lex.yy.c: lexer.l
 
 clean: 
 	rm lex.yy.c lexer *.o
+all:
+	lex lexer.l
+	gcc lex.yy.c
+
+clean:
+	rm lex.yy.c a.out
