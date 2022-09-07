@@ -5,7 +5,7 @@ L               [a-zA-Z]
 %{
 #include <stdio.h>
 #include "token.h"
-
+void comment();
 void count();
 %}
 
@@ -31,7 +31,7 @@ void count();
 "continue"              {count(); return(CONTINUE);}
 "else"                  {count(); return(ELSE);}
 "false"                 {count(); return(BOOL_LITERAL);}
-"family"                {count(); return{FAMILY};}
+"family"                {count(); return(FAMILY);}
 "float"                 {count(); return(FLOAT);}
 "floor"                 {count(); return(FLOOR);}
 "for"                   {count(); return(FOR);}
