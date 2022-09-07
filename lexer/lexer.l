@@ -51,9 +51,7 @@ void count();
 "void"                  {count(); return(VOID);}
 "while"                 {count(); return(WHILE);}
 
-{L}({L}|{D}|_)*         {count(); return(IDENTIFIER);}
-{D}+                    {count(); return(INTEGER_LITERAL);}
-{D}+"."{D}+             {count(); return(FLOAT_LITERAL);}
+
 
 "_x"                    {count(); return(POINT_X);}
 "_y"                    {count(); return(POINT_Y);}
@@ -96,7 +94,7 @@ void count();
 "_add_point"            {count(); return(ADD_POINT);}
 "_make_point"           {count(); return(MAKE_POINT);}
 
-\"([^\\\"]|\\.)*\"      {count(); return(STRING_LITERAL);}
+
 
 ">>"                    {count(); return(SCOPE_ACCESS);}
 "&"                     {count(); return(LOGICAL_AND);}
@@ -121,6 +119,12 @@ void count();
 "*"			            {count(); return('*');}
 "/"			            {count(); return('/');}
 "%"			            {count(); return('%');}
+
+{L}({L}|{D}|_)*         {count(); return(IDENTIFIER);}
+{D}+                    {count(); return(INTEGER_LITERAL);}
+{D}+"."{D}+             {count(); return(FLOAT_LITERAL);}
+
+\"([^\\\"]|\\.)*\"      {count(); return(STRING_LITERAL);}
 
 [ \t\v\n\f]             {count();}
 .                       { }
@@ -150,7 +154,7 @@ int main(int argc, char* argv[]){
         if(argc != 2)return -1; //number of input args
         yyin = fopen(argv[1], "r");
         yyout = fopen("output.txt", "w");
-        yylex();
+        while(yylex());
         fclose(yyin);
         fclose(yyout);
         return 0;
