@@ -1,6 +1,6 @@
 .vscode
-build/
-CMakeFiles/
-*.cmake
-CMakeCache.txt
-DartConfiguration.tcl
+lex.yy.c
+*.out
+*.exe
+*.o
+
