@@ -3,4 +3,5 @@ lex.yy.c
 *.out
 *.exe
 *.o
-
+parser.tab.h
+parser.tab.c
