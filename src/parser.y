@@ -513,6 +513,105 @@ function_definition
 	;
 
 // OOPS grammar rules
+translation_unit
+	: external_declaration
+	| translation_unit external_declaration
+	;
+
+external_declaration
+	: driver_definition
+	| function_definition
+	| variable_declaration
+	| class_declaration
+	;
+
+driver_definition
+	: DRIVER '(' ')' compound_statement
+	;
+
+function_definition
+	: type IDENTIFIER '(' args_list ')' compound_statement
+	| type IDENTIFIER '(' ')' compound_statement
+	;
+
+type
+	: INT
+	| FLOAT
+	| STRING
+	| BOOL
+	| VOID
+	;
+
+args_list
+	: arg
+	| args_list ',' arg
+	;
+
+arg
+	: type IDENTIFIER
+	;
+
+variable_declaration
+	: type variable_list ';'
+	| CONST type variable_list ';'
+	;
+
+variable_list
+	: variable
+	| variable_list variable
+	;
+
+variable
+	: IDENTIFIER
+	| variable_initialization
+	;
+
+variable_initialization
+	: IDENTIFIER ASSIGN type_const
+	;
+
+type_const
+	: INTEGER_LITERAL
+	| FLOAT_LITERAL
+	| STRING_LITERAL
+	| BOOL_LITERAL
+	;
+
+access_specifier
+	: PUBLIC 
+	| PRIVATE
+	;
+
+class_declaration
+	: FAMILY IDENTIFIER class_definition ';'
+	| FAMILY IDENTIFIER "::" IDENTIFIER class_definition ';'
+	| FAMILY IDENTIFIER "::" access_specifier class_definition ';'
+	;
+
+class_definition
+	: '{' '}'
+	| '{' class_members '}'
+	;
+class_members
+	: class_members access_specifier class_member
+	| class_members class_member
+	| access_specifier class_member
+	| class_member
+	;
+
+class_member
+	: variable_declaration
+	| function_definition
+	| constructor_declaration
+	;
+
+constructor_declaration	
+	: IDENTIFIER '(' ')' compound_statement
+	| IDENTIFIER '(' args_list ')' compound_statement
+	;
+
+
+
 
 
 // Tangent specific grammar rules
