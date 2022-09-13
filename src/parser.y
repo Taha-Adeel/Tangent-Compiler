@@ -1,116 +1,41 @@
-//token declarations
-%token INT
-%token FLOAT
-%token STRING
-%token BOOL
-%token VOID
-%token VAR
-%token FAMILY
-%token IF
-%token ELSE
-%token FOR
-%token WHILE
-%token SWITCH
-%token CASE
-%token BREAK
-%token CONTINUE
-%token SEND
-%token CONST
-%token ME
-%token PUBLIC
-%token PRIVATE
-%token POINT
-%token PATH
-%token IMAGE
-%token RECTANGLE
-%token CIRCLE
-%token ELLIPSE
-%token POLYGON
-%token CURVE
-%token FUNC
-%token PI
-%token COLOUR
-%token DRIVER
-%token ASSIGN
-%token EQ
-%token NOT_EQ
-%token LS_THAN
-%token LS_THAN_EQ
-%token GR_THAN
-%token GR_THAN_EQ
-%token LOGICAL_AND
-%token LOGICAL_OR
-%token LOGICAL_NOT
-%token PLUS
-%token MINUS
-%token STAR
-%token MODULO
-%token INCREMENT
-%token DECREMENT
-%token DELIMITER
-%token OPEN_PAR
-%token CLOSE_PAR
-%token OPEN_BRACES
-%token CLOSE_BRACES
-%token OPEN_SQ_BRKT
-%token CLOSE_SQ_BRKT
-%token COMMA
-%token SCOPE_ACCESS
-%token IDENTIFIER
-%token INTEGER_LITERAL
-%token FLOAT_LITERAL
-%token STRING_LITERAL
-%token BOOL_LITERAL
-%token CLEAR
-%token DRAW
-%token CEIL
-%token FLOOR
-%token PRINT
-%token TO_FLOAT
-%token POINT_X
-%token POINT_Y
-%token IMG_DIMS
-%token IMG_DRAWS
-%token RECT_LENGTH
-%token RECT_BREADTH
-%token CENTER
-%token ROTATION
-%token RADIUS
-%token ELLIPSE_A
-%token ELLIPSE_B
-%token POLYGON_SIZE
-%token POLYGON_LENGTH
-%token CURVE_POINTS
-%token RED
-%token BLUE
-%token GREEN
-%token GET_X
-%token GET_Y
-%token GET_POINTS
-%token GET_WIDTH
-%token GET_CENTER
-%token GET_SIDES
-%token GET_SIDE_LENGTH
-%token GET_ROTATION
-%token GET_RADIUS
-%token GET_COLOUR
-%token GET_BORDER_COLOUR
-%token SET_X
-%token SET_Y
-%token SET_POINTS
-%token SET_WIDTH
-%token SET_LENGTH
-%token SET_CENTER
-%token SET_SIDES
-%token SET_SIDE_LENGTH
-%token SET_ROTATION
-%token SET_RADIUS
-%token SET_COLOUR
-%token SET_BORDER_COLOUR
-%token ADD_POINT
-%token MAKE_POINT
+// TOKEN DECLARATION
+%token IDENTIFIER INTEGER_LITERAL FLOAT_LITERAL STRING_LITERAL BOOL_LITERAL CONSTANT PI
 
-%token CONSTANT
+/* Primitive data types */
+%token INT FLOAT STRING BOOL VOID
+%token CONST VAR 
+
+/* Operators */
+%token ASSIGN 
+%token EQ NOT_EQ LS_THAN LS_THAN_EQ GR_THAN GR_THAN_EQ
+%token OPEN_PAR CLOSE_PAR OPEN_BRACES CLOSE_BRACES OPEN_SQ_BRKT CLOSE_SQ_BRKT DELIMITER COMMA
+%token PLUS MINUS STAR MODULO INCREMENT DECREMENT
+%token LOGICAL_AND LOGICAL_OR LOGICAL_NOT
+
+/* Control flow keywords */
+%token IF ELSE FOR WHILE SWITCH CASE BREAK CONTINUE
+
+/* Derived data types and their member fields */
+%token FAMILY ME
+%token SCOPE_ACCESS PUBLIC PRIVATE 
+%token POINT IMAGE RECTANGLE CIRCLE ELLIPSE POLYGON CURVE PATH
+%token POINT_X POINT_Y
+%token IMG_DIMS IMG_DRAWS
+%token RECT_LENGTH RECT_BREADTH
+%token CENTER ROTATION RADIUS
+%token ELLIPSE_A ELLIPSE_B
+%token POLYGON_SIZE POLYGON_LENGTH
+%token CURVE_POINTS
+
+/* Functions */
+%token FUNC CLEAR DRAW SEND PRINT FLOOR CEIL TO_FLOAT
+%token ADD_POINT MAKE_POINT
+%token GET_X GET_Y GET_POINTS GET_WIDTH GET_CENTER GET_SIDES GET_SIDE_LENGTH GET_ROTATION GET_RADIUS GET_COLOUR GET_BORDER_COLOUR
+%token SET_X SET_Y SET_POINTS SET_WIDTH SET_LENGTH SET_CENTER SET_SIDES SET_SIDE_LENGTH SET_ROTATION SET_RADIUS SET_COLOUR SET_BORDER_COLOUR
+%token COLOUR RED BLUE GREEN
+
+/* Driver keyword */
+%token DRIVER
 
 %start translation_unit
 
