@@ -1,0 +1,15 @@
+#writing incorrect functions
+
+int multiply<: var int a, var int b :>        #int function does not return any value
+(:
+    var int product;
+    product := a * b;
+:)
+
+driver<: :>
+(:
+    var int a := 10;
+    var int b := 25;
+    var int product := multiply(a, b);
+    print("Product of "+ a + " and " + b +" :- " + product);
+:)

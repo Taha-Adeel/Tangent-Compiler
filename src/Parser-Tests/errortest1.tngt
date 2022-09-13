@@ -1,0 +1,22 @@
+#writing incorrect functions
+
+void checkIfEven<: var int a :>        #void function tries to return a bool value
+(:
+    var bool result;
+    if( a%2 = 0) 
+    (:
+        result := 1;
+    :)
+    else 
+    (:
+        result := 0;
+    :)
+    return result;
+:)
+
+driver<: :>
+(:
+    var int a := 10;
+    var bool result := checkIfEven(a);
+    print(result);
+:)
