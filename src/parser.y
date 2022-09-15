@@ -73,7 +73,7 @@ type
 	| VOID
 	;
 
-type_const
+literal
 	: INTEGER_LITERAL
 	| FLOAT_LITERAL
 	| STRING_LITERAL
@@ -83,6 +83,11 @@ type_const
 variable_declaration
 	: type variable_list ';'
 	| CONST type variable_list ';'
+	;
+
+variable_declaration_list
+	: variable_declaration
+	| variable_declaration_list variable_declaration
 	;
 
 variable_list
@@ -96,7 +101,7 @@ variable
 	;
 
 variable_initialization
-	: IDENTIFIER ASSIGN type_const
+	: IDENTIFIER ASSIGN literal
 	;
 
 function_definition
@@ -112,6 +117,7 @@ args_list
 arg
 	: type IDENTIFIER
 	;
+
 
 /*------------------------------------------------------------------------
  * Classes
@@ -160,42 +166,17 @@ primary_expression
 	| '(' expression ')'
 	;
 
-postfix_expression
-	: primary_expression
-	| postfix_expression '[' expression ']'
-	| postfix_expression '(' ')'
-	| postfix_expression '(' argument_expression_list ')'
-	| postfix_expression '.' IDENTIFIER
-	;
-
-argument_expression_list
-	: assignment_expression
-	| argument_expression_list ',' assignment_expression
-	;
-
 unary_expression
-	: postfix_expression
-	| unary_operator cast_expression
-	;
-
-unary_operator
-	: '&'
-	| '*'
-	| '+'
-	| '-'
-	| '!'
-	;
-
-cast_expression
-	: unary_expression
-	| '(' type ')' cast_expression
+	: primary_expression
+	| unary_expression '[' expression ']'
+	| unary_expression '.' IDENTIFIER
 	;
 
 multiplicative_expression
-	: cast_expression
-	| multiplicative_expression '*' cast_expression
-	| multiplicative_expression '/' cast_expression
-	| multiplicative_expression '%' cast_expression
+	: unary_expression
+	| multiplicative_expression '*' unary_expression
+	| multiplicative_expression '/' unary_expression
+	| multiplicative_expression '%' unary_expression
 	;
 
 additive_expression
@@ -218,24 +199,9 @@ equality_expression
 	| equality_expression NOT_EQ relational_expression
 	;
 
-and_expression
-	: equality_expression
-	| and_expression '&' equality_expression
-	;
-
-exclusive_or_expression
-	: and_expression
-	| exclusive_or_expression '^' and_expression
-	;
-
-inclusive_or_expression
-	: exclusive_or_expression
-	| inclusive_or_expression '|' exclusive_or_expression
-	;
-
 logical_and_expression
-	: inclusive_or_expression
-	| logical_and_expression LOGICAL_AND inclusive_or_expression
+	: equality_expression
+	| logical_and_expression LOGICAL_AND equality_expression
 	;
 
 logical_or_expression
@@ -284,22 +250,11 @@ statement
 	| jump_statement
 	;
 
-labeled_statement
-	: IDENTIFIER ':' statement
-	| CASE constant_expression ':' statement
-	| DEFAULT ':' statement
-	;
-
 compound_statement
 	: '{' '}'
 	| '{' statement_list '}'
-	| '{' declaration_list '}'
-	| '{' declaration_list statement_list '}'
-	;
-
-declaration_list
-	: variable_declaration
-	| declaration_list variable_declaration
+	| '{' variable_declaration_list '}'
+	| '{' variable_declaration_list statement_list '}'
 	;
 
 statement_list
@@ -318,6 +273,12 @@ selection_statement
 	| SWITCH '(' expression ')' statement
 	;
 
+labeled_statement
+	: IDENTIFIER ':' statement
+	| CASE constant_expression ':' statement
+	| DEFAULT ':' statement
+	;
+
 iteration_statement
 	: WHILE '(' expression ')' statement
 	| FOR '(' expression_statement expression_statement ')' statement
@@ -327,8 +288,7 @@ iteration_statement
 jump_statement
 	: CONTINUE ';'
 	| BREAK ';'
-	| RETURN ';'
-	| RETURN expression ';'
+	| RETURN expression_statement
 	;
 
 %%
