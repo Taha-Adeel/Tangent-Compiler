@@ -6,7 +6,9 @@ driver<: :>
 	my_circle.set_radius(2.3);
 	my_circle.set_colour(get_colour_from_rgb(20,122,0));
 	my_circle.set_center(make_point(200,200));
+
 	Image my_image;
-	my_image.set_dimen
+	my_image.set_dimension(300,300);
 	my_image.draw(my_circle);
+	my_image.output("outputfile.svg");
 :)
