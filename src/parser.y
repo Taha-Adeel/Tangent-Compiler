@@ -3,13 +3,11 @@
 
 /* Primitive data types */
 %token INT FLOAT STRING BOOL VOID
-%token CONST VAR 
+%token CONST VAR
 
 /* Operators */
-%token ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN SUB_ASSIGN 
+%token ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN SUB_ASSIGN
 %token EQ NOT_EQ LS_THAN LS_THAN_EQ GR_THAN GR_THAN_EQ
-%token OPEN_PAR CLOSE_PAR OPEN_BRACES CLOSE_BRACES OPEN_SQ_BRKT CLOSE_SQ_BRKT DELIMITER COMMA
-%token PLUS MINUS STAR MODULO INCREMENT DECREMENT
 %token LOGICAL_AND LOGICAL_OR LOGICAL_NOT
 
 /* Control flow keywords */
@@ -17,7 +15,7 @@
 
 /* Derived data types and their member fields */
 %token FAMILY ME
-%token SCOPE_ACCESS PUBLIC PRIVATE 
+%token SCOPE_ACCESS PUBLIC PRIVATE
 %token POINT IMAGE RECTANGLE CIRCLE ELLIPSE POLYGON CURVE PATH
 %token POINT_X POINT_Y
 %token IMG_DIMS IMG_DRAWS
@@ -73,11 +71,13 @@ type
 	| VOID
 	;
 
+
 literal
 	: INTEGER_LITERAL
 	| FLOAT_LITERAL
 	| STRING_LITERAL
 	| BOOL_LITERAL
+	| PI
 	;
 
 variable_declaration
@@ -109,6 +109,7 @@ function_definition
 	| type IDENTIFIER '(' ')' compound_statement
 	;
 
+
 args_list
 	: arg
 	| args_list ',' arg
@@ -129,7 +130,7 @@ class_declaration
 	;
 
 access_specifier
-	: PUBLIC 
+	: PUBLIC
 	| PRIVATE
 	;
 
@@ -150,10 +151,24 @@ class_member
 	| constructor_declaration
 	;
 
-constructor_declaration	
+constructor_declaration
 	: IDENTIFIER '(' ')' compound_statement
 	| IDENTIFIER '(' args_list ')' compound_statement
 	;
+
+
+/*---------------------------------------------------------------------
+*	Objects
+*----------------------------------------------------------------------*/
+
+object_declaration
+: IDENTIFIER IDENTIFIER ';'
+
+
+object_initialization
+: variable_declaration
+| IDENTIFIER SCOPE_ACCESS variable_initialization
+;
 
 
 /*------------------------------------------------------------------------
@@ -187,8 +202,8 @@ additive_expression
 
 relational_expression
 	: additive_expression
-	| relational_expression '<' additive_expression
-	| relational_expression '>' additive_expression
+	| relational_expression LS_THAN additive_expression
+	| relational_expression GR_THAN additive_expression
 	| relational_expression LS_THAN_EQ additive_expression
 	| relational_expression GR_THAN_EQ additive_expression
 	;
@@ -199,15 +214,20 @@ equality_expression
 	| equality_expression NOT_EQ relational_expression
 	;
 
+logical_not_expression
+	: LOGICAL_NOT equality_expression
+	;
+
 logical_and_expression
-	: equality_expression
-	| logical_and_expression LOGICAL_AND equality_expression
+	: logical_not_expression
+	| logical_and_expression LOGICAL_AND logical_not_expression
 	;
 
 logical_or_expression
 	: logical_and_expression
 	| logical_or_expression LOGICAL_OR logical_and_expression
 	;
+
 
 conditional_expression
 	: logical_or_expression

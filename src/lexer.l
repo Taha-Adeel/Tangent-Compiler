@@ -94,17 +94,27 @@ void count();
 
 
 
-">>"                    {count(); return(SCOPE_ACCESS);}
-"&"                     {count(); return(LOGICAL_AND);}
-"|"                     {count(); return(LOGICAL_OR);}
-"!"                     {count(); return(LOGICAL_NOT);}
+":="                    {count(); return(ASSIGN);}
+"*="                    {count(); return(MUL_ASSIGN);}
+"/="                    {count(); return(DIV_ASSIGN);}
+"%="                    {count(); return(MOD_ASSIGN);}
+"+="                    {count(); return(ADD_ASSIGN);}
+"-="                    {count(); return(SUB_ASSIGN);}
+"-"                     {count(); return('-');}
+"+"                     {count(); return('+');}
+"*"                     {count(); return('*');}
+"/"                     {count(); return('/');}
+"%"                     {count(); return('%');}
 "<="                    {count(); return(LS_THAN_EQ);}
 ">="                    {count(); return(GR_THAN_EQ);}
 "<"                     {count(); return(LS_THAN);}
 ">"                     {count(); return(GR_THAN);}
 "="                     {count(); return(EQ);}
 "!="                    {count(); return(NOT_EQ);}
-";"                     {count(); return(';');}
+"&"                     {count(); return(LOGICAL_AND);}
+"|"                     {count(); return(LOGICAL_OR);}
+"!"                     {count(); return(LOGICAL_NOT);}
+">>"                    {count(); return(SCOPE_ACCESS);}
 "(:"                    {count(); return('{');}
 ":)"                    {count(); return('}');}
 ("<:"|"(")              {count(); return('(');}
@@ -112,11 +122,8 @@ void count();
 ","                     {count(); return(',');}
 "["                     {count(); return('[');}
 "]"                     {count(); return(']');}
-"-"			            {count(); return('-');}
-"+"			            {count(); return('+');}
-"*"			            {count(); return('*');}
-"/"			            {count(); return('/');}
-"%"			            {count(); return('%');}
+","                     {count(); return(',');}
+";"                     {count(); return(';');}
 
 {L}({L}|{D}|_)*         {count(); return(IDENTIFIER);}
 {D}+                    {count(); return(INTEGER_LITERAL);}
