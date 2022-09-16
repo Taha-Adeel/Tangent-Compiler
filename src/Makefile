@@ -29,4 +29,5 @@ error: parser
 	done
 
 clean:
-	rm parser parser.tab.c lex.yy.c parser.tab.h parser.output test_outputs
+	rm parser parser.tab.c lex.yy.c parser.tab.h parser.output
+	rm -r test_outputs
