@@ -2,9 +2,10 @@
 
 driver<: :>
 (:
-    #using AND
-    var int a := 18;
-    if(a%2 = 0 & a%3 = 0)
+    var string word := "malayalam";
+    # var int len := word.length();
+    var int count := 0;
+    for(var int i := 0; i < len; i:= i + 1)
     (:
         print(a);
         print("is divisible by both 2 and 3\n");
