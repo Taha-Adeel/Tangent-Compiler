@@ -3,7 +3,7 @@
 driver<: :>
 (:
     var string word := "malayalam";
-    var int len := word.size();
+    var int len := word>>size();
     var int count := 0;
     for(var int i := 0; i < len; i:= i + 1)
     (:

@@ -2,30 +2,30 @@
 
 driver<: :>
 (:
-    var int a := 12;
-    var int b := 20;
-    var int c := 20;
-    var int d := 10;
+    var int a1 := 12;
+    var int b1 := 20;
+    var int c1 := 20;
+    var int d1 := 10;
 
-    if(a < b)
+    if(a1 < b1)
     (:
-        print(a);
+        print(a1);
         print(" is less than ");
-        print(b);
+        print(b1);
     :)
 
-    if(a = c)
+    if(a1 = c1)
     (:
-        print(a);
+        print(a1);
         print(" is equal to ");
-        print(c);
+        print(c1);
     :)
 
-    if(a > d)
+    if(a1 > d1)
     (:
-        print(a);
+        print(a1);
         print(" is greater than ");
-        print(d);
+        print(d1);
     :)
 
 :)
