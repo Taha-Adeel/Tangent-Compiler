@@ -1,4 +1,4 @@
-#using nested if-else
+#using functions
 
 void digitCount<: var int n :>
 (:

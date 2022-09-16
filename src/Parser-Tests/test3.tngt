@@ -1,22 +1,7 @@
 #print statement
 
-int square<: var int n :>   #returns the square of a number
-(:
-    n := n * n;
-    send n;
-:)
-
-int cube<: var int n :>     #returns the cube of  a number
-(:
-    n := n * n * n;
-    send n;
-:)
-
-int addition<: var int nsa , var int bas :>   #returns the sum of two numbers
-(:
-    var int sum := Faa + bS;
-    send sum;
-:)
+var int glob := 23;
+glob := glob + 1;
 
 driver<: :>
 (:

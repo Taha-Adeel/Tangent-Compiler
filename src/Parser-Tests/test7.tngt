@@ -4,20 +4,23 @@ driver<: :>
 (:
     var int a := 12;
     var int b := 20;
+    var int c := 20;
+    var int d := 10;
+
     if(a < b)
     (:
         print(a);
         print(" is less than ");
         print(b);
     :)
-    var int c := 20;
+
     if(a = c)
     (:
         print(a);
         print(" is equal to ");
         print(c);
     :)
-    var int d := 10;
+
     if(a > d)
     (:
         print(a);
