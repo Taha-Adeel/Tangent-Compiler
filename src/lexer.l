@@ -53,18 +53,6 @@ void count();
 "driver"                {count(); return(DRIVER);}
 
 
-"x"                    {count(); return(POINT_X);}
-"y"                    {count(); return(POINT_Y);}
-"length"               {count(); return(RECT_LENGTH);}
-"breadth"              {count(); return(RECT_BREADTH);}
-"center"               {count(); return(CENTER);}
-"rotation"             {count(); return(ROTATION);}
-"radius"               {count(); return(RADIUS);}
-"a"                    {count(); return(ELLIPSE_A);}
-"b"                    {count(); return(ELLIPSE_B);}
-"sides"                {count(); return(POLYGON_SIZE);}
-"side_len"             {count(); return(POLYGON_LENGTH);}
-"ctrl_pts"             {count(); return(CURVE_POINTS);}
 "get_x"                {count(); return(GET_X);}
 "get_y"                {count(); return(GET_Y);}
 "get_points"           {count(); return(GET_POINTS);}
@@ -134,6 +122,19 @@ void count();
 .                       { }
 
 %%
+//SOME REMOVED PATTERNS
+//"x"                    {count(); return(POINT_X);}
+//"y"                    {count(); return(POINT_Y);}
+//"length"               {count(); return(RECT_LENGTH);}
+//"breadth"              {count(); return(RECT_BREADTH);}
+//"center"               {count(); return(CENTER);}
+//"rotation"             {count(); return(ROTATION);}
+//"radius"               {count(); return(RADIUS);}
+//"a"                    {count(); return(ELLIPSE_A);}
+//"b"                    {count(); return(ELLIPSE_B);}
+//"sides"                {count(); return(POLYGON_SIZE);}
+//"side_len"             {count(); return(POLYGON_LENGTH);}
+//"ctrl_pts"             {count(); return(CURVE_POINTS);}
 
 int column = 0;
 void count()
