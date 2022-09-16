@@ -1,3 +1,8 @@
+%{
+	int yylex();
+	int yyerror(char*s);
+%}
+
 /*** TOKEN DECLARATION ***/
 %token IDENTIFIER INTEGER_LITERAL FLOAT_LITERAL STRING_LITERAL BOOL_LITERAL PI
 
@@ -45,7 +50,8 @@
  * Translation unit
  *------------------------------------------------------------------------*/
 translation_unit
-	: external_declaration
+	: 
+	| external_declaration
 	| translation_unit external_declaration
 	;
 
@@ -176,13 +182,6 @@ object_declaration
 | VAR IDENTIFIER IDENTIFIER '(' ')'
 | VAR IDENTIFIER IDENTIFIER '(' expression ')'
 ;
-
-/* 
-
-object_assignment
-: variable_declaration
-| IDENTIFIER SCOPE_ACCESS variable_initialization
-; */
 
 
 /*------------------------------------------------------------------------
@@ -400,7 +399,7 @@ int main(int argc, char **argv)
 	yyparse();
 }
 
-yyerror(char*s)
+int yyerror(char*s)
 {
 	fprintf(stderr, "error occured!\n%s\n", s);
 }
