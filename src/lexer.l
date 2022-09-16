@@ -77,10 +77,10 @@ void count();
 "set_radius"           {count(); return(SET_RADIUS);}
 "set_colour"           {count(); return(SET_COLOUR);}
 "set_border_colour"    {count(); return(SET_BORDER_COLOUR);}
+"set_dimension"	       {count(); return(SET_DIMENSION);}
 "add_point"            {count(); return(ADD_POINT);}
 "make_point"           {count(); return(MAKE_POINT);}
 "get_color_from_rgb"   {count(); return(GET_COLOUR_FROM_RGB);}
-
 
 ":="                    {count(); return(ASSIGN);}
 "*="                    {count(); return(MUL_ASSIGN);}
