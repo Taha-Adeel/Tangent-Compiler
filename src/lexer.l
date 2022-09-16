@@ -103,6 +103,7 @@ void count();
 "|"                     {count(); return(LOGICAL_OR);}
 "!"                     {count(); return(LOGICAL_NOT);}
 ">>"                    {count(); return(SCOPE_ACCESS);}
+"::"                    {count(); return(INHERITS);}  
 "(:"                    {count(); return('{');}
 ":)"                    {count(); return('}');}
 ("<:"|"(")              {count(); return('(');}
