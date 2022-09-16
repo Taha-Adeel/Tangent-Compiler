@@ -1,23 +1,28 @@
-#program to check if a string is palindrome
+#using logical Operators
 
 driver<: :>
 (:
-    var string word := "malayalam";
-    var int len := word.length();
-    var int count := 0;
-    for(var int i := 0; i < len; i:= i + 1)
+    #using AND
+    var int a := 18;
+    if(a%2 = 0 & a%3 = 0)
     (:
-        if(word[i] = word[len-i-1])
-        (:
-            count := count + 1;
-        :)
+        print(a + "is divisible by both 2 and 3\n");
     :)
-    if(count = len)
+
+    #using OR
+    var int b := 4;
+    if(b%2 = 0 | b%3 = 0)
     (:
-        print(word + " is palindrome\n");
+        print(b + "is divisible by at least one of 2 and 3\n");
     :)
-    else
+
+    #using NOT
+    var int c := 15;
+    if(c%3 != 0)
     (:
-        print(word + " is not palindrome\n");
+        print(c + "is not divisible by 3\n");
     :)
+    
+
+
 :)

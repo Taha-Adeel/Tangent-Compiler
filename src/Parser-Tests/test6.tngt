@@ -1,0 +1,23 @@
+#using Classes
+
+family Vehicle
+(:
+    int wheels;
+    string name;
+    string color;
+    void vehicleInfo<: :>
+    (:
+        print("Vehicle:- " + name + "\n");
+        print("Color:- " + color + "\n");
+        print("No. of wheels:- " + wheels + "\n");
+    :)
+:) ;
+
+driver<: :>
+(:
+    Vehicle car;
+    car.wheels := 4;
+    car.name := "car";
+    car.color := "magenta";
+    car.vehicleInfo();
+:)

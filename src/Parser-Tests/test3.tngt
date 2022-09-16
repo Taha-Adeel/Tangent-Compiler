@@ -1,31 +1,13 @@
-#writing functions
+#print statement
 
-int square<: var int n :>   #returns the square of a number
-(:
-    n := n * n;
-    return n;
-:)
-
-int cube<: var int n :>     #returns the cube of  a number
-(:
-    n := n * n * n;
-    return n;
-:)
-
-int addition<: var int a, var int b :>   #returns the sum of two numbers
-(:
-    var int sum := a + b;
-    return sum;
-:)
+var int glob = 23;
+glob := glob + 1;
 
 driver<: :>
 (:
-    var int n := 5;
-    var int sqr := square(n);
-    var int cub := cube(n);
-    var int sum := addition(sqr, cub);
-    print("Number:- " + n + "\n");
-    print("Square of " + n + ":- " + sqr + "\n");
-    print("Cube of " + n + ":- " + cub + "\n");
-    print("Sum of Square and Cube of " + n + ":- " + sum + "\n");
+    var int loc = 4;
+    loc := loc + 1;
+    glob := glob + 1;
+    print("a local variable value :- " + loc + "\n");
+    print("a global variable value :- " + glob + "\n");
 :)

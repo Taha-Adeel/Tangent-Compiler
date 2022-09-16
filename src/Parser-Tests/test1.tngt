@@ -1,23 +1,14 @@
-#program to check if a number is odd or even
+#using if-else Statements
 
 driver<: :>
 (:
-    var int n := 100;
-    print("Even Numbers under 100:- \n");
-    for(var int i := 1; i < n; i := i + 1)
+    var int a := 8;
+    if(a%2 = 0)
     (:
-        if(i%2 = 0)
-        (:
-            print(i + ','); #checking for even no.
-        :) 
+        print(a + " is an even number \n");
     :)
-    print("\n");
-    print("Odd Numbers under 100:- \n");
-    for(var int i := 1; i < n; i := i + 1)
+    else
     (:
-        if(i%2 != 0) 
-        (:
-            print(i + ','); #checking for odd no.
-        :)
+        print(a + " is an odd number \n");
     :)
 :)
