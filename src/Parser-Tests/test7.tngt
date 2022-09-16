@@ -1,25 +1,28 @@
-#program to check if a number is odd or even
+#using relational operators
 
 driver<: :>
 (:
-    var int n := 100;
-    print("Even Numbers under 100:- \n");
-    for(var int i := 1; i < n; i := i + 1)
+    var int a := 12;
+    var int b := 20;
+    if(a < b)
     (:
-        if(i%2 = 0)
-        (:
-            print(i); #checking for even no.
-            print("\n");
-        :) 
+        print(a);
+        print(" is less than ");
+        print(b);
     :)
-    print("\n");
-    print("Odd Numbers under 100:- \n");
-    for(var int i := 1; i < n; i := i + 1)
+    var int c := 20;
+    if(a = c)
     (:
-        if(i%2 != 0) 
-        (:
-            print(i); #checking for odd no.
-            print("\n");
-        :)
+        print(a);
+        print(" is equal to ");
+        print(c);
     :)
+    var int d := 10;
+    if(a > d)
+    (:
+        print(a);
+        print(" is greater than ");
+        print(d);
+    :)
+
 :)

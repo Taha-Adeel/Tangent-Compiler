@@ -1,0 +1,25 @@
+#program to check if a number is odd or even
+
+driver<: :>
+(:
+    var int n := 100;
+    print("Even Numbers under 100:- \n");
+    for(var int i := 1; i < n; i := i + 1)
+    (:
+        if(i%2 = 0)
+        (:
+            print(i); #checking for even no.
+            print("\n");
+        :) 
+    :)
+    print("\n");
+    print("Odd Numbers under 100:- \n");
+    for(var int i := 1; i < n; i := i + 1)
+    (:
+        if(i%2 != 0) 
+        (:
+            print(i); #checking for odd no.
+            print("\n");
+        :)
+    :)
+:)

@@ -2,18 +2,19 @@
 
 family Vehicle
 (:
-    var int wheels;
-    var string name;
-    var string color;
-    void vehicleInfo<: :>
-    (:
-        print("Vehicle:- " + name + "\n");
-        print("Color:- " + color + "\n");
-        print("No. of wheels:- ");
-        print(wheels);
-        print("\n");
-    :)
-:) ;
+    public:
+        var int wheels;
+        var string name;
+        var string color;
+        void vehicleInfo<: :>
+        (:
+            print("Vehicle:- " + name + "\n");
+            print("Color:- " + color + "\n");
+            print("No. of wheels:- ");
+            print(wheels);
+            print("\n");
+        :)
+:);
 
 driver<: :>
 (:
