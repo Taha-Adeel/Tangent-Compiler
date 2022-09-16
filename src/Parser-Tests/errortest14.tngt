@@ -1,4 +1,5 @@
 #print statement
+#error beracuse assignment not allowed in golabl space
 
 var int glob := 23;
 glob := glob + 1;

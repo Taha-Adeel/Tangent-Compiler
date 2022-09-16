@@ -69,6 +69,14 @@ type
 	| STRING
 	| BOOL
 	| VOID
+	| POINT
+	| IMAGE 
+	| RECTANGLE
+	| CIRCLE 
+	| ELLIPSE 
+	| POLYGON
+	| CURVE
+	| PATH	
 	;
 
 
