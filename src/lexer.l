@@ -44,7 +44,7 @@ void count();
 "public"                {count(); return(PUBLIC);}
 "string"                {count(); return(STRING);}
 "switch"                {count(); return(SWITCH);}
-"send"                  {count(); return(SEND);} /* this isn't listed as a keyword in the language spec, pls add */
+"send"                  {count(); return(SEND);} 
 "to_float"              {count(); return(TO_FLOAT);}
 "true"                  {count(); return(BOOL_LITERAL);}
 "var"                   {count(); return(VAR);}
@@ -122,7 +122,6 @@ void count();
 ","                     {count(); return(',');}
 "["                     {count(); return('[');}
 "]"                     {count(); return(']');}
-","                     {count(); return(',');}
 ";"                     {count(); return(';');}
 
 {L}({L}|{D}|_)*         {count(); return(IDENTIFIER);}

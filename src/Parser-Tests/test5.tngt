@@ -1,44 +1,17 @@
 #using nested if-else
 
+void digitCount<: var int n :>
+(:
+    var int count := 0;
+    while(n>0)
+    (:
+        count := count + 1;
+    :)
+    print(count + "\n");
+:)
+
 driver<: :>
 (:
-    var int n := 30;
-    if(n%2 = 0)
-    (:
-        print(n);
-        print("is divisible by 2\n");
-        if(n%3 = 0)
-        (:
-            print(n);
-            print("is divisible by 3\n");
-            if(n%5 = 0)
-            (:
-                if(n%7 = 0)
-                (:
-                    print(n);
-                    print("is divisible by 7\n");
-                :)
-                else 
-                (:
-                    print(n);
-                    print("is not divisible by 7\n");
-                :)
-            :)
-            else
-            (:
-                print(n);
-                print("is not divisible by 7\n");
-            :)
-        :)
-        else
-        (:
-            print(n);
-            print("is not divisible by 3\n");
-        :)
-    :)
-    else 
-    (:
-        print(n);
-        print("is not divisible by 2\n");
-    :)
+    var int n := 16;
+    digitCount(n);
 :)

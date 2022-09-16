@@ -1,5 +1,5 @@
 /*** TOKEN DECLARATION ***/
-%token IDENTIFIER INTEGER_LITERAL FLOAT_LITERAL STRING_LITERAL BOOL_LITERAL CONSTANT PI
+%token IDENTIFIER INTEGER_LITERAL FLOAT_LITERAL STRING_LITERAL BOOL_LITERAL PI
 
 /* Primitive data types */
 %token INT FLOAT STRING BOOL VOID
@@ -11,7 +11,7 @@
 %token LOGICAL_AND LOGICAL_OR LOGICAL_NOT
 
 /* Control flow keywords */
-%token IF ELSE FOR WHILE SWITCH CASE DEFAULT BREAK CONTINUE RETURN
+%token IF ELSE FOR WHILE SWITCH CASE DEFAULT BREAK CONTINUE SEND
 
 /* Derived data types and their member fields */
 %token FAMILY ME
@@ -26,7 +26,7 @@
 %token CURVE_POINTS
 
 /* Functions */
-%token FUNC CLEAR DRAW SEND PRINT FLOOR CEIL TO_FLOAT
+%token FUNC CLEAR DRAW PRINT FLOOR CEIL TO_FLOAT
 %token ADD_POINT MAKE_POINT
 %token GET_X GET_Y GET_POINTS GET_WIDTH GET_CENTER GET_SIDES GET_SIDE_LENGTH GET_ROTATION GET_RADIUS GET_COLOUR GET_BORDER_COLOUR
 %token SET_X SET_Y SET_POINTS SET_WIDTH SET_LENGTH SET_CENTER SET_SIDES SET_SIDE_LENGTH SET_ROTATION SET_RADIUS SET_COLOUR SET_BORDER_COLOUR
@@ -101,7 +101,7 @@ variable
 	;
 
 variable_initialization
-	: IDENTIFIER ASSIGN literal
+	: IDENTIFIER ASSIGN expression
 	;
 
 function_definition
@@ -116,7 +116,8 @@ args_list
 	;
 
 arg
-	: type IDENTIFIER
+	: VAR type IDENTIFIER
+	| CONST type IDENTIFIER
 	;
 
 
@@ -161,14 +162,14 @@ constructor_declaration
 *	Objects
 *----------------------------------------------------------------------*/
 
-object_declaration
+/* object_declaration
 : IDENTIFIER IDENTIFIER ';'
 
 
 object_initialization
 : variable_declaration
 | IDENTIFIER SCOPE_ACCESS variable_initialization
-;
+; */
 
 
 /*------------------------------------------------------------------------
@@ -176,15 +177,17 @@ object_initialization
  *------------------------------------------------------------------------*/
 primary_expression
 	: IDENTIFIER
-	| CONSTANT
-	| STRING_LITERAL
+	| literal
 	| '(' expression ')'
 	;
 
 unary_expression
 	: primary_expression
 	| unary_expression '[' expression ']'
+	| unary_expression '(' ')'
+	| unary_expression '(' expression ')'
 	| unary_expression '.' IDENTIFIER
+	| inbuilt_function_call
 	;
 
 multiplicative_expression
@@ -215,7 +218,8 @@ equality_expression
 	;
 
 logical_not_expression
-	: LOGICAL_NOT equality_expression
+	: equality_expression
+	| LOGICAL_NOT equality_expression
 	;
 
 logical_and_expression
@@ -228,7 +232,6 @@ logical_or_expression
 	| logical_or_expression LOGICAL_OR logical_and_expression
 	;
 
-
 conditional_expression
 	: logical_or_expression
 	| logical_or_expression '?' expression ':' conditional_expression
@@ -240,7 +243,7 @@ assignment_expression
 	;
 
 assignment_operator
-	: '='
+	: ASSIGN
 	| MUL_ASSIGN
 	| DIV_ASSIGN
 	| MOD_ASSIGN
@@ -303,12 +306,32 @@ iteration_statement
 	: WHILE '(' expression ')' statement
 	| FOR '(' expression_statement expression_statement ')' statement
 	| FOR '(' expression_statement expression_statement expression ')' statement
+	| FOR '(' variable_declaration expression_statement ')' statement
+	| FOR '(' variable_declaration expression_statement expression ')' statement
 	;
 
 jump_statement
 	: CONTINUE ';'
 	| BREAK ';'
-	| RETURN expression_statement
+	| SEND expression_statement
+	;
+
+/*------------------------------------------------------------------------
+ * Statements
+ *------------------------------------------------------------------------*/
+inbuilt_function_call
+	: inbuilt_function '(' ')'
+	| inbuilt_function '(' expression ')'
+	;
+inbuilt_function
+	: CLEAR
+	| DRAW
+	| PRINT
+	| FLOOR
+	| CEIL
+	| TO_FLOAT
+	| ADD_POINT
+	| MAKE_POINT
 	;
 
 %%
