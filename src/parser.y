@@ -31,6 +31,7 @@
 %token GET_X GET_Y GET_POINTS GET_WIDTH GET_CENTER GET_SIDES GET_SIDE_LENGTH GET_ROTATION GET_RADIUS GET_COLOUR GET_BORDER_COLOUR
 %token SET_X SET_Y SET_POINTS SET_WIDTH SET_LENGTH SET_CENTER SET_SIDES SET_SIDE_LENGTH SET_ROTATION SET_RADIUS SET_COLOUR SET_BORDER_COLOUR
 %token COLOUR RED BLUE GREEN
+%token GET_COLOUR_FROM_RGB
 
 /* Driver keyword */
 %token DRIVER
@@ -340,11 +341,13 @@ jump_statement
 	;
 
 /*------------------------------------------------------------------------
- * Statements
+ * Inbuilt Functions
  *------------------------------------------------------------------------*/
 inbuilt_function_call
 	: inbuilt_function '(' ')'
 	| inbuilt_function '(' expression ')'
+	| inbuilt_member_function '(' ')'
+	| inbuilt_member_function '(' expression ')'
 	;
 inbuilt_function
 	: CLEAR
@@ -355,8 +358,39 @@ inbuilt_function
 	| TO_FLOAT
 	| ADD_POINT
 	| MAKE_POINT
+	| GET_COLOUR_FROM_RGB
 	;
-
+inbuilt_member_function
+	: inbuilt_get_function
+	| inbuilt_set_function
+	;	
+inbuilt_get_function
+	: GET_X
+	| GET_Y 
+	| GET_POINTS
+	| GET_WIDTH
+	| GET_CENTER
+	| GET_SIDES
+	| GET_SIDE_LENGTH
+	| GET_ROTATION
+	| GET_RADIUS
+	| GET_COLOUR
+	| GET_BORDER_COLOUR
+	;
+inbuilt_set_function
+	: SET_X
+	| SET_Y
+	| SET_POINTS
+	| SET_WIDTH
+	| SET_LENGTH
+	| SET_CENTER
+	| SET_SIDES
+	| SET_SIDE_LENGTH
+	| SET_ROTATION
+	| SET_RADIUS
+	| SET_COLOUR
+	| SET_BORDER_COLOUR
+	;
 %%
 
 #include<stdio.h>

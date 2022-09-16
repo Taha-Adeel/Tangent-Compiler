@@ -91,7 +91,7 @@ void count();
 "set_border_colour"    {count(); return(SET_BORDER_COLOUR);}
 "add_point"            {count(); return(ADD_POINT);}
 "make_point"           {count(); return(MAKE_POINT);}
-
+"get_color_from_rgb"   {count(); return(GET_COLOUR_FROM_RGB);}
 
 
 ":="                    {count(); return(ASSIGN);}
