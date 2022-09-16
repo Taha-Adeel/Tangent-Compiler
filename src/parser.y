@@ -14,8 +14,8 @@
 %token IF ELSE FOR WHILE SWITCH CASE DEFAULT BREAK CONTINUE SEND
 
 /* Derived data types and their member fields */
-%token FAMILY ME
-%token SCOPE_ACCESS PUBLIC PRIVATE
+%token FAMILY ME INHERITS
+%token SCOPE_ACCESS PUBLIC PRIVATE 
 %token POINT IMAGE RECTANGLE CIRCLE ELLIPSE POLYGON CURVE PATH
 %token POINT_X POINT_Y
 %token IMG_DIMS IMG_DRAWS
@@ -126,8 +126,8 @@ arg
  *------------------------------------------------------------------------*/
 class_declaration
 	: FAMILY IDENTIFIER class_definition ';'
-	| FAMILY IDENTIFIER SCOPE_ACCESS IDENTIFIER class_definition ';'
-	| FAMILY IDENTIFIER SCOPE_ACCESS access_specifier class_definition ';'
+	| FAMILY IDENTIFIER INHERITS IDENTIFIER class_definition ';'
+	| FAMILY IDENTIFIER INHERITS access_specifier class_definition ';'
 	;
 
 access_specifier
@@ -162,11 +162,15 @@ constructor_declaration
 *	Objects
 *----------------------------------------------------------------------*/
 
-/* object_declaration
-: IDENTIFIER IDENTIFIER ';'
+object_declaration
+: VAR IDENTIFIER IDENTIFIER
+| VAR IDENTIFIER IDENTIFIER '(' ')'
+| VAR IDENTIFIER IDENTIFIER '(' expression ')'
+;
 
+/* 
 
-object_initialization
+object_assignment
 : variable_declaration
 | IDENTIFIER SCOPE_ACCESS variable_initialization
 ; */
@@ -186,7 +190,9 @@ unary_expression
 	| unary_expression '[' expression ']'
 	| unary_expression '(' ')'
 	| unary_expression '(' expression ')'
-	| unary_expression '.' IDENTIFIER
+	| unary_expression SCOPE_ACCESS IDENTIFIER
+	| unary_expression SCOPE_ACCESS IDENTIFIER '(' ')'
+	| unary_expression SCOPE_ACCESS IDENTIFIER '(' expression ')'
 	| inbuilt_function_call
 	;
 
@@ -264,21 +270,6 @@ constant_expression
 /*------------------------------------------------------------------------
  * Statements
  *------------------------------------------------------------------------*/
-/* statement
-	: labeled_statement
-	| compound_statement
-	| expression_statement
-	| selection_statement
-	| iteration_statement
-	| jump_statement
-	; */
-
-/* compound_statement
-	: '{' '}'
-	| '{' statement_list '}'
-	| '{' variable_declaration_list '}'
-	| '{' variable_declaration_list statement_list '}'
-	; */
 
 statement
 	: labeled_statement
@@ -287,7 +278,12 @@ statement
 	| selection_statement
 	| iteration_statement
 	| jump_statement
+	| declaration_statement
+	;
+
+declaration_statement:
 	| variable_declaration_list
+	| object_declaration
 	;
 
 compound_statement

@@ -18,9 +18,9 @@ family Vehicle
 
 driver<: :>
 (:
-    Vehicle car;
-    car.wheels := 4;
-    car.name := "car";
-    car.color := "magenta";
-    car.vehicleInfo();
+    var Vehicle car;
+    car>>wheels := 4;
+    car>>name := "car";
+    car>>color := "magenta";
+    car>>vehicleInfo();
 :)
