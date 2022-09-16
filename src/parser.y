@@ -81,7 +81,7 @@ literal
 	;
 
 variable_declaration
-	: type variable_list ';'
+	: VAR type variable_list ';'
 	| CONST type variable_list ';'
 	;
 
@@ -92,7 +92,7 @@ variable_declaration_list
 
 variable_list
 	: variable
-	| variable_list variable
+	| variable_list ',' variable
 	;
 
 variable

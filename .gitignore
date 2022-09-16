@@ -5,3 +5,10 @@ lex.yy.c
 *.o
 parser.tab.h
 parser.tab.c
+src/test_outputs
+lexer
+output.txt
+parser
+parser.output
+parser.tab.c
+parser.tab.h

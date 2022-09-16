@@ -107,8 +107,8 @@ void count();
 ";"                     {count(); return(';');}
 "(:"                    {count(); return('{');}
 ":)"                    {count(); return('}');}
-("<:"|"(")                    {count(); return('(');}
-(":>"|")")                    {count(); return(')');}
+("<:"|"(")              {count(); return('(');}
+(":>"|")")              {count(); return(')');}
 ","                     {count(); return(',');}
 "["                     {count(); return('[');}
 "]"                     {count(); return(']');}
@@ -148,15 +148,15 @@ int yywrap()
 {
 	return 1;
 }
-main(int argc, char* argv[]){
-        if(argc != 2)return -1; //number of input args
-        yyin = fopen(argv[1], "r");
-        yyout = fopen("output.txt", "w");
-        while(yylex());
-        fclose(yyin);
-        fclose(yyout);
-        return 0;
-}
+// int main(int argc, char* argv[]){
+//         if(argc != 2)return -1; //number of input args
+//         yyin = fopen(argv[1], "r");
+//         yyout = fopen("output.txt", "w");
+//         while(yylex());
+//         fclose(yyin);
+//         fclose(yyout);
+//         return 0;
+// }
 
 void comment(){
         char c;
