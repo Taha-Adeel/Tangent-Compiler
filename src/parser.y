@@ -8,8 +8,6 @@
 /* Operators */
 %token ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN SUB_ASSIGN 
 %token EQ NOT_EQ LS_THAN LS_THAN_EQ GR_THAN GR_THAN_EQ
-%token OPEN_PAR CLOSE_PAR OPEN_BRACES CLOSE_BRACES OPEN_SQ_BRKT CLOSE_SQ_BRKT DELIMITER COMMA
-%token PLUS MINUS STAR MODULO INCREMENT DECREMENT
 %token LOGICAL_AND LOGICAL_OR LOGICAL_NOT
 
 /* Control flow keywords */
@@ -78,10 +76,11 @@ literal
 	| FLOAT_LITERAL
 	| STRING_LITERAL
 	| BOOL_LITERAL
+	| PI
 	;
 
 variable_declaration
-	: type variable_list ';'
+	: VAR type variable_list ';'
 	| CONST type variable_list ';'
 	;
 
@@ -187,8 +186,8 @@ additive_expression
 
 relational_expression
 	: additive_expression
-	| relational_expression '<' additive_expression
-	| relational_expression '>' additive_expression
+	| relational_expression LS_THAN additive_expression
+	| relational_expression GR_THAN additive_expression
 	| relational_expression LS_THAN_EQ additive_expression
 	| relational_expression GR_THAN_EQ additive_expression
 	;
@@ -199,9 +198,13 @@ equality_expression
 	| equality_expression NOT_EQ relational_expression
 	;
 
+logical_not_expression
+	: LOGICAL_NOT equality_expression
+	;
+
 logical_and_expression
-	: equality_expression
-	| logical_and_expression LOGICAL_AND equality_expression
+	: logical_not_expression
+	| logical_and_expression LOGICAL_AND logical_not_expression
 	;
 
 logical_or_expression
