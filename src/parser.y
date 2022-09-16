@@ -41,7 +41,7 @@
 /* Driver keyword */
 %token DRIVER
 
-%start translation_unit
+%start program
 
 /*** RULES ***/
 %%
@@ -49,9 +49,13 @@
 /*------------------------------------------------------------------------
  * Translation unit
  *------------------------------------------------------------------------*/
+program
+	:
+	| translation_unit
+	;
+	
 translation_unit
-	: 
-	| external_declaration
+	: external_declaration
 	| translation_unit external_declaration
 	;
 
@@ -286,10 +290,6 @@ statement
 	| selection_statement
 	| iteration_statement
 	| jump_statement
-	| declaration_statement
-	;
-
-declaration_statement:
 	| variable_declaration_list
 	| object_declaration
 	;
