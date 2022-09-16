@@ -264,6 +264,22 @@ constant_expression
 /*------------------------------------------------------------------------
  * Statements
  *------------------------------------------------------------------------*/
+/* statement
+	: labeled_statement
+	| compound_statement
+	| expression_statement
+	| selection_statement
+	| iteration_statement
+	| jump_statement
+	; */
+
+/* compound_statement
+	: '{' '}'
+	| '{' statement_list '}'
+	| '{' variable_declaration_list '}'
+	| '{' variable_declaration_list statement_list '}'
+	; */
+
 statement
 	: labeled_statement
 	| compound_statement
@@ -271,13 +287,12 @@ statement
 	| selection_statement
 	| iteration_statement
 	| jump_statement
+	| variable_declaration_list
 	;
 
 compound_statement
 	: '{' '}'
 	| '{' statement_list '}'
-	| '{' variable_declaration_list '}'
-	| '{' variable_declaration_list statement_list '}'
 	;
 
 statement_list

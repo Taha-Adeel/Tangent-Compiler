@@ -2,18 +2,18 @@
 
 driver<: :>
 (:
-    var int a := 18;
-    if(a%2 = 0 & a%3 = 0)
+    var int a1 := 18;
+    if(a1%2 = 0 & a1%3 = 0)
     (:
-        print(a);
+        print(a1);
         print("is divisible by both 2 and 3\n");
     :)
 
     #using OR
-    var int b := 4;
-    if(b%2 = 0 | b%3 = 0)
+    var int aaa := 4;
+    if(b1%2 = 0 | b1%3 = 0)
     (:
-        print(b);
+        print(b1);
         print("is divisible by at least one of 2 and 3\n");
     :)
 
