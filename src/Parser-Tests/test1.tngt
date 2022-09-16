@@ -5,10 +5,12 @@ driver<: :>
     var int a := 8;
     if(a%2 = 0)
     (:
-        print(a + " is an even number \n");
+        print(a);
+        print(" is an even number \n");
     :)
     else
     (:
-        print(a + " is an odd number \n");
+        print(a);
+        print(" is an odd number \n");
     :)
 :)

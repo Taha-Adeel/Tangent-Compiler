@@ -16,7 +16,8 @@ driver<: :>
         :)
         if(count = 2)
         (:
-            print(i + ',');
+            print(i);
+            print("\n");
         :)  
     :)
 :)

@@ -1,13 +1,17 @@
 #print statement
 
-var int glob = 23;
+var int glob := 23;
 glob := glob + 1;
 
 driver<: :>
 (:
-    var int loc = 4;
+    var int loc := 4;
     loc := loc + 1;
     glob := glob + 1;
-    print("a local variable value :- " + loc + "\n");
-    print("a global variable value :- " + glob + "\n");
+    print("a local variable value:- ");
+    print(loc);
+    print("\n");
+    print("a global variable value :- ");
+    print(glob);
+    print("\n");
 :)

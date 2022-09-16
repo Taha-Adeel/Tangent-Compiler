@@ -4,7 +4,8 @@ bool printNumbers<: for(var int a: = 1; a < 10; a:= a++) :>
 (:
     for(var int i : 1; i <= 10; i := i++)
     (:
-        print(i + ",");
+        print(i);
+        print("\n");
     :)
 
 :)

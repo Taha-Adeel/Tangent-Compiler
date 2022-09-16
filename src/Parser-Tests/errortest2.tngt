@@ -1,5 +1,4 @@
-
-
+#incorrect print format
 int multiply<: var int a, var int b :>        
 (:
     var int product;
@@ -12,5 +11,5 @@ driver<: :>
     var int a := 10;
     var int b := 25;
     var int product := multiply(a, b);
-    print("Product of " a  " and "  b " :- "  product); #incorrect print format
+    print("Product of " a  " and "  b " :- "  product); 
 :)

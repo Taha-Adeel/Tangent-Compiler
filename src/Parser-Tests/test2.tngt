@@ -2,8 +2,9 @@
 
 driver<: :>
 (:
-    for(var int i = 1; i <= 10; i := i + 1)
+    for(var int i := 1; i <= 10; i := i + 1)
     (:
-        print(i + "\n");
+        print(i);
+        print("\n");
     :)
 :)

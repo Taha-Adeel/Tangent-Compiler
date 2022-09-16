@@ -6,21 +6,24 @@ driver<: :>
     var int a := 18;
     if(a%2 = 0 & a%3 = 0)
     (:
-        print(a + "is divisible by both 2 and 3\n");
+        print(a);
+        print("is divisible by both 2 and 3\n");
     :)
 
     #using OR
     var int b := 4;
     if(b%2 = 0 | b%3 = 0)
     (:
-        print(b + "is divisible by at least one of 2 and 3\n");
+        print(b);
+        print("is divisible by at least one of 2 and 3\n");
     :)
 
     #using NOT
     var int c := 15;
     if(c%3 != 0)
     (:
-        print(c + "is not divisible by 3\n");
+        print(c);
+        print("is not divisible by 3\n");
     :)
     
 

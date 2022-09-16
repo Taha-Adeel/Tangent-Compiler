@@ -8,7 +8,8 @@ driver<: :>
     (:
         if(i%2 = 0)
         (:
-            print(i + ','); #checking for even no.
+            print(i); #checking for even no.
+            print("\n");
         :) 
     :)
     print("\n");
@@ -17,7 +18,8 @@ driver<: :>
     (:
         if(i%2 != 0) 
         (:
-            print(i + ','); #checking for odd no.
+            print(i); #checking for odd no.
+            print("\n");
         :)
     :)
 :)
