@@ -1,0 +1,11 @@
+#checking if number is even or odd
+
+#here braces are not used for the for loop and if-else statements
+
+driver<: :>
+(:
+    var int n = 10;
+    for(var int i := 1; i <= 10; i := i + 1)
+        if(i%2 = 0) print(i + " is even\n");
+        else print(i + " is odd\n);
+:)

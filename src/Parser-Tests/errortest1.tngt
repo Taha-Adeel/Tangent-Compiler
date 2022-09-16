@@ -1,6 +1,6 @@
-#writing incorrect functions
+#
 
-void checkIfEven<: var int a :>        #void function tries to return a bool value
+void checkIfEven<: var a :>       #int keyword missing
 (:
     var bool result;
     if( a%2 = 0) 
@@ -11,12 +11,12 @@ void checkIfEven<: var int a :>        #void function tries to return a bool val
     (:
         result := 0;
     :)
-    return result;
+    print(result);
 :)
 
 driver<: :>
 (:
     var int a := 10;
     var bool result := checkIfEven(a);
-    print(result);
+    
 :)
