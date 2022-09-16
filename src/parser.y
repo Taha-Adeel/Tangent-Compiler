@@ -115,13 +115,10 @@ variable_list
 	;
 
 variable
-	: IDENTIFIER
-	| variable_initialization
+	: IDENTIFIER ';'
+	| IDENTIFIER ASSIGN expression
 	;
 
-variable_initialization
-	: IDENTIFIER ASSIGN expression
-	;
 
 function_definition
 	: type IDENTIFIER '(' args_list ')' compound_statement
@@ -182,9 +179,9 @@ constructor_declaration
 *----------------------------------------------------------------------*/
 
 object_declaration
-: VAR IDENTIFIER IDENTIFIER
-| VAR IDENTIFIER IDENTIFIER '(' ')'
-| VAR IDENTIFIER IDENTIFIER '(' expression ')'
+	: VAR IDENTIFIER IDENTIFIER ';'
+	| VAR IDENTIFIER IDENTIFIER '(' ')'
+	| VAR IDENTIFIER IDENTIFIER '(' expression ')'
 ;
 
 
@@ -202,7 +199,7 @@ unary_expression
 	| unary_expression '[' expression ']'
 	| unary_expression '(' ')'
 	| unary_expression '(' expression ')'
-	| unary_expression SCOPE_ACCESS IDENTIFIER
+	| unary_expression SCOPE_ACCESS IDENTIFIER 
 	| unary_expression SCOPE_ACCESS IDENTIFIER '(' ')'
 	| unary_expression SCOPE_ACCESS IDENTIFIER '(' expression ')'
 	| inbuilt_function_call
@@ -310,8 +307,8 @@ expression_statement
 	;
 
 selection_statement
-	: IF '(' expression ')' statement
-	| IF '(' expression ')' statement ELSE statement
+	: IF '(' expression ')' compound_statement
+	| IF '(' expression ')' compound_statement ELSE compound_statement
 	| SWITCH '(' expression ')' statement
 	;
 

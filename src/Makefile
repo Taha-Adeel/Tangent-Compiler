@@ -1,7 +1,7 @@
 all: tangent
 
 parser.tab.c parser.tab.h: parser.y
-	bison -t -v --debug -d parser.y
+	bison -t -g -v --debug -d parser.y
 
 lex.yy.c: lexer.l parser.tab.h
 	flex lexer.l
