@@ -25,7 +25,6 @@ error: parser
 	for num in 1 2 3 4 5 6 ; do \
 		touch test_outputs/erroroutput$$num.txt ; \
 		./parser < Parser-Tests/errortest$$num.tngt > test_outputs/erroroutput$$num.txt ; \
-		diff correct_outputs/erroroutput$$num.txt test_outputs/erroroutput$$num.txt ; \
 	done
 
 clean:
