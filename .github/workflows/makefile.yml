@@ -22,6 +22,7 @@ jobs:
         sudo apt-get update
         sudo apt-get -y install flex
         sudo apt-get -y install bison
+        sudo apt-get -y install libfl-dev
         cd src
         make all
       
