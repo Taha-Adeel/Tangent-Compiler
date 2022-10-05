@@ -28,4 +28,4 @@ jobs:
     - name: Run tests on incorrect codes
       run: |
         cd src
-        make test
+        make error
