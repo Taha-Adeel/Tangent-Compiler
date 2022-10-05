@@ -2,7 +2,7 @@ name: Makefile CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "actions ]
 
 jobs:
   build:
@@ -24,11 +24,7 @@ jobs:
         make all
       
     - name: Run tests on correct codes
-      run: |
-        cd src
-        make test
+      run: make test
       
     - name: Run tests on incorrect codes
-      run: |
-        cd src
-        make error
+      run: make error
