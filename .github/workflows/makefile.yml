@@ -27,7 +27,11 @@ jobs:
         make all
       
     - name: Run tests on correct codes
-      run: make test
+      run: |
+        cd src
+        make test
       
     - name: Run tests on incorrect codes
-      run: make error
+      run: |
+        cd src
+        make error
