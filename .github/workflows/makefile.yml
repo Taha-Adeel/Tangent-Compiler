@@ -1,0 +1,31 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+#     - name: configure
+#       run: ./configure
+      
+    - name: Install dependencies
+      run: |
+        cd src
+        make all
+      
+    - name: Run tests on correct codes
+      run: |
+        cd src
+        make test
+      
+    - name: Run tests on incorrect codes
+      run: |
+        cd src
+        make test
