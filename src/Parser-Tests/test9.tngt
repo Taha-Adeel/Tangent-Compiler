@@ -1,0 +1,17 @@
+#working of function
+
+
+int addition<: var int a1, var int b1 :>   #returns the sum of two numbers
+(:
+    var int sum := a1 + b1;
+    send sum;
+:)
+
+driver<: :>
+(:
+    var int n := 5;
+    var int p := 13;
+    var int sum := addition(n, p);
+    print("Sum = ");
+    print(sum);
+:)

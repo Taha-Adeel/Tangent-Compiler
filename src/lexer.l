@@ -4,7 +4,7 @@ L               [a-zA-Z]
 
 %{
 #include <stdio.h>
-#include "lex.yy.h"
+#include "parser.tab.h"
 void comment();
 void count();
 %}
@@ -44,7 +44,7 @@ void count();
 "public"                {count(); return(PUBLIC);}
 "string"                {count(); return(STRING);}
 "switch"                {count(); return(SWITCH);}
-"send"                  {count(); return(SEND);} /* this isn't listed as a keyword in the language spec, pls add */
+"send"                  {count(); return(SEND);} 
 "to_float"              {count(); return(TO_FLOAT);}
 "true"                  {count(); return(BOOL_LITERAL);}
 "var"                   {count(); return(VAR);}
@@ -53,18 +53,6 @@ void count();
 "driver"                {count(); return(DRIVER);}
 
 
-"x"                    {count(); return(POINT_X);}
-"y"                    {count(); return(POINT_Y);}
-"length"               {count(); return(RECT_LENGTH);}
-"breadth"              {count(); return(RECT_BREADTH);}
-"center"               {count(); return(CENTER);}
-"rotation"             {count(); return(ROTATION);}
-"radius"               {count(); return(RADIUS);}
-"a"                    {count(); return(ELLIPSE_A);}
-"b"                    {count(); return(ELLIPSE_B);}
-"sides"                {count(); return(POLYGON_SIZE);}
-"side_len"             {count(); return(POLYGON_LENGTH);}
-"ctrl_pts"             {count(); return(CURVE_POINTS);}
 "get_x"                {count(); return(GET_X);}
 "get_y"                {count(); return(GET_Y);}
 "get_points"           {count(); return(GET_POINTS);}
@@ -89,34 +77,41 @@ void count();
 "set_radius"           {count(); return(SET_RADIUS);}
 "set_colour"           {count(); return(SET_COLOUR);}
 "set_border_colour"    {count(); return(SET_BORDER_COLOUR);}
+"set_dimension"	       {count(); return(SET_DIMENSION);}
 "add_point"            {count(); return(ADD_POINT);}
 "make_point"           {count(); return(MAKE_POINT);}
+"get_color_from_rgb"   {count(); return(GET_COLOUR_FROM_RGB);}
 
-
-
-">>"                    {count(); return(SCOPE_ACCESS);}
-"&"                     {count(); return(LOGICAL_AND);}
-"|"                     {count(); return(LOGICAL_OR);}
-"!"                     {count(); return(LOGICAL_NOT);}
+":="                    {count(); return(ASSIGN);}
+"*="                    {count(); return(MUL_ASSIGN);}
+"/="                    {count(); return(DIV_ASSIGN);}
+"%="                    {count(); return(MOD_ASSIGN);}
+"+="                    {count(); return(ADD_ASSIGN);}
+"-="                    {count(); return(SUB_ASSIGN);}
+"-"                     {count(); return('-');}
+"+"                     {count(); return('+');}
+"*"                     {count(); return('*');}
+"/"                     {count(); return('/');}
+"%"                     {count(); return('%');}
 "<="                    {count(); return(LS_THAN_EQ);}
 ">="                    {count(); return(GR_THAN_EQ);}
 "<"                     {count(); return(LS_THAN);}
 ">"                     {count(); return(GR_THAN);}
 "="                     {count(); return(EQ);}
 "!="                    {count(); return(NOT_EQ);}
-";"                     {count(); return(';');}
+"&"                     {count(); return(LOGICAL_AND);}
+"|"                     {count(); return(LOGICAL_OR);}
+"!"                     {count(); return(LOGICAL_NOT);}
+">>"                    {count(); return(SCOPE_ACCESS);}
+"::"                    {count(); return(INHERITS);}  
 "(:"                    {count(); return('{');}
 ":)"                    {count(); return('}');}
-("<:"|"(")                    {count(); return('(');}
-(":>"|")")                    {count(); return(')');}
+("<:"|"(")              {count(); return('(');}
+(":>"|")")              {count(); return(')');}
 ","                     {count(); return(',');}
 "["                     {count(); return('[');}
 "]"                     {count(); return(']');}
-"-"			            {count(); return('-');}
-"+"			            {count(); return('+');}
-"*"			            {count(); return('*');}
-"/"			            {count(); return('/');}
-"%"			            {count(); return('%');}
+";"                     {count(); return(';');}
 
 {L}({L}|{D}|_)*         {count(); return(IDENTIFIER);}
 {D}+                    {count(); return(INTEGER_LITERAL);}
@@ -128,6 +123,19 @@ void count();
 .                       { }
 
 %%
+//SOME REMOVED PATTERNS
+//"x"                    {count(); return(POINT_X);}
+//"y"                    {count(); return(POINT_Y);}
+//"length"               {count(); return(RECT_LENGTH);}
+//"breadth"              {count(); return(RECT_BREADTH);}
+//"center"               {count(); return(CENTER);}
+//"rotation"             {count(); return(ROTATION);}
+//"radius"               {count(); return(RADIUS);}
+//"a"                    {count(); return(ELLIPSE_A);}
+//"b"                    {count(); return(ELLIPSE_B);}
+//"sides"                {count(); return(POLYGON_SIZE);}
+//"side_len"             {count(); return(POLYGON_LENGTH);}
+//"ctrl_pts"             {count(); return(CURVE_POINTS);}
 
 int column = 0;
 void count()
@@ -148,15 +156,15 @@ int yywrap()
 {
 	return 1;
 }
-int main(int argc, char* argv[]){
-        if(argc != 2)return -1; //number of input args
-        yyin = fopen(argv[1], "r");
-        yyout = fopen("output.txt", "w");
-        while(yylex());
-        fclose(yyin);
-        fclose(yyout);
-        return 0;
-}
+// int main(int argc, char* argv[]){
+//         if(argc != 2)return -1; //number of input args
+//         yyin = fopen(argv[1], "r");
+//         yyout = fopen("output.txt", "w");
+//         while(yylex());
+//         fclose(yyin);
+//         fclose(yyout);
+//         return 0;
+// }
 
 void comment(){
         char c;

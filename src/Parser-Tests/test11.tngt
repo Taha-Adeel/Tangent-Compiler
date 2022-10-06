@@ -1,0 +1,36 @@
+#using jump statements
+
+bool isEven<: var int a1 :>
+(:
+    var bool ans;
+    if(a1%2 = 0)
+    (:
+        ans = 1;
+    :)
+    else
+    (:
+        ans = 0;
+    :)
+    send ans;
+:)
+
+driver<: :>
+(:
+    var int a1 := 100;
+    for(var int i := 1; i <= a1; i := i + 1)
+    (:
+        if(i%10 = 0)
+        (:
+            continue;
+        :) 
+        var bool ans := isEven(i);
+        if(ans)
+        (:
+            print(i);
+        :)
+        if(i%11 = 0) 
+        (:
+            break;
+        :)
+    :)
+:)
