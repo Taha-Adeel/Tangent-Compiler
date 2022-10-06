@@ -5,12 +5,10 @@ lex.yy.c
 *.o
 parser.tab.h
 parser.tab.c
-src/test_outputs
+Tests/Test_Outputs
 lexer
-output.txt
 parser
 parser.output
 parser.tab.c
 parser.tab.h
-*.swp
 parser.dot
