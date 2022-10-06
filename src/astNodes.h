@@ -165,18 +165,28 @@ class ModAssign : public AssignmentExp
 
 };
 
-/* Arithmetic Operations */
+/* Base Classes for Unary and Binary Operations */
 
-class BinaryArithmetic : public Expression
+class UnaryOperation : public Expression
+{
+    protected:
+        Expression* RHS;
+    public:
+        UnaryOperation(Expression* R);
+};
+
+class BinaryOperation : public Expression
 {
     protected:
         Expression* LHS;
         Expression* RHS;
     public:
-        BinaryArithmetic(Expression* L, Expression* R);
+        BinaryOperation(Expression* L, Expression* R);
 };
 
-class Addition : public BinaryArithmetic
+/* Arithmetic Operations */
+
+class Addition : public BinaryOperation
 {
     public:
         Addition(Expression* L, Expression* R);
@@ -189,7 +199,7 @@ class Addition : public BinaryArithmetic
     */
 };
 
-class Subtraction: public BinaryArithmetic
+class Subtraction: public BinaryOperation
 {
     public:
         Subtraction(Expression* L, Expression* R);
@@ -198,7 +208,7 @@ class Subtraction: public BinaryArithmetic
 
 };
 
-class Multiplication : public BinaryArithmetic
+class Multiplication : public BinaryOperation
 {
     public:
         Multiplication(Expression* L, Expression* R);
@@ -207,7 +217,7 @@ class Multiplication : public BinaryArithmetic
 
 };
 
-class Division : public BinaryArithmetic
+class Division : public BinaryOperation
 {
     public:
         Division(Expression* L, Expression* R);
@@ -216,7 +226,7 @@ class Division : public BinaryArithmetic
 
 };
 
-class ModularDiv : public BinaryArithmetic
+class ModularDiv : public BinaryOperation
 {
     public:
         ModularDiv(Expression* L, Expression* R);
@@ -225,15 +235,7 @@ class ModularDiv : public BinaryArithmetic
 
 };
 
-class UnaryArithmetic : public Expression
-{
-    protected:
-        Expression* RHS;
-    public:
-        UnaryArithmetic(Expression* R);
-};
-
-class UnaryPlus : public UnaryArithmetic
+class UnaryPlus : public UnaryOperation
 {
     public:
         UnaryPlus(Expression* R);
@@ -241,7 +243,7 @@ class UnaryPlus : public UnaryArithmetic
         value_pair evaluate();
 };
 
-class UnaryMinus : public UnaryArithmetic
+class UnaryMinus : public UnaryOperation
 {
     public:
         UnaryMinus(Expression* R);
@@ -250,6 +252,94 @@ class UnaryMinus : public UnaryArithmetic
 };
 
 /* Logical Operations */
+
+class LogicalAND : public BinaryOperation
+{
+    public:
+        LogicalAND(Expression* L, Expression* R);
+        void print();
+        value_pair evaluate(); 
+
+};
+
+class LogicalOR : public BinaryOperation
+{
+    public:
+        LogicalOR(Expression* L, Expression* R);
+        void print();
+        value_pair evaluate(); 
+
+};
+
+class LogicalNOT : public UnaryOperation
+{
+    public:
+        LogicalNOT(Expression* R);
+        void print();
+        value_pair evaluate();
+};
+
+/* Comparison Operations */
+
+class CompGT: public BinaryOperation
+{
+    // >
+    public:
+        CompGT(Expression* L, Expression* R);
+        void print();
+        value_pair evaluate(); 
+
+};
+
+class CompLT: public BinaryOperation
+{
+    // <
+    public:
+        CompLT(Expression* L, Expression* R);
+        void print();
+        value_pair evaluate(); 
+
+};
+
+class CompGE: public BinaryOperation
+{
+    // >=
+    public:
+        CompGE(Expression* L, Expression* R);
+        void print();
+        value_pair evaluate(); 
+
+};
+
+class CompLE: public BinaryOperation
+{
+    // <=
+    public:
+        CompLE(Expression* L, Expression* R);
+        void print();
+        value_pair evaluate(); 
+
+};
+
+class CompEQ: public BinaryOperation
+{
+    // =
+    public:
+        CompEQ(Expression* L, Expression* R);
+        void print();
+        value_pair evaluate(); 
+
+};
+
+class CompNEQ: public BinaryOperation
+{
+    // !=
+    public:
+        CompNEQ(Expression* L, Expression* R);
+        void print();
+        value_pair evaluate(); 
+
+};
 
 
 /*------------------------------------------------------------------------
