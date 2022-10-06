@@ -2,11 +2,11 @@
 #include <iostream>
 #include <list>
 
-#define value_pair pair <exp_type, data>
+#define value_pair pair <type, data>
 using namespace std;
 
 /* Definitions to store the value of an Expression */
-enum exp_type {INT_TYPE, FLOAT_TYPE, STRING_TYPE, BOOL_TYPE, VOID_TYPE};
+enum type {INT_TYPE, FLOAT_TYPE, STRING_TYPE, BOOL_TYPE, VOID_TYPE};
 union data 
 {
     int ivalue;
@@ -348,6 +348,100 @@ class CompNEQ: public BinaryOperation
 class Statement : public ASTNode
 {
     
+};
+
+class ExpressionStatement : public Statement
+{
+    protected:
+        Expression* exp;
+    public:
+        ExpressionStatement(Expression* e);
+        void print();
+};
+
+class CompoundStatement : public Statement
+{
+    protected:
+        list <Statement*> stmt_list;
+    public:
+        CompoundStatement(list <Statement*> l);
+        void print();
+};
+
+/* Declaration Statements */
+
+class FunctionDefinition : public Statement
+{
+    protected:
+        Identifier* func_name;
+        type return_type;
+        CompoundStatement* func_body;
+    public:
+        FunctionDefinition(Identifier* name, type t, CompoundStatement* stmt);
+        void print();
+};
+
+class VariableDeclaration : public Statement
+{
+    protected:
+        type variable_type;
+        list <Identifier*> variable_list;
+    public:
+        VariableDeclaration(type t, list <Identifier*> l);
+        void print();
+};
+
+class DriverDefinition : public CompoundStatement
+{
+    protected:
+        CompoundStatement* func_body;
+    public:
+        DriverDefinition(CompoundStatement* body);
+        void print();
+};
+
+class VariableInitialization : public Statement
+{
+    protected:
+        type variable_type;
+        AssignmentExp* exp;
+    public:
+        VariableInitialization(type t, AssignmentExp* e);
+        void print();
+};
+
+class IterationStatement : public Statement
+{
+    protected:
+        CompoundStatement* body;
+        ExpressionStatement* condition;
+    public:
+        IterationStatement(CompoundStatement* b, ExpressionStatement* cond);
+};
+
+class WhileLoop : public IterationStatement
+{
+    public:
+        WhileLoop(CompoundStatement* b);
+        WhileLoop(CompoundStatement* b, Expression* cond);
+        void print();
+};
+
+
+class ForLoop : public IterationStatement
+{
+    protected:
+        Expression* initialization;
+        Expression* counter_updation;
+    public:
+        ForLoop(CompoundStatement* b);
+        ForLoop(CompoundStatement* b, Expression* cond);
+        ForLoop(CompoundStatement* b, Expression* init);
+        ForLoop(CompoundStatement* b, Expression* update);
+        ForLoop(CompoundStatement* b, Expression* cond, Expression* init);
+        ForLoop(CompoundStatement* b, Expression* cond, Expression* update);
+        ForLoop(CompoundStatement* b, Expression* init, Expression* update);
+        ForLoop(CompoundStatement* b, Expression* cond, Expression* init, Expression* update);
 };
 
 /*------------------------------------------------------------------------
