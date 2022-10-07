@@ -127,8 +127,10 @@ L               [a-zA-Z]
 {L}({L}|{D}|_)*        {count(); return(IDENTIFIER);}
 
 [ \t\v\n\f]*           {count();}
-.                      {printf("%s: Line %d:%d\t%-12s - Invalid token\n", cur_filename, yylineno, column, yytext);}
 
+.                      {printf("ERROR: %s: Line %d:%d\t%-12s - Invalid token\n", cur_filename, yylineno, column, yytext);
+                        fprintf(stderr, "\033[0;31m   ERROR:\033[0m %s: Line %d:%d\t%-12s - Invalid token\n", cur_filename, yylineno, column, yytext);
+                       }
 %%
 
 void count(){

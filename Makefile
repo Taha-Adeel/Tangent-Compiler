@@ -3,14 +3,6 @@ CC = gcc
 # Input and output directories
 SRC_DIR := ./src
 BUILD_DIR := ./build
-TESTS_DIR := ./tests
-TESTS_OUTPUT_DIR := test_outputs
-
-# The testcases
-LEXER_CORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Lexer_Tests/Correct_codes/*.tngt))
-LEXER_INCORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Lexer_Tests/Incorrect_codes/*.tngt))
-PARSER_CORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Parser_Tests/Correct_codes/*.tngt))
-PARSER_INCORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Parser_Tests/Incorrect_codes/*.tngt))
 
 .PHONY : all compiler lexer parser parser_documentation tests lexer_tests lexer_correct_codes lexer_incorrect_codes \
 	parser_tests parser_correct_codes parser_incorrect_codes clean
@@ -47,6 +39,35 @@ parser_documentation: $(SRC_DIR)/parser.y
 	xdg-open ./documentation/$(<F:%.y=%.html)
 
 
+# Remove all generated files
+clean:
+	rm -rf $(BUILD_DIR) $$(find . -type d -name $(TESTS_OUTPUT_DIR))
+
+
+#################### TESTING RULES ########################
+
+TESTS_DIR := ./tests
+TESTS_OUTPUT_DIR := test_outputs
+
+# The testcases
+LEXER_CORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Lexer_Tests/Correct_codes/*.tngt))
+LEXER_INCORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Lexer_Tests/Incorrect_codes/*.tngt))
+PARSER_CORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Parser_Tests/Correct_codes/*.tngt))
+PARSER_INCORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Parser_Tests/Incorrect_codes/*.tngt))
+
+BLACK := \e[0;30m
+RED := \e[0;31m
+GREEN := \e[0;32m
+YELLOW := \e[0;33m
+BLUE := \e[0;34m
+PURPLE := \e[0;35m
+CYAN := \e[0;36m
+WHITE := \e[0;37m
+B := \e[1m #BOLD
+I := \e[3m #Italics
+U := \e[4m #Underline
+NC := \e[0m # No Color / Default
+
 # Test the compiler against the testcases located in ./tests
 tests: lexer_tests parser_tests
 
@@ -54,23 +75,44 @@ tests: lexer_tests parser_tests
 lexer_tests: lexer_correct_codes lexer_incorrect_codes
 
 lexer_correct_codes: $(LEXER_CORRECT_CODES) lexer
+	@echo "$(WHITE)\n###################################################################################$(NC)\n"; \
+	echo "$(BLUE)$(B)$(U)Running testcases with lexicologically correct code for the Lexical Analyzer$(NC)\n"; \
 	ROOT_DIR="$$(pwd)"; \
 	cd $(<D); \
 	mkdir -p $(TESTS_OUTPUT_DIR); \
-	for testcase in $(basename $(notdir $(LEXER_CORRECT_CODES))); do\
+	TOTAL=0; SUCCESSFUL=0; \
+	for testcase in $(basename $(notdir $(LEXER_CORRECT_CODES))); do TOTAL=$$((TOTAL+1)) ;\
+		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_CORRECT_CODES))): $${testcase}.tngt$(NC)";\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/lexer $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-	done
+		if [ $$(grep "Invalid token" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -eq 0 ] ; then \
+			echo "$(GREEN)   Testcase Passed\n$(NC)"; SUCCESSFUL=$$((SUCCESSFUL+1)); \
+		else echo "$(RED)   Testcase Failed\n$(NC)"; fi;\
+	done; \
+	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
+		echo "$(GREEN)$(B)All valid Lexical Analyzer testcases passed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
+	else \
+		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
 
 lexer_incorrect_codes: $(LEXER_INCORRECT_CODES) lexer
+	@echo "$(WHITE)\n###################################################################################$(NC)\n"; \
+	echo "$(BLUE)$(B)$(U)Running testcases with lexicologically incorrect code for the Lexical Analyzer$(NC)\n"; \
 	ROOT_DIR="$$(pwd)"; \
 	cd $(<D); \
 	mkdir -p $(TESTS_OUTPUT_DIR); \
-	for testcase in $(basename $(notdir $(LEXER_INCORRECT_CODES))); do\
+	TOTAL=0; SUCCESSFUL=0; \
+	for testcase in $(basename $(notdir $(LEXER_INCORRECT_CODES))); do TOTAL=$$((TOTAL+1)) ;\
+		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_INCORRECT_CODES))): $${testcase}.tngt$(NC)";\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/lexer $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-	done
-
+		if [ $$(grep "Invalid token" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -gt 0 ] ; then \
+			echo "$(GREEN)   Testcase Passed, as the invalid tokens are rejected by the lexer\n$(NC)"; SUCCESSFUL=$$((SUCCESSFUL+1)); \
+		else echo "$(RED)   Testcase Failed\n$(NC)"; fi;\
+	done; \
+	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
+		echo "$(GREEN)$(B)All invalid tokens were rejected by the Lexical Analyzer.$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
+	else \
+		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
 
 # Parser Tests
 parser_tests: parser parser_correct_codes parser_incorrect_codes
@@ -92,8 +134,3 @@ parser_incorrect_codes: $(PARSER_INCORRECT_CODES) parser
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/parser < $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 	done
-
-
-# Remove all generated files
-clean:
-	rm -rf $(BUILD_DIR) $$(find . -type d -name $(TESTS_OUTPUT_DIR))
