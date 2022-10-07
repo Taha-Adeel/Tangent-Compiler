@@ -1,12 +1,19 @@
 CC = gcc
 
 # Input and output directories
-SRC_DIR = ./src
-BUILD_DIR = ./build
-TESTS_DIR = ./tests
-TESTS_OUTPUT_DIR = $(TESTS_DIR)/test_outputs
+SRC_DIR := ./src
+BUILD_DIR := ./build
+TESTS_DIR := ./tests
+TESTS_OUTPUT_DIR := test_outputs
 
-.PHONY : all compiler parser lexer clean
+# The testcases
+LEXER_CORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Lexer_Tests/Correct_codes/*.tngt))
+LEXER_INCORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Lexer_Tests/Incorrect_codes/*.tngt))
+PARSER_CORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Parser_Tests/Correct_codes/*.tngt))
+PARSER_INCORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Parser_Tests/Incorrect_codes/*.tngt))
+
+.PHONY : all compiler lexer parser parser_documentation tests lexer_tests lexer_correct_codes lexer_incorrect_codes \
+	parser_tests parser_correct_codes parser_incorrect_codes clean
 
 # Default target
 all: compiler
@@ -39,20 +46,54 @@ parser_documentation: $(SRC_DIR)/parser.y
 	xsltproc $$(bison --print-datadir)/xslt/xml2xhtml.xsl $(BUILD_DIR)/$(<F:%.y=%.xml) > ./documentation/$(<F:%.y=%.html)
 	xdg-open ./documentation/$(<F:%.y=%.html)
 
-test: parser
-	mkdir -p $(TESTS_OUTPUT_DIR)
-	for num in 1 2 3 4 5 6 7 8 9 10 11; do \
-		touch $(TESTS_OUTPUT_DIR)/output$$num.txt ; \
-		$(BUILD_DIR)/parser < $(TESTS_DIR)/Parser_Tests/Correct_codes/test$$num.tngt > $(TESTS_OUTPUT_DIR)/output$$num.txt ; \
+
+# Test the compiler against the testcases located in ./tests
+tests: lexer_tests parser_tests
+
+# Lexer Tests
+lexer_tests: lexer_correct_codes lexer_incorrect_codes
+
+lexer_correct_codes: $(LEXER_CORRECT_CODES) lexer
+	ROOT_DIR="$$(pwd)"; \
+	cd $(<D); \
+	mkdir -p $(TESTS_OUTPUT_DIR); \
+	for testcase in $(basename $(notdir $(LEXER_CORRECT_CODES))); do\
+		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
+		"$${ROOT_DIR}"/$(BUILD_DIR)/lexer $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 	done
 
-error: parser
-	mkdir -p $(TESTS_OUTPUT_DIR)
-	for num in 1 2 3 4 5 6 7 8 9 10 11; do \
-		touch $(TESTS_OUTPUT_DIR)/erroroutput$$num.txt ; \
-		$(BUILD_DIR)/parser < $(TESTS_DIR)/Parser_Tests/Incorrect_codes/errortest$$num.tngt > $(TESTS_OUTPUT_DIR)/output$$num.txt ; \
+lexer_incorrect_codes: $(LEXER_INCORRECT_CODES) lexer
+	ROOT_DIR="$$(pwd)"; \
+	cd $(<D); \
+	mkdir -p $(TESTS_OUTPUT_DIR); \
+	for testcase in $(basename $(notdir $(LEXER_INCORRECT_CODES))); do\
+		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
+		"$${ROOT_DIR}"/$(BUILD_DIR)/lexer $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 	done
+
+
+# Parser Tests
+parser_tests: parser parser_correct_codes parser_incorrect_codes
+
+parser_correct_codes: $(PARSER_CORRECT_CODES) parser
+	ROOT_DIR="$$(pwd)"; \
+	cd $(<D); \
+	mkdir -p $(TESTS_OUTPUT_DIR); \
+	for testcase in $(basename $(notdir $(PARSER_CORRECT_CODES))); do\
+		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
+		"$${ROOT_DIR}"/$(BUILD_DIR)/parser < $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
+	done
+
+parser_incorrect_codes: $(PARSER_INCORRECT_CODES) parser
+	ROOT_DIR="$$(pwd)"; \
+	cd $(<D); \
+	mkdir -p $(TESTS_OUTPUT_DIR); \
+	for testcase in $(basename $(notdir $(PARSER_INCORRECT_CODES))); do\
+		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
+		"$${ROOT_DIR}"/$(BUILD_DIR)/parser < $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
+	done
+
 
 # Remove all generated files
 clean:
-	rm -rf $(BUILD_DIR) $(TESTS_OUTPUT_DIR)
+	rm -rf $(BUILD_DIR) $$(find . -type d -name $(TESTS_OUTPUT_DIR))

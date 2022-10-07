@@ -12,6 +12,7 @@ L               [a-zA-Z]
     void comment();
     void count();
     char* cur_filename;
+    int column = 0;
 %}
 
 %%
@@ -126,11 +127,10 @@ L               [a-zA-Z]
 {L}({L}|{D}|_)*        {count(); return(IDENTIFIER);}
 
 [ \t\v\n\f]*           {count();}
-.                      {}
+.                      {printf("%s: Line %d:%d\t%-12s - Invalid token\n", cur_filename, yylineno, column, yytext);}
 
 %%
 
-int column = 0;
 void count(){
     for(int i = 0; yytext[i] != '\0'; i++){
         if(yytext[i] == '\n')
