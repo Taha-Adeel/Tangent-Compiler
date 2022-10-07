@@ -6,6 +6,8 @@ L               [a-zA-Z]
 
 %{
     #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
     #include "parser.tab.h"
     void comment();
     void count();
@@ -175,10 +177,12 @@ static const char *const yytname[] =
 void print_tokens_matched(){
     int token;
     while(token = yylex()){
+        char token_name[20] = "'''";
         if(token < 255) 
-            printf("%s: Line %d:%d\t%8s was matched to the token '%c' (= %d) \n", cur_filename, yylineno, column, yytext, token, token);
+            token_name[1] = token;
         else
-            printf("%s: Line %d:%d\t%8s was matched to the token %s (= %d) \n", cur_filename, yylineno, column, yytext, yytname[token - 255], token);
+            strcpy(token_name, yytname[token - 255]);
+        printf("%s: Line %d:%d\t%-12s was matched to the token %-20s (= %d) \n", cur_filename, yylineno, column, yytext, token_name, token);
     }
     printf("\n");
 }
