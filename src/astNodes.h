@@ -15,7 +15,18 @@ union data
     char *svalue;
     bool bvalue;
 };
-
+string enumtypeToString(type t)
+{
+    switch (t)
+    {
+        case INT_TYPE: return "INT";
+        case FLOAT_TYPE: return "FLOAT";
+        case STRING_TYPE: return "STRING";
+        case BOOL_TYPE: return "BOOL";
+        case VOID_TYPE: return "VOID";
+    }
+    return "UNRECOGNISED TYPE";
+}
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
  *------------------------------------------------------------------------*/
@@ -291,6 +302,7 @@ class CompGT: public BinaryOperation
         CompGT(Expression* L, Expression* R);
         void print();
         value_pair evaluate(); 
+        va
 
 };
 
@@ -353,44 +365,66 @@ class Statement : public ASTNode
     
 };
 
+/// @class Class to represent Expression Statements in the AST. Derives from \ref Statement
 class ExpressionStatement : public Statement
 {
     protected:
-        Expression* exp;
+        Expression* exp; ///
     public:
-        ExpressionStatement(Expression* e);
+        ExpressionStatement() = delete;
+        /// @brief Constructor for class
+        /// @param e input expression
+        ExpressionStatement(Expression* e):exp(e){}
+        /// @brief print the content of expression statement
         void print();
 };
 
+/// @class Class to represent Compound Statements in the AST. Derives from Statement
 class CompoundStatement : public Statement
 {
     protected:
         list <Statement*> stmt_list;
     public:
-        CompoundStatement(list <Statement*> l);
+        CompoundStatement() = delete;
+        /// @brief Constructor for Comppund Statement Class
+        /// @param l list of statements
+        CompoundStatement(list <Statement*> l):stmt_list(l){} 
+        /// @brief print the content of compound statement
         void print();
 };
 
 /* Declaration Statements */
 
+/// @class Class to represent Function Definition in the AST. Derives from Statement
 class FunctionDefinition : public Statement
 {
     protected:
         Identifier* func_name;
         type return_type;
         CompoundStatement* func_body;
+        list<Identifier*> arg_list;
     public:
-        FunctionDefinition(Identifier* name, type t, CompoundStatement* stmt);
+        FunctionDefinition() = delete;
+        /// @brief Constructor for Function Definition Class
+        /// @param _name function name
+        /// @param _t return type
+        /// @param _arg_list list of arguments
+        /// @param _stmt list of arguments 
+        FunctionDefinition(Identifier* _name, type _t, list<Identifier*> _arg_list, CompoundStatement* _stmt): func_name(_name), return_type(_t), arg_list(_arg_list), func_body(_stmt){};
+        /// @brief print the content of function definition
         void print();
 };
-
+/// @class Class to represent Variable Declaration in the AST. Derives from Statement
 class VariableDeclaration : public Statement
 {
     protected:
         type variable_type;
         list <Identifier*> variable_list;
     public:
-        VariableDeclaration(type t, list <Identifier*> l);
+        /// @brief Constructor for function declaration 
+        /// @param t type of variable
+        /// @param l list of identifires
+        VariableDeclaration(type t, list <Identifier*> l): variable_type(t), variable_list(l){};
         void print();
 };
 

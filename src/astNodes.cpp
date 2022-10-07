@@ -6,7 +6,6 @@
 #include <list>
 // contains implementations of the member methods and constructors in astNodes.h
 
-
 IntegerLiteral::IntegerLiteral(int num)
 {
     value.first = INT_TYPE;
@@ -89,4 +88,52 @@ value_pair Identifier::evaluate()
 {
     cout << "Identifier node: " << id << " = " << symTable[id] << endl;
     return symTable[id];
+}
+
+/**************************************
+ * STATEMENTS
+ **************************************/
+
+
+void ExpressionStatement::print()
+{
+    cout << "Expression Statement:\n{ \n->";
+    exp->print();
+    cout << "\n}\n";
+}
+void CompoundStatement::print()
+{
+    cout << "Compound Statement:\n{";
+    for (auto ele : stmt_list)
+    {
+        cout<<"\n->";
+        ele->print();
+    }
+    cout << "\n}\n";
+}
+void FunctionDefinition::print()
+{
+    cout<<"Function Definition:\n{";
+    func_name->print();
+    cout<< "\nReturn type : "<<enumtypeToString(return_type)<<"\n";
+    cout<<"list of arguments";
+    for(auto &ele: arg_list)
+    {
+        cout<<"\n";
+        ele->print();
+    }
+    cout<<"\nfunction body:\n";
+    func_body->print();
+    cout<<"}";   
+}
+void VariableDeclaration::print()
+{
+    cout<<"Variable Declaration: \n";
+    cout<<"type : "<< enumtypeToString(variable_type)<<'\n';
+    cout<<"list of identifiers";
+    for(auto &ele: variable_list)
+    {
+        ele->print();
+        cout<<"\n";
+    }
 }
