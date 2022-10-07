@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <list>
+#include <string>
 
 #define value_pair pair <type, data>
 using namespace std;
@@ -11,7 +12,7 @@ union data
 {
     int ivalue;
     float fvalue;
-    string svalue;
+    char *svalue;
     bool bvalue;
 };
 
@@ -32,6 +33,8 @@ class Expression : public ASTNode
     protected:
         value_pair value;
     public:
+        Expression();
+        ~Expression();
         virtual value_pair evaluate() = 0;
 
 };
@@ -549,3 +552,7 @@ class Program : public ASTNode
     public:
         Program(list <Statement*> stmt_list);
 };
+
+// objects at the base of the tree
+extern map <string, value_pair> symTable;
+extern Program *root;
