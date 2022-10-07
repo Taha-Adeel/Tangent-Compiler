@@ -26,7 +26,7 @@ $(BUILD_DIR)/parser.tab.h: $(SRC_DIR)/parser.y
 
 # Build an executable to scan the input tangent code and output the matched tokens
 lexer: $(BUILD_DIR)/lex.yy.c $(BUILD_DIR)/parser.tab.h
-	$(CC) -o $(BUILD_DIR)/$@ $< -D LEX_TEST 
+	$(CC) -o $(BUILD_DIR)/$@ $< -D STANDALONE_LEXER
 
 # Build an executable to parse the input tangent code files according to the grammar rules
 parser: $(BUILD_DIR)/parser.tab.c $(BUILD_DIR)/lex.yy.c
