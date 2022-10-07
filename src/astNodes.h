@@ -410,6 +410,40 @@ class VariableInitialization : public Statement
         void print();
 };
 
+/* Labeled Statements */
+
+class LabeledStatement : public Statement
+{
+    protected:
+        Identifier* label;
+        Statement* stmt;
+    public:
+        LabeledStatement(Identifier* l, Statement* st);
+        void print();
+};
+
+class CaseLabel : public Statement
+{
+    protected:
+        Expression* label;
+        list <Statement*> stmt_list;
+    public:
+        CaseLabel(Expression* lb, list <Statement*> st_list);
+        void print();
+
+};
+
+class DefaultLabel : public Statement
+{
+    protected:
+        list <Statement*> stmt_list;
+    public:
+        DefaultLabel(list <Statement*> st_list);
+        void print();
+
+};
+
+/* Iteration Statements */
 class IterationStatement : public Statement
 {
     protected:
@@ -442,6 +476,67 @@ class ForLoop : public IterationStatement
         ForLoop(CompoundStatement* b, Expression* cond, Expression* update);
         ForLoop(CompoundStatement* b, Expression* init, Expression* update);
         ForLoop(CompoundStatement* b, Expression* cond, Expression* init, Expression* update);
+        void print();
+};
+
+/* Selection Statements */
+class IfElse : public Statement
+{
+    protected:
+        list <Expression*> condition_list;
+        list <CompoundStatement*> if_blocks;
+        CompoundStatement* else_block;
+    public:
+        IfElse(list <Expression*> l, list <CompoundStatement*> ifs);
+        IfElse(list <Expression*> l, list <CompoundStatement*> ifs, CompoundStatement* elseb);
+        void print();
+};
+
+class Switch : public Statement
+{
+    protected:
+        Expression* exp;
+        list <CaseLabel*> cases;
+    public:
+        Switch(Expression* e, list <CaseLabel*> c);
+        void print();
+};
+
+class TernaryOperator : public Statement
+{
+    protected:
+        Expression* condition;
+        Expression* true_eval;
+        Expression* false_eval;
+    public:
+        TernaryOperator(Expression* cond, Expression* t_eval, Expression* f_eval);
+        void print();
+};
+
+class JumpStatement : public Statement
+{
+
+};
+
+class ReturnStatement: public JumpStatement
+{
+    protected:
+        value_pair return_value;
+    public:
+        ReturnStatement(value_pair val);
+        void print();
+};
+
+class BreakStatement: public JumpStatement
+{
+    public:
+        void print();
+};
+
+class ContinueStatement: public JumpStatement
+{
+    public:
+        void print();
 };
 
 /*------------------------------------------------------------------------
