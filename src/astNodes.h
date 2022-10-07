@@ -2,6 +2,7 @@
 #include <iostream>
 #include <list>
 #include <string>
+#include <map>
 
 #define value_pair pair <type, data>
 using namespace std;
@@ -81,7 +82,8 @@ class Identifier : public Expression
     public:
         Identifier(string name);
         void print();
-        value_pair evaluate;
+        string ret_id();
+        value_pair evaluate();
 };
 
 /* Array Element Access */
@@ -94,7 +96,7 @@ class ArrayAccess : public Expression
     public:
         ArrayAccess(Identifier* name, int i);
         void print();
-        value_pair evaluate;
+        value_pair evaluate();
 };
 
 /* Function Call */
@@ -118,6 +120,7 @@ class AssignmentExp : public Expression
         Identifier* id;
         Expression* RHS;
     public:
+        AssignmentExp();
         AssignmentExp(Identifier* name, Expression* R);
         void print();
         value_pair evaluate();
