@@ -1001,3 +1001,4 @@ void VariableDeclaration::print()
         ele->print();
         cout<<"\n";
     }
+}

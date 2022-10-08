@@ -388,7 +388,7 @@ class ExpressionStatement : public Statement
         void print();
 };
 
-/// @class Class to represent Compound Statements in the AST. Derives from Statement
+/// @class Class to represent Compound Statements in the AST. Derives from Statement. Represents a collection of statements
 class CompoundStatement : public Statement
 {
     protected:
@@ -436,96 +436,147 @@ class VariableDeclaration : public Statement
         VariableDeclaration(type t, list <Identifier*> l): variable_type(t), variable_list(l){};
         void print();
 };
-
+/// @class Class to represent definition of driver function in the AST. Derives from CompoundStatement
 class DriverDefinition : public CompoundStatement
 {
     protected:
         CompoundStatement* func_body;
     public:
+        DriverDefinition() = delete;
+        /// @brief Constructor for DriverFunction
+        /// @param body the Compound Statements that take make up the driver function
         DriverDefinition(CompoundStatement* body);
         void print();
 };
-
+/// @class Class to represent variable initialization in the AST. Derives from Statement
 class VariableInitialization : public Statement
 {
     protected:
         type variable_type;
         AssignmentExp* exp;
     public:
+        /// @brief Constructor for VariableInitiailization
+        /// @param t type of variable
+        /// @param e paired assignment expression
         VariableInitialization(type t, AssignmentExp* e);
         void print();
 };
 
 /* Labeled Statements */
 
+/// @class Class to represent All Labelled Statements in the AST
 class LabeledStatement : public Statement
 {
     protected:
         Identifier* label;
         Statement* stmt;
     public:
+        /// @brief Constructor for LabelledStatement
         LabeledStatement(Identifier* l, Statement* st);
         void print();
 };
-
+/// @class Class to represent 'case' in the AST. Derives from Statement
 class CaseLabel : public Statement
 {
     protected:
         Expression* label;
         list <Statement*> stmt_list;
     public:
+        /// @brief Constructor for CaseLabel
+        /// @param lb expression to check for in case
+        /// @param st_list list of statements to execute in said case
         CaseLabel(Expression* lb, list <Statement*> st_list);
         void print();
 
 };
-
+/// @class Class to represent 'default' in the AST. Derives from Statement
 class DefaultLabel : public Statement
 {
     protected:
         list <Statement*> stmt_list;
     public:
+        /// @brief Constructor for DefaultLabel
+        /// @param st_list list of statements in default case
         DefaultLabel(list <Statement*> st_list);
         void print();
-
 };
 
 /* Iteration Statements */
+
+/// @class Class to represent  iterations in the AST. Derives from Statement. Provides base class to classes like WhileLoop
 class IterationStatement : public Statement
 {
     protected:
         CompoundStatement* body;
         ExpressionStatement* condition;
     public:
+        /// @brief Constructor for IterationStatement
         IterationStatement(CompoundStatement* b, ExpressionStatement* cond);
 };
-
+/// @class Class to represent while loop in the AST. Derives from Statement
 class WhileLoop : public IterationStatement
 {
     public:
+        /// @brief Constructor for WhileLoop
+        /// @param b list of statements to execute
         WhileLoop(CompoundStatement* b);
+        /// @brief Constructor for WhileLoop
+        /// @param b body of while loop 
+        /// @param cond entry condition for while loop
         WhileLoop(CompoundStatement* b, Expression* cond);
         void print();
 };
 
-
+/// @class Class to represent for loop in the AST. Derives from Statement
 class ForLoop : public IterationStatement
 {
     protected:
         Expression* initialization;
         Expression* counter_updation;
     public:
+        /// @brief Constructor for ForLoop
+        /// @param b body of for loop
         ForLoop(CompoundStatement* b);
+        /// @brief Constructor for ForLoop
+        /// @param b body of for loop
+        /// @param cond entry condition for for loop
         ForLoop(CompoundStatement* b, Expression* cond);
+        /// @brief Constructor for ForLoop
+        /// @param b body of for loop
+        /// @param init initialization expression
         ForLoop(CompoundStatement* b, Expression* init);
+        /// @brief Constructor for ForLoop
+        /// @param b body of for loop
+        /// @param update update expression in for loop
         ForLoop(CompoundStatement* b, Expression* update);
+        /// @brief Constructor for ForLoop
+        /// @param b body of for loop
+        /// @param init initialization expression
+        /// @param cond entry condition for for loop
         ForLoop(CompoundStatement* b, Expression* cond, Expression* init);
+        /// @brief Constructor for ForLoop
+        /// @param b body of for loop
+        /// @param cond entry condition for for loop
+        /// @param update update expression in for loop
         ForLoop(CompoundStatement* b, Expression* cond, Expression* update);
+        /// @brief Constructor for ForLoop
+        /// @param b body of for loop
+        /// @param init initialization expression
+        /// @param update update expression in for loop
         ForLoop(CompoundStatement* b, Expression* init, Expression* update);
+        /// @brief Constructor for ForLoop
+        /// @param b body of for loop
+        /// @param init initialization expression
+        /// @param cond entry condition for for loop
+        /// @param update update expression in for loop
         ForLoop(CompoundStatement* b, Expression* cond, Expression* init, Expression* update);
         void print();
 };
 
-/* Selection Statements */
+/*********************************************
+ * Selection Statements 
+ * *******************************************/
+/// @class Class to represent if - else statements in the AST. Derives from Statement
 class IfElse : public Statement
 {
     protected:
@@ -533,11 +584,14 @@ class IfElse : public Statement
         list <CompoundStatement*> if_blocks;
         CompoundStatement* else_block;
     public:
+        /// @brief Constructor for IfElse
+        /// @param l 
+        /// @param ifs 
         IfElse(list <Expression*> l, list <CompoundStatement*> ifs);
         IfElse(list <Expression*> l, list <CompoundStatement*> ifs, CompoundStatement* elseb);
         void print();
 };
-
+/// @class Class to represent switch case statement in the AST. Derives from Statement
 class Switch : public Statement
 {
     protected:
@@ -547,7 +601,7 @@ class Switch : public Statement
         Switch(Expression* e, list <CaseLabel*> c);
         void print();
 };
-
+/// @class Class to represent the ternary operator in the AST. Derives from Statement
 class TernaryOperator : public Statement
 {
     protected:
@@ -563,7 +617,7 @@ class JumpStatement : public Statement
 {
 
 };
-
+/// @class Class to represent 'return' in the AST. Derives from Statement
 class ReturnStatement: public JumpStatement
 {
     protected:
@@ -572,13 +626,13 @@ class ReturnStatement: public JumpStatement
         ReturnStatement(value_pair val);
         void print();
 };
-
+/// @class Class to represent 'break' in the AST. Derives from Statement
 class BreakStatement: public JumpStatement
 {
     public:
         void print();
 };
-
+/// @class Class to represent 'continue' in the AST. Derives from Statement
 class ContinueStatement: public JumpStatement
 {
     public:
@@ -588,6 +642,7 @@ class ContinueStatement: public JumpStatement
 /*------------------------------------------------------------------------
  * Class to create the AST Root Node 
  *------------------------------------------------------------------------*/
+/// @class Class to represent the actual program as the AST. Derives from Statement
 class Program : public ASTNode
 {
     protected:
