@@ -178,7 +178,10 @@ class UnaryOperation : public Expression
     protected:
         Expression* RHS;
     public:
+        UnaryOperation();
         UnaryOperation(Expression* R);
+        void print();
+        value_pair evaluate();
 };
 
 class BinaryOperation : public Expression
@@ -187,7 +190,10 @@ class BinaryOperation : public Expression
         Expression* LHS;
         Expression* RHS;
     public:
+        BinaryOperation();
         BinaryOperation(Expression* L, Expression* R);
+        void print();
+        value_pair evaluate();
 };
 
 /* Arithmetic Operations */
