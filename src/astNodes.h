@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-#define value_pair pair <type, data>
+#define value_pair pair <type, union data>
 using namespace std;
 
 /* Definitions to store the value of an Expression */
@@ -310,9 +310,7 @@ class CompGT: public BinaryOperation
     public:
         CompGT(Expression* L, Expression* R);
         void print();
-        value_pair evaluate(); 
-        va
-
+        value_pair evaluate();
 };
 
 class CompLT: public BinaryOperation
