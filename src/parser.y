@@ -23,6 +23,8 @@
 		int last_column;
 		char *filename;
 	} YYLTYPE;
+	#define YYLTYPE_IS_DECLARED 1
+	#define YYLTYPE_IS_TRIVIAL 1
 }
 
 /*** TOKEN DECLARATION ***/
@@ -416,7 +418,7 @@ void init_yylloc(char* filename){
 }
 
 int main(int argc, char **argv){
-	#ifdef YYDEBUGOUTPUT
+	#ifdef YYDEBUG
 		yydebug = 1;
 	#endif
 	
@@ -439,6 +441,6 @@ int main(int argc, char **argv){
 }
 
 void yyerror(const char*s){
-	fprintf(stdout, "   %s\n", s);
-	fprintf(stderr, "   %s\n", s);
+	fprintf(stdout, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename, yylloc.first_line, yylloc.first_column, s);
+	fprintf(stderr, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename, yylloc.first_line, yylloc.first_column, s);
 }

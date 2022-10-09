@@ -29,7 +29,7 @@ lexer: $(BUILD_DIR)/lex.yy.c $(BUILD_DIR)/parser.tab.h
 
 # Build an executable to parse the input tangent code files according to the grammar rules
 parser: $(BUILD_DIR)/parser.tab.c $(BUILD_DIR)/lex.yy.c
-	$(CC) -o $(BUILD_DIR)/$@ $^ -D YYDEBUGOUTPUT
+	$(CC) -o $(BUILD_DIR)/$@ $^ --debug
 
 # Generate HTML documentation describing our grammar and the DFA representing the parser.
 parser_documentation: $(SRC_DIR)/parser.y
