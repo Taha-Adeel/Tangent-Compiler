@@ -62,11 +62,11 @@ YELLOW := \e[0;33m
 BLUE := \e[0;34m
 PURPLE := \e[0;35m
 CYAN := \e[0;36m
-WHITE := \e[0;37m
-B := \e[1m #BOLD
-I := \e[3m #Italics
-U := \e[4m #Underline
-NC := \e[0m # No Color / Default
+WHITE := \e[0;0m
+B := \e[1m
+I := \e[3m
+U := \e[4m
+NC := \e[0m
 
 # Test the compiler against the testcases located in ./tests
 tests: lexer_tests parser_tests
@@ -81,8 +81,8 @@ lexer_correct_codes: $(LEXER_CORRECT_CODES) lexer
 	cd $(<D); \
 	mkdir -p $(TESTS_OUTPUT_DIR); \
 	TOTAL=0; SUCCESSFUL=0; \
-	for testcase in $(basename $(notdir $(LEXER_CORRECT_CODES))); do TOTAL=$$((TOTAL+1)) ;\
-		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_CORRECT_CODES))): $${testcase}.tngt$(NC)";\
+	for testcase in $(basename $(notdir $(LEXER_CORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
+		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_CORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt";\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/lexer $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		if [ $$(grep "Invalid token" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -eq 0 ] ; then \
@@ -90,7 +90,7 @@ lexer_correct_codes: $(LEXER_CORRECT_CODES) lexer
 		else echo "$(RED)   Testcase Failed\n$(NC)"; fi;\
 	done; \
 	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
-		echo "$(GREEN)$(B)All valid Lexical Analyzer testcases passed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
+		echo "$(GREEN)$(B)Success: All valid Lexical Analyzer testcases passed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
 	else \
 		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
 
@@ -101,8 +101,8 @@ lexer_incorrect_codes: $(LEXER_INCORRECT_CODES) lexer
 	cd $(<D); \
 	mkdir -p $(TESTS_OUTPUT_DIR); \
 	TOTAL=0; SUCCESSFUL=0; \
-	for testcase in $(basename $(notdir $(LEXER_INCORRECT_CODES))); do TOTAL=$$((TOTAL+1)) ;\
-		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_INCORRECT_CODES))): $${testcase}.tngt$(NC)";\
+	for testcase in $(basename $(notdir $(LEXER_INCORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
+		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_INCORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt";\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/lexer $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		if [ $$(grep "Invalid token" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -gt 0 ] ; then \
@@ -110,7 +110,7 @@ lexer_incorrect_codes: $(LEXER_INCORRECT_CODES) lexer
 		else echo "$(RED)   Testcase Failed\n$(NC)"; fi;\
 	done; \
 	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
-		echo "$(GREEN)$(B)All invalid tokens were rejected by the Lexical Analyzer.$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
+		echo "$(GREEN)$(B)Success: All invalid tokens were rejected by the Lexical Analyzer.$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
 	else \
 		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
 
@@ -118,19 +118,41 @@ lexer_incorrect_codes: $(LEXER_INCORRECT_CODES) lexer
 parser_tests: parser parser_correct_codes parser_incorrect_codes
 
 parser_correct_codes: $(PARSER_CORRECT_CODES) parser
+	@echo "$(WHITE)\n########################################################################$(NC)\n"; \
+	echo "$(BLUE)$(B)$(U)Running testcases with syntactically correct code for the Parser$(NC)\n"; \
 	ROOT_DIR="$$(pwd)"; \
 	cd $(<D); \
 	mkdir -p $(TESTS_OUTPUT_DIR); \
-	for testcase in $(basename $(notdir $(PARSER_CORRECT_CODES))); do\
+	TOTAL=0; SUCCESSFUL=0; \
+	for testcase in $(basename $(notdir $(PARSER_CORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
+		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(PARSER_CORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt";\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/parser $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-	done
+		if [ $$(grep "syntax error" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -eq 0 ] ; then \
+			echo "$(GREEN)   Testcase Passed\n$(NC)"; SUCCESSFUL=$$((SUCCESSFUL+1)); \
+		else echo "$(RED)   Testcase Failed\n$(NC)"; fi;\
+	done; \
+	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
+		echo "$(GREEN)$(B)Success: All syntactically valid testcases passed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
+	else \
+		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
 
 parser_incorrect_codes: $(PARSER_INCORRECT_CODES) parser
+	@echo "$(WHITE)\n########################################################################$(NC)\n"; \
+	echo "$(BLUE)$(B)$(U)Running testcases with syntactically incorrect code for the Parser$(NC)\n"; \
 	ROOT_DIR="$$(pwd)"; \
 	cd $(<D); \
 	mkdir -p $(TESTS_OUTPUT_DIR); \
-	for testcase in $(basename $(notdir $(PARSER_INCORRECT_CODES))); do\
+	TOTAL=0; SUCCESSFUL=0; \
+	for testcase in $(basename $(notdir $(PARSER_INCORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
+		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(PARSER_INCORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt";\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/parser $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-	done
+		if [ $$(grep "syntax error" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -gt 0 ] ; then \
+			echo "$(GREEN)   Testcase Passed. All syntax errors detected\n$(NC)"; SUCCESSFUL=$$((SUCCESSFUL+1)); \
+		else echo "$(RED)   Testcase Failed\n$(NC)"; fi;\
+	done; \
+	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
+		echo "$(GREEN)$(B)Success: All syntax errors were caught by the parser!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
+	else \
+		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \

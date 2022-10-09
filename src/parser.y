@@ -5,8 +5,10 @@
 	extern void yyrestart(FILE*);
 	extern int yylineno;
 
-	int yyerror(char*s);
+	void yyerror(const char*s);
 }
+
+%define parse.error detailed
 
 %locations
 %code requires{
@@ -195,15 +197,14 @@ constructor_declaration
 
 
 /*---------------------------------------------------------------------
-*	Objects
-*----------------------------------------------------------------------*/
+ *	Objects
+ *----------------------------------------------------------------------*/
 
 object_declaration
 	: VAR IDENTIFIER IDENTIFIER ';'
 	| VAR IDENTIFIER IDENTIFIER '(' ')'
 	| VAR IDENTIFIER IDENTIFIER '(' expression ')'
-;
-
+	;
 
 /*------------------------------------------------------------------------
  * Expressions
@@ -431,6 +432,7 @@ int main(int argc, char **argv){
     }
 }
 
-int yyerror(char*s){
-	fprintf(stderr, "error occured!\n%s\n", s);
+void yyerror(const char*s){
+	fprintf(stdout, "   %s\n", s);
+	fprintf(stderr, "   %s\n", s);
 }
