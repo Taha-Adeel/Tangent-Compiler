@@ -6,7 +6,7 @@ driver <: :>
 (:
     # Creating the image of the output file
     var Image I;
-    I.set_dimension(200, 200);
+    I>>set_dimension(200, 200);
 
 
     # Using Polygon
@@ -23,15 +23,15 @@ driver <: :>
     p3 := make_point(90, 90);
 
     var Path triangle2;
-    triangle2.add_point("M", p1);
-    triangle2.add_point("L", p2);
-    triangle2.add_point("L", p3);
-    triangle2.add_point("L", p1);
+    triangle2>>add_point("M", p1);
+    triangle2>>add_point("L", p2);
+    triangle2>>add_point("L", p3);
+    triangle2>>add_point("L", p1);
 
     # Inserting both triangles to the Image and creating an output file
-    I.draw(triangle1);
-    I.draw(triangle2);
+    I>>draw(triangle1);
+    I>>draw(triangle2);
 
-    I.output("triangles.svg");
+    I>>output("triangles.svg");
 
 :)
