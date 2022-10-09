@@ -3,20 +3,13 @@
 #include <list>
 #include <string>
 #include <map>
+#include <variant>
 
-#define value_pair pair <type, union data>
 using namespace std;
 
-/* Definitions to store the value of an Expression */
 enum type {INT_TYPE, FLOAT_TYPE, STRING_TYPE, BOOL_TYPE, VOID_TYPE};
-union data 
-{
-    int ivalue;
-    float fvalue;
-    string svalue;
-    bool bvalue;
-};
-#define value_pair pair <type, union data>
+typedef variant<int,float,string, bool> var_data;
+typedef pair<type, var_data> value_pair;
 
 /// @brief returns type of variable as string
 /// @param t input type
@@ -33,34 +26,40 @@ string enumtypeToString(type t)
     }
     return "UNRECOGNISED TYPE";
 }
+
+//****************redundant code from old value_pair derfinition**************/////////
+
 /// @brief returns the value stored in valuepair as a string
 /// @param d input valuepair
 /// @return content of the value pair
-string get_valuepair_content(value_pair d)
-{
-    switch(d.first)
-    {
-        case INT_TYPE: return(to_string(d.second.ivalue));
-        case FLOAT_TYPE: return(to_string(d.second.fvalue));
-        case STRING_TYPE: return(d.second.svalue);
-        case BOOL_TYPE: return(to_string(d.second.bvalue));
-        case VOID_TYPE: return("VOID");
-    }
-    return "";
-}
-/// @brief copies value of d to inp
-/// @param inp value to set
-/// @param d value to copy
-void copy_valuepair(value_pair& inp, value_pair d)
-{
-    switch(d.first)
-    {
-        case INT_TYPE: inp.second.ivalue = d.second.ivalue;break;
-        case FLOAT_TYPE: inp.second.fvalue = d.second.fvalue;break;
-        case STRING_TYPE: inp.second.svalue = d.second.svalue;break;
-        case BOOL_TYPE: inp.second.bvalue = d.second.bvalue;break;
-    }
-}
+// string get_valuepair_content(value_pair d)
+// {
+//     switch(d.first)
+//     {
+//         case INT_TYPE: return(to_string(d.second.ivalue));
+//         case FLOAT_TYPE: return(to_string(d.second.fvalue));
+//         case STRING_TYPE: return(d.second.svalue);
+//         case BOOL_TYPE: return(to_string(d.second.bvalue));
+//         case VOID_TYPE: return("VOID");
+//     }
+//     return "";
+// }
+// /// @brief copies value of d to inp
+// /// @param inp value to set
+// /// @param d value to copy
+// void copy_valuepair(value_pair& inp, value_pair d)
+// {
+//     switch(d.first)
+//     {
+//         case INT_TYPE: inp.second.ivalue = d.second.ivalue;break;
+//         case FLOAT_TYPE: inp.second.fvalue = d.second.fvalue;break;
+//         case STRING_TYPE: inp.second.svalue = d.second.svalue;break;
+//         case BOOL_TYPE: inp.second.bvalue = d.second.bvalue;break;
+//     }
+// }
+
+
+
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
  *------------------------------------------------------------------------*/
@@ -543,6 +542,7 @@ class IterationStatement : public Statement
     public:
         /// @brief Constructor for IterationStatement
         IterationStatement(CompoundStatement* b, Expression* cond);
+        void print();
 };
 /// @class Class to represent while loop in the AST. Derives from Statement
 class WhileLoop : public IterationStatement

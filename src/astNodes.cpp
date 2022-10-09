@@ -1035,7 +1035,7 @@ void LabeledStatement::print()
     cout<<"\n}\n";
 }
 
-CaseLabel::CaseLabel(Expression* lb, list <Statement*> st_list):label(lb), stmt_list(lb){}
+CaseLabel::CaseLabel(Expression* lb, list <Statement*> st_list):label(lb), stmt_list(st_list){}
 void CaseLabel::print()
 {
     cout<<"Case Label {\n";
@@ -1062,7 +1062,7 @@ void DefaultLabel::print()
     cout<<"\n}\n";
 }
 
-IterationStatement::IterationStatement(CompoundStatement* b, ExpressionStatement* cond):body(b),condition(cond){}
+IterationStatement::IterationStatement(CompoundStatement* b, Expression* cond):body(b),condition(cond){}
 void IterationStatement::print()
 {
     cout<<"Default Label \n{\n";
@@ -1152,10 +1152,7 @@ void TernaryOperator::print()
     cout<<"\n}\n";  
 }
 
-ReturnStatement::ReturnStatement(value_pair val)//:return_value(val)
-{
-    copy_valuepair(return_value, val);
-}
+ReturnStatement::ReturnStatement(value_pair val):return_value(val){}
 void ReturnStatement::print()
 {
     cout<<"ternary:\n{\nreturns:\n";
