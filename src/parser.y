@@ -314,6 +314,7 @@ statement
 	| jump_statement
 	| variable_declaration_list
 	| object_declaration
+	| error ';'
 	;
 
 compound_statement
