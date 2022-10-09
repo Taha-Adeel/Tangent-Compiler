@@ -2,6 +2,9 @@
 	#include<stdio.h>
 
 	extern int yylex();
+	extern void yyrestart(FILE*);
+	extern int yylineno;
+
 	int yyerror(char*s);
 }
 
@@ -403,28 +406,29 @@ inbuilt_set_function
 	;
 %%
 
+void init_yylloc(char* filename){
+	yylloc.first_line = yylloc.last_line = yylineno = 1;
+	yylloc.first_column = yylloc.last_column = 0;
+	yylloc.filename = filename;
+}
+
 int main(int argc, char **argv){	
-	/* if(argc < 2){
-        yylloc.filename = "(stdin)";
+	if(argc < 2){
+		init_yylloc("(stdin)");
 		yyparse();
 	}
     else{
         for(int i = 1; i < argc; i++){
-            yylloc.first_line = yylloc.last_line = 1;
-            yylloc.first_column = yylloc.last_column = 0;
-            yylloc.filename = argv[i];
+            init_yylloc(argv[i]);
             FILE *file = fopen(argv[i], "r");
-            if(file == NULL){ 
-                perror(argv[i]); 
-                return 1;
-            }
+            if(file == NULL){ perror(argv[i]); return -1; }
             yyrestart(file);
+
 			yyparse();
+
             fclose(file);
         }
-    } */
-
-	yyparse();
+    }
 }
 
 int yyerror(char*s){

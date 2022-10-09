@@ -198,18 +198,20 @@ void print_tokens_matched(){
     printf("\n");
 }
 
+void init_yylloc(char* filename){
+	yylloc.first_line = yylloc.last_line = yylineno = 1;
+	yylloc.first_column = yylloc.last_column = 0;
+	yylloc.filename = filename;
+}
+
 int main(int argc, char* argv[]){
     if(argc < 2){ /* just read stdin */
-        yylloc.first_line = yylloc.last_line = yylineno = 1;
-        yylloc.first_column = yylloc.last_column = 0;
-        if(yylloc.filename == NULL) yylloc.filename = "(stdin)";
+        init_yylloc("(stdin)");
         print_tokens_matched();
     }
     else{
         for(int i = 1; i < argc; i++){
-            yylloc.first_line = yylloc.last_line = yylineno = 1;
-            yylloc.first_column = yylloc.last_column = 0;
-            yylloc.filename = argv[i];
+            init_yylloc(argv[i]);
             FILE *file = fopen(argv[i], "r");
             if(file == NULL){ 
                 perror(argv[i]); 

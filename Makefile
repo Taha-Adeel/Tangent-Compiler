@@ -123,8 +123,7 @@ parser_correct_codes: $(PARSER_CORRECT_CODES) parser
 	mkdir -p $(TESTS_OUTPUT_DIR); \
 	for testcase in $(basename $(notdir $(PARSER_CORRECT_CODES))); do\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-		echo $${testcase}; \
-		"$${ROOT_DIR}"/$(BUILD_DIR)/parser < $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
+		"$${ROOT_DIR}"/$(BUILD_DIR)/parser $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 	done
 
 parser_incorrect_codes: $(PARSER_INCORRECT_CODES) parser
@@ -133,5 +132,5 @@ parser_incorrect_codes: $(PARSER_INCORRECT_CODES) parser
 	mkdir -p $(TESTS_OUTPUT_DIR); \
 	for testcase in $(basename $(notdir $(PARSER_INCORRECT_CODES))); do\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-		"$${ROOT_DIR}"/$(BUILD_DIR)/parser < $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
+		"$${ROOT_DIR}"/$(BUILD_DIR)/parser $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 	done
