@@ -1,9 +1,35 @@
-%{
-	int yylex();
-	int yyerror(char*s);
-%}
+%code top{
+	#include<stdio.h>
+
+	extern int yylex();
+	extern void yyrestart(FILE*);
+	extern int yylineno;
+
+	void yyerror(const char*s);
+	#define YYFPRINTF(f, fmt, ...)  printf(fmt, ##__VA_ARGS__)
+}
+
+%define parse.error detailed
+%define parse.trace
+
+%locations
+%code requires{
+	#define YYLTYPE YYLTYPE
+	typedef struct YYLTYPE
+	{
+		int first_line;
+		int first_column;
+		int last_line;
+		int last_column;
+		char *filename;
+	} YYLTYPE;
+	#define YYLTYPE_IS_DECLARED 1
+	#define YYLTYPE_IS_TRIVIAL 1
+}
 
 /*** TOKEN DECLARATION ***/
+%header
+
 %token IDENTIFIER INTEGER_LITERAL FLOAT_LITERAL STRING_LITERAL BOOL_LITERAL PI
 
 /* Primitive data types */
@@ -175,15 +201,14 @@ constructor_declaration
 
 
 /*---------------------------------------------------------------------
-*	Objects
-*----------------------------------------------------------------------*/
+ *	Objects
+ *----------------------------------------------------------------------*/
 
 object_declaration
 	: VAR IDENTIFIER IDENTIFIER ';'
 	| VAR IDENTIFIER IDENTIFIER '(' ')'
 	| VAR IDENTIFIER IDENTIFIER '(' expression ')'
-;
-
+	;
 
 /*------------------------------------------------------------------------
  * Expressions
@@ -289,6 +314,7 @@ statement
 	| jump_statement
 	| variable_declaration_list
 	| object_declaration
+	| error ';'
 	;
 
 compound_statement
@@ -386,17 +412,36 @@ inbuilt_set_function
 	;
 %%
 
-#include<stdio.h>
-
-extern char yytext[];
-extern int column;
-
-int main(int argc, char **argv)
-{
-	yyparse();
+void init_yylloc(char* filename){
+	yylloc.first_line = yylloc.last_line = yylineno = 1;
+	yylloc.first_column = yylloc.last_column = 0;
+	yylloc.filename = filename;
 }
 
-int yyerror(char*s)
-{
-	fprintf(stderr, "error occured!\n%s\n", s);
+int main(int argc, char **argv){
+	#ifdef YYDEBUG
+		yydebug = 1;
+	#endif
+	
+	if(argc < 2){
+		init_yylloc("(stdin)");
+		yyparse();
+	}
+    else{
+        for(int i = 1; i < argc; i++){
+            init_yylloc(argv[i]);
+            FILE *file = fopen(argv[i], "r");
+            if(file == NULL){ perror(argv[i]); return -1; }
+            yyrestart(file);
+
+			yyparse();
+
+            fclose(file);
+        }
+    }
+}
+
+void yyerror(const char*s){
+	fprintf(stdout, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename, yylloc.first_line, yylloc.first_column, s);
+	fprintf(stderr, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename, yylloc.first_line, yylloc.first_column, s);
 }
