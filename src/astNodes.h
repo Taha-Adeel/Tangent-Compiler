@@ -13,9 +13,14 @@ union data
 {
     int ivalue;
     float fvalue;
-    char *svalue;
+    string svalue;
     bool bvalue;
 };
+#define value_pair pair <type, union data>
+
+/// @brief returns type of variable as string
+/// @param t input type
+/// @return type of variable 
 string enumtypeToString(type t)
 {
     switch (t)
@@ -27,6 +32,34 @@ string enumtypeToString(type t)
         case VOID_TYPE: return "VOID";
     }
     return "UNRECOGNISED TYPE";
+}
+/// @brief returns the value stored in valuepair as a string
+/// @param d input valuepair
+/// @return content of the value pair
+string get_valuepair_content(value_pair d)
+{
+    switch(d.first)
+    {
+        case INT_TYPE: return(to_string(d.second.ivalue));
+        case FLOAT_TYPE: return(to_string(d.second.fvalue));
+        case STRING_TYPE: return(d.second.svalue);
+        case BOOL_TYPE: return(to_string(d.second.bvalue));
+        case VOID_TYPE: return("VOID");
+    }
+    return "";
+}
+/// @brief copies value of d to inp
+/// @param inp value to set
+/// @param d value to copy
+void copy_valuepair(value_pair& inp, value_pair d)
+{
+    switch(d.first)
+    {
+        case INT_TYPE: inp.second.ivalue = d.second.ivalue;break;
+        case FLOAT_TYPE: inp.second.fvalue = d.second.fvalue;break;
+        case STRING_TYPE: inp.second.svalue = d.second.svalue;break;
+        case BOOL_TYPE: inp.second.bvalue = d.second.bvalue;break;
+    }
 }
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
@@ -392,11 +425,11 @@ class CompoundStatement : public Statement
 {
     protected:
         list <Statement*> stmt_list;
+        CompoundStatement() = default;
     public:
-        CompoundStatement() = delete;
         /// @brief Constructor for Comppund Statement Class
         /// @param l list of statements
-        CompoundStatement(list <Statement*> l):stmt_list(l){} 
+        CompoundStatement(list <Statement*> l);
         /// @brief print the content of compound statement
         void print();
 };
@@ -418,7 +451,7 @@ class FunctionDefinition : public Statement
         /// @param _t return type
         /// @param _arg_list list of arguments
         /// @param _stmt list of arguments 
-        FunctionDefinition(Identifier* _name, type _t, list<Identifier*> _arg_list, CompoundStatement* _stmt): func_name(_name), return_type(_t), arg_list(_arg_list), func_body(_stmt){};
+        FunctionDefinition(Identifier* _name, type _t, list<Identifier*> _arg_list, CompoundStatement* _stmt);
         /// @brief print the content of function definition
         void print();
 };
@@ -432,7 +465,7 @@ class VariableDeclaration : public Statement
         /// @brief Constructor for function declaration 
         /// @param t type of variable
         /// @param l list of identifires
-        VariableDeclaration(type t, list <Identifier*> l): variable_type(t), variable_list(l){};
+        VariableDeclaration(type t, list <Identifier*> l);
         void print();
 };
 /// @class Class to represent definition of driver function in the AST. Derives from CompoundStatement
@@ -469,6 +502,7 @@ class LabeledStatement : public Statement
     protected:
         Identifier* label;
         Statement* stmt;
+        LabeledStatement() = default;
     public:
         /// @brief Constructor for LabelledStatement
         LabeledStatement(Identifier* l, Statement* st);
@@ -486,7 +520,6 @@ class CaseLabel : public Statement
         /// @param st_list statement to execute in said case
         CaseLabel(Expression* lb, Statement* st) : label(lb), stmt(st) {};
         void print();
-
 };
 /// @class Class to represent 'default' in the AST. Derives from Statement
 class DefaultLabel : public Statement
@@ -507,10 +540,10 @@ class IterationStatement : public Statement
 {
     protected:
         CompoundStatement* body;
-        ExpressionStatement* condition;
+        Expression* condition;
     public:
         /// @brief Constructor for IterationStatement
-        IterationStatement(CompoundStatement* b, ExpressionStatement* cond);
+        IterationStatement(CompoundStatement* b, Expression* cond);
 };
 /// @class Class to represent while loop in the AST. Derives from Statement
 class WhileLoop : public IterationStatement
@@ -518,7 +551,7 @@ class WhileLoop : public IterationStatement
     public:
         /// @brief Constructor for WhileLoop
         /// @param b list of statements to execute
-        WhileLoop(CompoundStatement* b);
+        WhileLoop(CompoundStatement* b);                                   //this constructor implies use of while loop without statement??
         /// @brief Constructor for WhileLoop
         /// @param b body of while loop 
         /// @param cond entry condition for while loop
@@ -533,36 +566,39 @@ class ForLoop : public IterationStatement
         Expression* initialization;
         Expression* counter_updation;
     public:
-        /// @brief Constructor for ForLoop
-        /// @param b body of for loop
-        ForLoop(CompoundStatement* b);
-        /// @brief Constructor for ForLoop
-        /// @param b body of for loop
-        /// @param cond entry condition for for loop
-        ForLoop(CompoundStatement* b, Expression* cond);
-        /// @brief Constructor for ForLoop
-        /// @param b body of for loop
-        /// @param init initialization expression
-        ForLoop(CompoundStatement* b, Expression* init);
-        /// @brief Constructor for ForLoop
-        /// @param b body of for loop
-        /// @param update update expression in for loop
-        ForLoop(CompoundStatement* b, Expression* update);
-        /// @brief Constructor for ForLoop
-        /// @param b body of for loop
-        /// @param init initialization expression
-        /// @param cond entry condition for for loop
-        ForLoop(CompoundStatement* b, Expression* cond, Expression* init);
-        /// @brief Constructor for ForLoop
-        /// @param b body of for loop
-        /// @param cond entry condition for for loop
-        /// @param update update expression in for loop
-        ForLoop(CompoundStatement* b, Expression* cond, Expression* update);
-        /// @brief Constructor for ForLoop
-        /// @param b body of for loop
-        /// @param init initialization expression
-        /// @param update update expression in for loop
-        ForLoop(CompoundStatement* b, Expression* init, Expression* update);
+
+        //removed most constructor beacuse there is no way to distinguish between them on basis of arguments passed
+
+        // /// @brief Constructor for ForLoop
+        // /// @param b body of for loop
+        // ForLoop(CompoundStatement* b);
+        // /// @brief Constructor for ForLoop
+        // /// @param b body of for loop
+        // /// @param cond entry condition for for loop
+        // ForLoop(CompoundStatement* b, Expression* cond);
+        // /// @brief Constructor for ForLoop
+        // /// @param b body of for loop
+        // /// @param init initialization expression
+        // ForLoop(CompoundStatement* b, Expression* init);
+        // /// @brief Constructor for ForLoop
+        // /// @param b body of for loop
+        // /// @param update update expression in for loop
+        // ForLoop(CompoundStatement* b, Expression* update);
+        // /// @brief Constructor for ForLoop
+        // /// @param b body of for loop
+        // /// @param init initialization expression
+        // /// @param cond entry condition for for loop
+        // ForLoop(CompoundStatement* b, Expression* cond, Expression* init);
+        // /// @brief Constructor for ForLoop
+        // /// @param b body of for loop
+        // /// @param cond entry condition for for loop
+        // /// @param update update expression in for loop
+        // ForLoop(CompoundStatement* b, Expression* cond, Expression* update);
+        // /// @brief Constructor for ForLoop
+        // /// @param b body of for loop
+        // /// @param init initialization expression
+        // /// @param update update expression in for loop
+        // ForLoop(CompoundStatement* b, Expression* init, Expression* update);
         /// @brief Constructor for ForLoop
         /// @param b body of for loop
         /// @param init initialization expression
@@ -583,11 +619,15 @@ class IfElse : public Statement
         list <CompoundStatement*> if_blocks;
         CompoundStatement* else_block;
     public:
+        // /// @brief Constructor for IfElse
+        // /// @param l list of if statements
+        // /// @param ifs block of code for corresponding statement
+        // IfElse(list <Expression*> l, list <CompoundStatement*> ifs);
         /// @brief Constructor for IfElse
-        /// @param l 
-        /// @param ifs 
-        IfElse(list <Expression*> l, list <CompoundStatement*> ifs);
-        IfElse(list <Expression*> l, list <CompoundStatement*> ifs, CompoundStatement* elseb);
+        /// @param l list of if statements
+        /// @param ifs block of code for corresponding statement
+        /// @param elseb block of code for else block
+        IfElse(list <Expression*> l, list <CompoundStatement*> ifs, CompoundStatement* elseb = nullptr);
         void print();
 };
 /// @class Class to represent switch case statement in the AST. Derives from Statement
@@ -596,8 +636,17 @@ class Switch : public Statement
     protected:
         Expression* exp;
         list <CaseLabel*> cases;
+        DefaultLabel* def;
     public:
+        /// @brief Constructor for Switch statement
+        /// @param e switch expression
+        /// @param c cases for switch
         Switch(Expression* e, list <CaseLabel*> c);
+        /// @brief Constructor for Switch statement
+        /// @param e switch expression
+        /// @param c cases for switch
+        /// @param _def default case for switch
+        Switch(Expression* e, list <CaseLabel*> c, DefaultLabel* _def);
         void print();
 };
 /// @class Class to represent the ternary operator in the AST. Derives from Statement
@@ -608,15 +657,16 @@ class TernaryOperator : public Statement
         Expression* true_eval;
         Expression* false_eval;
     public:
+        /// @brief Constructor for TernaryOperator
+        /// @param cond conditon
+        /// @param t_eval expression to eval on cond == true
+        /// @param f_eval expression to eval on cond == false
         TernaryOperator(Expression* cond, Expression* t_eval, Expression* f_eval);
         void print();
 };
-
-class JumpStatement : public Statement
-{
-
-};
-/// @class Class to represent 'return' in the AST. Derives from Statement
+/// @class Provides base class for all jump statements
+class JumpStatement : public Statement{};
+/// @class Class to represent 'return' in the AST. Derives from Statement. 
 class ReturnStatement: public JumpStatement
 {
     protected:
