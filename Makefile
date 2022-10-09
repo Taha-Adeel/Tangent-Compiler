@@ -29,7 +29,7 @@ lexer: $(BUILD_DIR)/lex.yy.c $(BUILD_DIR)/parser.tab.h
 
 # Build an executable to parse the input tangent code files according to the grammar rules
 parser: $(BUILD_DIR)/parser.tab.c $(BUILD_DIR)/lex.yy.c
-	$(CC) -o $(BUILD_DIR)/$@ $^
+	$(CC) -o $(BUILD_DIR)/$@ $^ -D YYDEBUGOUTPUT
 
 # Generate HTML documentation describing our grammar and the DFA representing the parser.
 parser_documentation: $(SRC_DIR)/parser.y
@@ -82,7 +82,7 @@ lexer_correct_codes: $(LEXER_CORRECT_CODES) lexer
 	mkdir -p $(TESTS_OUTPUT_DIR); \
 	TOTAL=0; SUCCESSFUL=0; \
 	for testcase in $(basename $(notdir $(LEXER_CORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
-		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_CORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt";\
+		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_CORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt$(NC)";\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/lexer $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		if [ $$(grep "Invalid token" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -eq 0 ] ; then \
@@ -102,7 +102,7 @@ lexer_incorrect_codes: $(LEXER_INCORRECT_CODES) lexer
 	mkdir -p $(TESTS_OUTPUT_DIR); \
 	TOTAL=0; SUCCESSFUL=0; \
 	for testcase in $(basename $(notdir $(LEXER_INCORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
-		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_INCORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt";\
+		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_INCORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt$(NC)";\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/lexer $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		if [ $$(grep "Invalid token" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -gt 0 ] ; then \
@@ -125,7 +125,7 @@ parser_correct_codes: $(PARSER_CORRECT_CODES) parser
 	mkdir -p $(TESTS_OUTPUT_DIR); \
 	TOTAL=0; SUCCESSFUL=0; \
 	for testcase in $(basename $(notdir $(PARSER_CORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
-		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(PARSER_CORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt";\
+		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(PARSER_CORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt$(NC)";\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/parser $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		if [ $$(grep "syntax error" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -eq 0 ] ; then \
@@ -145,7 +145,7 @@ parser_incorrect_codes: $(PARSER_INCORRECT_CODES) parser
 	mkdir -p $(TESTS_OUTPUT_DIR); \
 	TOTAL=0; SUCCESSFUL=0; \
 	for testcase in $(basename $(notdir $(PARSER_INCORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
-		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(PARSER_INCORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt";\
+		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(PARSER_INCORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt$(NC)";\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/parser $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		if [ $$(grep "syntax error" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -gt 0 ] ; then \

@@ -6,9 +6,11 @@
 	extern int yylineno;
 
 	void yyerror(const char*s);
+	#define YYFPRINTF(f, fmt, ...)  printf(fmt, ##__VA_ARGS__)
 }
 
 %define parse.error detailed
+%define parse.trace
 
 %locations
 %code requires{
@@ -413,7 +415,11 @@ void init_yylloc(char* filename){
 	yylloc.filename = filename;
 }
 
-int main(int argc, char **argv){	
+int main(int argc, char **argv){
+	#ifdef YYDEBUGOUTPUT
+		yydebug = 1;
+	#endif
+	
 	if(argc < 2){
 		init_yylloc("(stdin)");
 		yyparse();
