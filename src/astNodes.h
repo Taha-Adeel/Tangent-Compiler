@@ -381,8 +381,9 @@ class ExpressionStatement : public Statement
         ExpressionStatement() = delete;
         /// @brief Constructor for class
         /// @param e input expression
-        ExpressionStatement(Expression* e):exp(e){}
+        ExpressionStatement(Expression* e):exp(e){};
         /// @brief print the content of expression statement
+        Expression* getValue();
         void print();
 };
 
@@ -435,7 +436,7 @@ class VariableDeclaration : public Statement
         void print();
 };
 /// @class Class to represent definition of driver function in the AST. Derives from CompoundStatement
-class DriverDefinition : public CompoundStatement
+class DriverDefinition : public Statement
 {
     protected:
         CompoundStatement* func_body;
@@ -443,7 +444,7 @@ class DriverDefinition : public CompoundStatement
         DriverDefinition() = delete;
         /// @brief Constructor for DriverFunction
         /// @param body the Compound Statements that take make up the driver function
-        DriverDefinition(CompoundStatement* body);
+        DriverDefinition(CompoundStatement* body) : func_body(body) {};
         void print();
 };
 /// @class Class to represent variable initialization in the AST. Derives from Statement
@@ -478,12 +479,12 @@ class CaseLabel : public Statement
 {
     protected:
         Expression* label;
-        list <Statement*> stmt_list;
+        Statement* stmt;
     public:
         /// @brief Constructor for CaseLabel
         /// @param lb expression to check for in case
-        /// @param st_list list of statements to execute in said case
-        CaseLabel(Expression* lb, list <Statement*> st_list);
+        /// @param st_list statement to execute in said case
+        CaseLabel(Expression* lb, Statement* st) : label(lb), stmt(st) {};
         void print();
 
 };
@@ -491,11 +492,11 @@ class CaseLabel : public Statement
 class DefaultLabel : public Statement
 {
     protected:
-        list <Statement*> stmt_list;
+        Statement* stmt;
     public:
         /// @brief Constructor for DefaultLabel
-        /// @param st_list list of statements in default case
-        DefaultLabel(list <Statement*> st_list);
+        /// @param st_list statement in default case
+        DefaultLabel(Statement* st) : stmt(st) {};
         void print();
 };
 
@@ -619,9 +620,9 @@ class JumpStatement : public Statement
 class ReturnStatement: public JumpStatement
 {
     protected:
-        value_pair return_value;
+        Expression *return_val;
     public:
-        ReturnStatement(value_pair val);
+        ReturnStatement(Expression* val) : return_val(val) {};
         void print();
 };
 /// @class Class to represent 'break' in the AST. Derives from Statement
@@ -644,9 +645,9 @@ class ContinueStatement: public JumpStatement
 class Program : public ASTNode
 {
     protected:
-        list <Statement*> stmt_list;
+        list <Statement*> *stmt_list;
     public:
-        Program(list <Statement*> stmt_list);
+        Program(list <Statement*> *stmts = new list <Statement*> ());
 };
 
 // objects at the base of the tree

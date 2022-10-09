@@ -966,6 +966,12 @@ void ExpressionStatement::print()
     exp->print();
     cout << "\n}\n";
 }
+
+Expression* ExpressionStatement::getValue()
+{
+    return exp;
+}
+
 void CompoundStatement::print()
 {
     cout << "Compound Statement:\n{";
@@ -1001,4 +1007,14 @@ void VariableDeclaration::print()
         ele->print();
         cout<<"\n";
     }
+}
+
+
+/*------------------------------------------------------------------------
+ * Program Root Node 
+ *------------------------------------------------------------------------*/
+
+Program :: Program(list <Statement*> *stmts)
+{
+    stmt_list = stmts;
 }
