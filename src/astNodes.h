@@ -500,36 +500,32 @@ class VariableInitialization : public Statement
 class LabeledStatement : public Statement
 {
     protected:
-        Identifier* label;
+        Expression* label;
         Statement* stmt;
-        LabeledStatement() = default;
+        
     public:
         /// @brief Constructor for LabelledStatement
-        LabeledStatement(Identifier* l, Statement* st);
+        LabeledStatement() = default;
+        LabeledStatement(Expression* lb, Statement* st);
         void print();
 };
 /// @class Class to represent 'case' in the AST. Derives from Statement
-class CaseLabel : public Statement
+class CaseLabel : public LabeledStatement
 {
-    protected:
-        Expression* label;
-        Statement* stmt;
     public:
         /// @brief Constructor for CaseLabel
         /// @param lb expression to check for in case
         /// @param st_list statement to execute in said case
-        CaseLabel(Expression* lb, Statement* st) : label(lb), stmt(st) {};
+        CaseLabel(Expression* lb, Statement* st) : LabeledStatement(lb, st){};
         void print();
 };
 /// @class Class to represent 'default' in the AST. Derives from Statement
-class DefaultLabel : public Statement
+class DefaultLabel : public LabeledStatement
 {
-    protected:
-        Statement* stmt;
     public:
         /// @brief Constructor for DefaultLabel
         /// @param st_list statement in default case
-        DefaultLabel(Statement* st) : stmt(st) {};
+        DefaultLabel(Statement* st) : LabeledStatement(NULL, st){};
         void print();
 };
 
