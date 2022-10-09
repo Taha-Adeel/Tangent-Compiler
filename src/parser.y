@@ -1,5 +1,6 @@
 %code top{
 	#include<stdio.h>
+	#include "astNodes.h"
 
 	extern int yylex();
 	extern void yyrestart(FILE*);
@@ -26,6 +27,28 @@
 	#define YYLTYPE_IS_DECLARED 1
 	#define YYLTYPE_IS_TRIVIAL 1
 }
+
+/* Listing the different types of the terminals and non-terminals*/
+%union 
+{
+	Program *pgm
+	list <Statement*> *stmt_list;
+	Expression *exp;
+	Statement* stmt;
+	int token;
+	// enum type 
+}
+
+/* Declaring types to the different non-terminals */
+%type <pgm> program
+%type <stmt_list> translation_unit
+
+%type <stmt> external_declaration 
+%type <stmt> driver_definition function_definition variable_declaration class_declaration
+%type <stmt> jump_statement iteration_statement labeled_statement expression_statement
+%type <stmt> selection_statement compound_statement variable_declaration_list
+
+%type <exp> expression constant_expression
 
 /*** TOKEN DECLARATION ***/
 %header
@@ -76,24 +99,24 @@
  * Translation unit
  *------------------------------------------------------------------------*/
 program
-	:
-	| translation_unit
+	:					{$$ = new Program(); root = $$;}
+	| translation_unit	{$$ = new Program($1); root = $$;}
 	;
 	
 translation_unit
-	: external_declaration
-	| translation_unit external_declaration
+	: external_declaration		{$$ = new list <Statement*>(); $$->push_back($1);}
+	| translation_unit external_declaration	{$$ = $1; $$->push_back($2);}
 	;
 
 external_declaration
-	: driver_definition
-	| function_definition
-	| variable_declaration
-	| class_declaration
+	: driver_definition		//{$$ = $1;}
+	| function_definition	//{$$ = $1;}
+	| variable_declaration	//{$$ = $1;}
+	| class_declaration		//{$$ = $1;}
 	;
 
 driver_definition
-	: DRIVER '(' ')' compound_statement
+	: DRIVER '(' ')' compound_statement {$$ = new DriverDefinition($4);}
 	;
 
 
@@ -101,7 +124,7 @@ driver_definition
  * Declarations
  *----------------------------------------------------------------------*/
 type
-	: INT
+	: INT	
 	| FLOAT
 	| STRING
 	| BOOL
@@ -328,8 +351,8 @@ statement_list
 	;
 
 expression_statement
-	: ';'
-	| expression ';'
+	: ';'			 
+	| expression ';' {$$ = new ExpressionStatement($1);}
 	;
 
 selection_statement
@@ -339,23 +362,24 @@ selection_statement
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement
-	| CASE constant_expression ':' statement
-	| DEFAULT ':' statement
+	: IDENTIFIER ':' statement	{$$ = new LabeledStatement($1, $3);}
+	| CASE constant_expression ':' statement	{$$ = new CaseLabel($2, $4);}
+	| DEFAULT ':' statement		{$$ = new DefaultLabel($3);}
 	;
 
 iteration_statement
-	: WHILE '(' expression ')' statement
-	| FOR '(' expression_statement expression_statement ')' statement
-	| FOR '(' expression_statement expression_statement expression ')' statement
-	| FOR '(' variable_declaration expression_statement ')' statement
-	| FOR '(' variable_declaration expression_statement expression ')' statement
+	: WHILE '(' ')' compound_statement 	{$$ = new WhileLoop($4);}
+	| WHILE '(' expression ')' compound_statement {$$ = new WhileLoop($5, $3);}
+	| FOR '(' expression_statement expression_statement ')' compound_statement 
+	| FOR '(' expression_statement expression_statement expression ')' compound_statement 
+	| FOR '(' variable_declaration expression_statement ')' compound_statement 
+	| FOR '(' variable_declaration expression_statement expression ')' compound_statement
 	;
 
 jump_statement
-	: CONTINUE ';'
-	| BREAK ';'
-	| SEND expression_statement
+	: CONTINUE ';' 	{$$ = new ContinueStatement();}
+	| BREAK ';'		{$$ = new BreakStatement();}
+	| SEND expression_statement	{$$ = new ReturnStatement(($2).getValue());}
 	;
 
 /*------------------------------------------------------------------------

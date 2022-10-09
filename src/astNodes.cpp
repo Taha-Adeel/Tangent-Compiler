@@ -963,6 +963,12 @@ void ExpressionStatement::print()
     cout << "\n}\n";
 }
 
+Expression* ExpressionStatement::getValue()
+{
+    return exp;
+}
+
+
 
 CompoundStatement::CompoundStatement(list<Statement *> l) : stmt_list(l) {}
 void CompoundStatement::print()
@@ -1158,4 +1164,14 @@ void ReturnStatement::print()
     cout<<"ternary:\n{\nreturns:\n";
     
     cout<<"\n}\n";  
+}
+
+
+/*------------------------------------------------------------------------
+ * Program Root Node 
+ *------------------------------------------------------------------------*/
+
+Program :: Program(list <Statement*> *stmts)
+{
+    stmt_list = stmts;
 }
