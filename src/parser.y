@@ -1,9 +1,26 @@
-%{
-	int yylex();
+%code top{
+	#include<stdio.h>
+
+	extern int yylex();
 	int yyerror(char*s);
-%}
+}
+
+%locations
+%code requires{
+	#define YYLTYPE YYLTYPE
+	typedef struct YYLTYPE
+	{
+		int first_line;
+		int first_column;
+		int last_line;
+		int last_column;
+		char *filename;
+	} YYLTYPE;
+}
 
 /*** TOKEN DECLARATION ***/
+%header
+
 %token IDENTIFIER INTEGER_LITERAL FLOAT_LITERAL STRING_LITERAL BOOL_LITERAL PI
 
 /* Primitive data types */
@@ -386,17 +403,30 @@ inbuilt_set_function
 	;
 %%
 
-#include<stdio.h>
+int main(int argc, char **argv){	
+	/* if(argc < 2){
+        yylloc.filename = "(stdin)";
+		yyparse();
+	}
+    else{
+        for(int i = 1; i < argc; i++){
+            yylloc.first_line = yylloc.last_line = 1;
+            yylloc.first_column = yylloc.last_column = 0;
+            yylloc.filename = argv[i];
+            FILE *file = fopen(argv[i], "r");
+            if(file == NULL){ 
+                perror(argv[i]); 
+                return 1;
+            }
+            yyrestart(file);
+			yyparse();
+            fclose(file);
+        }
+    } */
 
-extern char yytext[];
-extern int column;
-
-int main(int argc, char **argv)
-{
 	yyparse();
 }
 
-int yyerror(char*s)
-{
+int yyerror(char*s){
 	fprintf(stderr, "error occured!\n%s\n", s);
 }

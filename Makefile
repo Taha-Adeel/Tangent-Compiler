@@ -21,7 +21,7 @@ $(BUILD_DIR)/lex.yy.c: $(SRC_DIR)/lexer.l
 $(BUILD_DIR)/parser.tab.c \
 $(BUILD_DIR)/parser.tab.h: $(SRC_DIR)/parser.y
 	mkdir -p $(@D)
-	bison -o $(BUILD_DIR)/parser.tab.c $^ -d
+	bison -o $(BUILD_DIR)/parser.tab.c $^
 
 # Build an executable to scan the input tangent code and output the matched tokens
 lexer: $(BUILD_DIR)/lex.yy.c $(BUILD_DIR)/parser.tab.h
@@ -123,6 +123,7 @@ parser_correct_codes: $(PARSER_CORRECT_CODES) parser
 	mkdir -p $(TESTS_OUTPUT_DIR); \
 	for testcase in $(basename $(notdir $(PARSER_CORRECT_CODES))); do\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
+		echo $${testcase}; \
 		"$${ROOT_DIR}"/$(BUILD_DIR)/parser < $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 	done
 
