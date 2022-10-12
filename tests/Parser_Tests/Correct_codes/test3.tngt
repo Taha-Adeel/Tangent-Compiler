@@ -1,17 +1,11 @@
-#print statement
-
-var int glob := 23;
-glob := glob + 1ffff;
+# Simple code
 
 driver<: :>
 (:
-    var int loc := 4;
-    loc := loc + 1;
-    glob := glob + 1;
-    print("a local variable value:- ");
-    print(loc);
-    print("\n");
-    print("a global variable value :- ");
-    print(glob);
-    print("\n");
+    var string n := "code";
+    var int x := 10;
+    var string a1 := n/n;
+    var string a2 := x*n;
+    print(a1);
+    print(a2);
 :)

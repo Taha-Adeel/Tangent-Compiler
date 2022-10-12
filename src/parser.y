@@ -114,6 +114,14 @@ type
 	| STRING
 	| BOOL
 	| VOID
+	| POINT
+	| IMAGE
+	| RECTANGLE
+	| CIRCLE
+	| ELLIPSE 
+	| POLYGON
+	| CURVE
+	| PATH
 	| IDENTIFIER
 	;
 
@@ -206,7 +214,9 @@ primary_expression
 
 variable
 	: IDENTIFIER
+	| inbuilt_function
 	| variable SCOPE_ACCESS IDENTIFIER
+	| variable SCOPE_ACCESS inbuilt_member_function
 	| variable '[' expression ']'
 	;
 
@@ -313,7 +323,6 @@ inbuilt_function_call
 	;
 inbuilt_function
 	: CLEAR
-	| DRAW
 	| PRINT
 	| FLOOR
 	| CEIL
@@ -325,6 +334,7 @@ inbuilt_function
 inbuilt_member_function
 	: inbuilt_get_function
 	| inbuilt_set_function
+	| DRAW
 	;	
 inbuilt_get_function
 	: GET_X
