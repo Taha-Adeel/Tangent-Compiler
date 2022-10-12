@@ -67,6 +67,20 @@
 /* Driver keyword */
 %token DRIVER
 
+
+/* The operator precedence and associativity rules for the language. The higher precedence operators are listed below the lower precedence rules. */
+%left ','
+%right ASSIGN ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN
+%right '?' ':'
+%left LOGICAL_OR
+%left LOGICAL_AND
+%left EQ NOT_EQ
+%left LS_THAN LS_THAN_EQ GR_THAN GR_THAN_EQ
+%left '+' '-'
+%left '*' '/' '%'
+%precedence UPLUS UMINUS LOGICAL_NOT
+%left '(' ')' '[' ']' SCOPE_ACCESS
+
 /*** RULES ***/
 %%
 
