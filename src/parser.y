@@ -67,8 +67,6 @@
 /* Driver keyword */
 %token DRIVER
 
-%start program
-
 /*** RULES ***/
 %%
 
@@ -106,14 +104,7 @@ type
 	| STRING
 	| BOOL
 	| VOID
-	| POINT
-	| IMAGE 
-	| RECTANGLE
-	| CIRCLE 
-	| ELLIPSE 
-	| POLYGON
-	| CURVE
-	| PATH	
+	| IDENTIFIER
 	;
 
 
@@ -126,24 +117,26 @@ literal
 	;
 
 variable_declaration
-	: VAR type variable_list ';'
-	| CONST type variable_list ';'
+	: type new_variable_list ';'
+	| VAR type new_variable_list ';'
+	| CONST type new_variable_list ';'
 	;
 
-variable_list
-	: variable
-	| variable_list ',' variable
+new_variable_list
+	: new_variable
+	| new_variable_list ',' new_variable
 	;
 
-variable
-	: IDENTIFIER ';'
+new_variable
+	: IDENTIFIER
 	| IDENTIFIER ASSIGN expression
+	| IDENTIFIER '(' ')'
+	| IDENTIFIER '(' expression_list ')'
 	;
-
 
 function_definition
-	: type IDENTIFIER '(' args_list ')' compound_statement
-	| type IDENTIFIER '(' ')' compound_statement
+	: type IDENTIFIER '(' ')' compound_statement
+	| type IDENTIFIER '(' args_list ')' compound_statement
 	;
 
 
@@ -153,34 +146,30 @@ args_list
 	;
 
 arg
-	: VAR type IDENTIFIER
+	: type IDENTIFIER
+	| VAR type IDENTIFIER
 	| CONST type IDENTIFIER
 	;
-
 
 /*------------------------------------------------------------------------
  * Classes
  *------------------------------------------------------------------------*/
 class_declaration
-	: FAMILY IDENTIFIER class_definition ';'
-	| FAMILY IDENTIFIER INHERITS IDENTIFIER class_definition ';'
-	| FAMILY IDENTIFIER INHERITS access_specifier class_definition ';'
+	: FAMILY IDENTIFIER '{' '}' ';'
+	| FAMILY IDENTIFIER '{' class_members '}' ';'
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';'
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' class_members '}' ';'
 	;
 
 access_specifier
-	: PUBLIC
+	: %empty
+	| PUBLIC
 	| PRIVATE
 	;
 
-class_definition
-	: '{' '}'
-	| '{' class_members '}'
-	;
 class_members
-	: class_members access_specifier class_member
-	| class_members class_member
-	| access_specifier class_member
-	| class_member
+	: access_specifier class_member
+	| class_members access_specifier class_member
 	;
 
 class_member
@@ -190,111 +179,57 @@ class_member
 	;
 
 constructor_declaration
-	: IDENTIFIER '(' ')' compound_statement
-	| IDENTIFIER '(' args_list ')' compound_statement
-	;
-
-
-/*---------------------------------------------------------------------
- *	Objects
- *----------------------------------------------------------------------*/
-
-object_declaration
-	: VAR IDENTIFIER IDENTIFIER ';'
-	| VAR IDENTIFIER IDENTIFIER '(' ')'
-	| VAR IDENTIFIER IDENTIFIER '(' expression ')'
+	: IDENTIFIER '(' args_list ')' compound_statement
 	;
 
 /*------------------------------------------------------------------------
  * Expressions
  *------------------------------------------------------------------------*/
 primary_expression
-	: IDENTIFIER
-	| literal
+	: literal
+	| variable
+	| variable '[' expression ']'
+	| variable '(' ')'
+	| variable '(' expression_list ')'
+	| inbuilt_function_call
 	| '(' expression ')'
 	;
 
-unary_expression
-	: primary_expression
-	| unary_expression '[' expression ']'
-	| unary_expression '(' ')'
-	| unary_expression '(' expression ')'
-	| unary_expression SCOPE_ACCESS IDENTIFIER 
-	| unary_expression SCOPE_ACCESS IDENTIFIER '(' ')'
-	| unary_expression SCOPE_ACCESS IDENTIFIER '(' expression ')'
-	| inbuilt_function_call
-	;
-
-multiplicative_expression
-	: unary_expression
-	| multiplicative_expression '*' unary_expression
-	| multiplicative_expression '/' unary_expression
-	| multiplicative_expression '%' unary_expression
-	;
-
-additive_expression
-	: multiplicative_expression
-	| additive_expression '+' multiplicative_expression
-	| additive_expression '-' multiplicative_expression
-	;
-
-relational_expression
-	: additive_expression
-	| relational_expression LS_THAN additive_expression
-	| relational_expression GR_THAN additive_expression
-	| relational_expression LS_THAN_EQ additive_expression
-	| relational_expression GR_THAN_EQ additive_expression
-	;
-
-equality_expression
-	: relational_expression
-	| equality_expression EQ relational_expression
-	| equality_expression NOT_EQ relational_expression
-	;
-
-logical_not_expression
-	: equality_expression
-	| LOGICAL_NOT equality_expression
-	;
-
-logical_and_expression
-	: logical_not_expression
-	| logical_and_expression LOGICAL_AND logical_not_expression
-	;
-
-logical_or_expression
-	: logical_and_expression
-	| logical_or_expression LOGICAL_OR logical_and_expression
-	;
-
-conditional_expression
-	: logical_or_expression
-	| logical_or_expression '?' expression ':' conditional_expression
-	;
-
-assignment_expression
-	: conditional_expression
-	| unary_expression assignment_operator assignment_expression
-	;
-
-assignment_operator
-	: ASSIGN
-	| MUL_ASSIGN
-	| DIV_ASSIGN
-	| MOD_ASSIGN
-	| ADD_ASSIGN
-	| SUB_ASSIGN
+variable
+	: IDENTIFIER
 	;
 
 expression
-	: assignment_expression
-	| expression ',' assignment_expression
+	: primary_expression
+	| expression '*' expression
+	| expression '/' expression
+	| expression '%' expression
+	| expression '+' expression
+	| expression '-' expression
+	| expression EQ expression
+	| expression NOT_EQ expression
+	| expression LS_THAN expression
+	| expression LS_THAN_EQ expression
+	| expression GR_THAN expression
+	| expression GR_THAN_EQ expression
+	| expression LOGICAL_AND expression
+	| expression LOGICAL_OR expression
+	| LOGICAL_NOT expression
+	| '+' expression %prec UPLUS
+	| '-' expression %prec UMINUS
+	| variable ASSIGN expression
+	| variable MUL_ASSIGN expression
+	| variable DIV_ASSIGN expression
+	| variable MOD_ASSIGN expression
+	| variable ADD_ASSIGN expression
+	| variable SUB_ASSIGN expression
+	| expression '?' expression ':' expression
 	;
 
-constant_expression
-	: conditional_expression
+expression_list
+	: expression
+	| expression_list ',' expression
 	;
-
 
 /*------------------------------------------------------------------------
  * Statements
@@ -303,11 +238,11 @@ constant_expression
 statement
 	: labeled_statement
 	| compound_statement
+	| variable_declaration
 	| expression_statement
 	| selection_statement
 	| iteration_statement
 	| jump_statement
-	| object_declaration
 	| error ';'
 	;
 
@@ -323,7 +258,7 @@ statement_list
 
 expression_statement
 	: ';'
-	| expression ';'
+	| expression_list ';'
 	;
 
 selection_statement
@@ -334,7 +269,7 @@ selection_statement
 
 labeled_statement
 	: IDENTIFIER ':' statement
-	| CASE constant_expression ':' statement
+	| CASE expression ':' statement
 	| DEFAULT ':' statement
 	;
 
@@ -357,9 +292,9 @@ jump_statement
  *------------------------------------------------------------------------*/
 inbuilt_function_call
 	: inbuilt_function '(' ')'
-	| inbuilt_function '(' expression ')'
+	| inbuilt_function '(' expression_list ')'
 	| inbuilt_member_function '(' ')'
-	| inbuilt_member_function '(' expression ')'
+	| inbuilt_member_function '(' expression_list ')'
 	;
 inbuilt_function
 	: CLEAR
