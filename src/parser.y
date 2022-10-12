@@ -76,7 +76,7 @@
  * Translation unit
  *------------------------------------------------------------------------*/
 program
-	:
+	: %empty
 	| translation_unit
 	;
 	
@@ -128,11 +128,6 @@ literal
 variable_declaration
 	: VAR type variable_list ';'
 	| CONST type variable_list ';'
-	;
-
-variable_declaration_list
-	: variable_declaration
-	| variable_declaration_list variable_declaration
 	;
 
 variable_list
@@ -312,7 +307,6 @@ statement
 	| selection_statement
 	| iteration_statement
 	| jump_statement
-	| variable_declaration_list
 	| object_declaration
 	| error ';'
 	;
