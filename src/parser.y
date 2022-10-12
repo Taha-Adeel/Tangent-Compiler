@@ -36,11 +36,6 @@
 %token INT FLOAT STRING BOOL VOID
 %token CONST VAR
 
-/* Operators */
-%token ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN SUB_ASSIGN
-%token EQ NOT_EQ LS_THAN LS_THAN_EQ GR_THAN GR_THAN_EQ
-%token LOGICAL_AND LOGICAL_OR LOGICAL_NOT
-
 /* Control flow keywords */
 %token IF ELSE FOR WHILE SWITCH CASE DEFAULT BREAK CONTINUE SEND
 
@@ -78,7 +73,8 @@
 %left LS_THAN LS_THAN_EQ GR_THAN GR_THAN_EQ
 %left '+' '-'
 %left '*' '/' '%'
-%precedence UPLUS UMINUS LOGICAL_NOT
+%precedence INC DEC
+%precedence INC_POST DEC_POST UPLUS UMINUS LOGICAL_NOT
 %left '(' ')' '[' ']' SCOPE_ACCESS
 
 /*** RULES ***/
@@ -202,7 +198,6 @@ constructor_declaration
 primary_expression
 	: literal
 	| variable
-	| variable '[' expression ']'
 	| variable '(' ')'
 	| variable '(' expression_list ')'
 	| inbuilt_function_call
@@ -212,10 +207,13 @@ primary_expression
 variable
 	: IDENTIFIER
 	| variable SCOPE_ACCESS IDENTIFIER
+	| variable '[' expression ']'
 	;
 
 expression
 	: primary_expression
+	| '+' expression %prec UPLUS
+	| '-' expression %prec UMINUS
 	| expression '*' expression
 	| expression '/' expression
 	| expression '%' expression
@@ -230,15 +228,17 @@ expression
 	| expression LOGICAL_AND expression
 	| expression LOGICAL_OR expression
 	| LOGICAL_NOT expression
-	| '+' expression %prec UPLUS
-	| '-' expression %prec UMINUS
+	| expression '?' expression ':' expression
+	| INC variable
+	| DEC variable
+	| variable INC %prec INC_POST
+	| variable DEC %prec DEC_POST
 	| variable ASSIGN expression
 	| variable MUL_ASSIGN expression
 	| variable DIV_ASSIGN expression
 	| variable MOD_ASSIGN expression
 	| variable ADD_ASSIGN expression
 	| variable SUB_ASSIGN expression
-	| expression '?' expression ':' expression
 	;
 
 expression_list
