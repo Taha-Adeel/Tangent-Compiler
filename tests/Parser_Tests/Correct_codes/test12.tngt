@@ -3,7 +3,7 @@
 driver<: :>
 (:
 	var Circle my_circle;
-	my_circle.set_radius(2.3);
+	my_circle>>set_radius(2.3);
 	my_circle.set_colour(get_colour_from_rgb(20,122,0));
 	my_circle.set_center(make_point(200,200));
 
