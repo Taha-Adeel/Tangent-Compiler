@@ -211,6 +211,7 @@ primary_expression
 
 variable
 	: IDENTIFIER
+	| variable SCOPE_ACCESS IDENTIFIER
 	;
 
 expression
