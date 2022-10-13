@@ -2,10 +2,9 @@
 
 family Vehicle
 (:
-    public:
-        var int wheels;
+        public var int wheels;
         var string name;
-        var string color;
+        private var string color;
         void vehicleInfo<: :>
         (:
             print("Vehicle:- " + name + "\n");
