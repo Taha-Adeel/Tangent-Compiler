@@ -30,38 +30,26 @@
 /*** TOKEN DECLARATION ***/
 %header
 
-%token IDENTIFIER INTEGER_LITERAL FLOAT_LITERAL STRING_LITERAL BOOL_LITERAL PI
 
 /* Primitive data types */
-%token INT FLOAT STRING BOOL VOID
 %token CONST VAR
+%token BOOL FLOAT INT STRING VOID 
+
+/* Literals */
+%token BOOL_LITERAL FLOAT_LITERAL INTEGER_LITERAL STRING_LITERAL
 
 /* Control flow keywords */
-%token IF ELSE FOR WHILE SWITCH CASE DEFAULT BREAK CONTINUE SEND
+%token IF ELSE SWITCH CASE DEFAULT WHILE FOR BREAK CONTINUE SEND
 
 /* Derived data types and their member fields */
-%token FAMILY ME INHERITS
-%token SCOPE_ACCESS PUBLIC PRIVATE 
-%token POINT IMAGE RECTANGLE CIRCLE ELLIPSE POLYGON CURVE PATH
-%token POINT_X POINT_Y
-%token IMG_DIMS IMG_DRAWS
-//%token RECT_LENGTH RECT_BREADTH
-//%token CENTER ROTATION RADIUS
-//%token ELLIPSE_A ELLIPSE_B
-//%token POLYGON_SIZE POLYGON_LENGTH
-//%token CURVE_POINTS
-
-/* Functions */
-%token FUNC CLEAR DRAW PRINT FLOOR CEIL TO_FLOAT
-%token ADD_POINT MAKE_POINT
-%token GET_X GET_Y GET_POINTS GET_WIDTH GET_CENTER GET_SIDES GET_SIDE_LENGTH GET_ROTATION GET_RADIUS GET_COLOUR GET_BORDER_COLOUR
-%token SET_X SET_Y SET_POINTS SET_WIDTH SET_LENGTH SET_CENTER SET_SIDES SET_SIDE_LENGTH SET_ROTATION SET_RADIUS SET_COLOUR SET_BORDER_COLOUR SET_DIMENSION
-%token COLOUR RED BLUE GREEN
-%token GET_COLOUR_FROM_RGB
+%token FAMILY INHERITS
+%token PUBLIC PRIVATE 
 
 /* Driver keyword */
 %token DRIVER
 
+/* Variables */
+%token IDENTIFIER
 
 /* The operator precedence and associativity rules for the language. The higher precedence operators are listed below the lower precedence rules. */
 %left ','
@@ -95,7 +83,7 @@ translation_unit
 
 external_declaration
 	: driver_definition
-	| function_definition
+	| function_declaration
 	| variable_declaration
 	| class_declaration
 	;
@@ -114,24 +102,14 @@ type
 	| STRING
 	| BOOL
 	| VOID
-	| POINT
-	| IMAGE
-	| RECTANGLE
-	| CIRCLE
-	| ELLIPSE 
-	| POLYGON
-	| CURVE
-	| PATH
 	| IDENTIFIER
 	;
-
 
 literal
 	: INTEGER_LITERAL
 	| FLOAT_LITERAL
 	| STRING_LITERAL
 	| BOOL_LITERAL
-	| PI
 	;
 
 variable_declaration
@@ -152,11 +130,10 @@ new_variable
 	| IDENTIFIER '(' expression_list ')'
 	;
 
-function_definition
+function_declaration
 	: type IDENTIFIER '(' ')' compound_statement
 	| type IDENTIFIER '(' args_list ')' compound_statement
 	;
-
 
 args_list
 	: arg
@@ -192,7 +169,7 @@ class_members
 
 class_member
 	: variable_declaration
-	| function_definition
+	| function_declaration
 	| constructor_declaration
 	;
 
@@ -208,15 +185,12 @@ primary_expression
 	| variable
 	| variable '(' ')'
 	| variable '(' expression_list ')'
-	| inbuilt_function_call
 	| '(' expression ')'
 	;
 
 variable
 	: IDENTIFIER
-	| inbuilt_function
 	| variable SCOPE_ACCESS IDENTIFIER
-	| variable SCOPE_ACCESS inbuilt_member_function
 	| variable '[' expression ']'
 	;
 
@@ -238,7 +212,6 @@ expression
 	| expression LOGICAL_AND expression
 	| expression LOGICAL_OR expression
 	| LOGICAL_NOT expression
-	| expression '?' expression ':' expression
 	| INC variable
 	| DEC variable
 	| variable INC %prec INC_POST
@@ -249,6 +222,7 @@ expression
 	| variable MOD_ASSIGN expression
 	| variable ADD_ASSIGN expression
 	| variable SUB_ASSIGN expression
+	| expression '?' expression ':' expression
 	;
 
 expression_list
@@ -259,7 +233,6 @@ expression_list
 /*------------------------------------------------------------------------
  * Statements
  *------------------------------------------------------------------------*/
-
 statement
 	: labeled_statement
 	| compound_statement
@@ -312,58 +285,6 @@ jump_statement
 	| SEND expression_statement
 	;
 
-/*------------------------------------------------------------------------
- * Inbuilt Functions
- *------------------------------------------------------------------------*/
-inbuilt_function_call
-	: inbuilt_function '(' ')'
-	| inbuilt_function '(' expression_list ')'
-	| inbuilt_member_function '(' ')'
-	| inbuilt_member_function '(' expression_list ')'
-	;
-inbuilt_function
-	: CLEAR
-	| PRINT
-	| FLOOR
-	| CEIL
-	| TO_FLOAT
-	| ADD_POINT
-	| MAKE_POINT
-	| GET_COLOUR_FROM_RGB
-	;
-inbuilt_member_function
-	: inbuilt_get_function
-	| inbuilt_set_function
-	| DRAW
-	;	
-inbuilt_get_function
-	: GET_X
-	| GET_Y 
-	| GET_POINTS
-	| GET_WIDTH
-	| GET_CENTER
-	| GET_SIDES
-	| GET_SIDE_LENGTH
-	| GET_ROTATION
-	| GET_RADIUS
-	| GET_COLOUR
-	| GET_BORDER_COLOUR
-	;
-inbuilt_set_function
-	: SET_X
-	| SET_Y
-	| SET_POINTS
-	| SET_WIDTH
-	| SET_LENGTH
-	| SET_CENTER
-	| SET_SIDES
-	| SET_SIDE_LENGTH
-	| SET_ROTATION
-	| SET_RADIUS
-	| SET_COLOUR
-	| SET_BORDER_COLOUR
-	| SET_DIMENSION
-	;
 %%
 
 void init_yylloc(char* filename){
