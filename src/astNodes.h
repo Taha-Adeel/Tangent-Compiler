@@ -1,3 +1,5 @@
+#ifndef ASTNODES_H
+#define ASTNODES_H
 #include <stdlib.h>
 #include <iostream>
 #include <list>
@@ -454,3 +456,5 @@ class Program : public ASTNode
     public:
         Program(list <Statement*> stmt_list);
 };
+
+#endif
