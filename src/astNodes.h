@@ -3,20 +3,13 @@
 #include <list>
 #include <string>
 #include <map>
+#include <variant>
 
-#define value_pair pair <type, union data>
 using namespace std;
 
-/* Definitions to store the value of an Expression */
 enum type {INT_TYPE, FLOAT_TYPE, STRING_TYPE, BOOL_TYPE, VOID_TYPE};
-union data 
-{
-    int ivalue;
-    float fvalue;
-    string svalue;
-    bool bvalue;
-};
-#define value_pair pair <type, union data>
+typedef variant<int,float,string, bool> var_data;
+typedef pair<type, var_data> value_pair;
 
 /// @brief returns type of variable as string
 /// @param t input type
@@ -33,34 +26,44 @@ string enumtypeToString(type t)
     }
     return "UNRECOGNISED TYPE";
 }
+/// @brief checks if comparasion of two values in value_pair is valid or not
+/// @param a first vp
+/// @param b second vp
+/// @return true if comparasion is possible. else returns false
+bool is_valid_comparasion(value_pair a, value_pair b);
+//****************redundant code from old value_pair derfinition**************/////////
+
 /// @brief returns the value stored in valuepair as a string
 /// @param d input valuepair
 /// @return content of the value pair
-string get_valuepair_content(value_pair d)
-{
-    switch(d.first)
-    {
-        case INT_TYPE: return(to_string(d.second.ivalue));
-        case FLOAT_TYPE: return(to_string(d.second.fvalue));
-        case STRING_TYPE: return(d.second.svalue);
-        case BOOL_TYPE: return(to_string(d.second.bvalue));
-        case VOID_TYPE: return("VOID");
-    }
-    return "";
-}
-/// @brief copies value of d to inp
-/// @param inp value to set
-/// @param d value to copy
-void copy_valuepair(value_pair& inp, value_pair d)
-{
-    switch(d.first)
-    {
-        case INT_TYPE: inp.second.ivalue = d.second.ivalue;break;
-        case FLOAT_TYPE: inp.second.fvalue = d.second.fvalue;break;
-        case STRING_TYPE: inp.second.svalue = d.second.svalue;break;
-        case BOOL_TYPE: inp.second.bvalue = d.second.bvalue;break;
-    }
-}
+// string get_valuepair_content(value_pair d)
+// {
+//     switch(d.first)
+//     {
+//         case INT_TYPE: return(to_string(d.second.ivalue));
+//         case FLOAT_TYPE: return(to_string(d.second.fvalue));
+//         case STRING_TYPE: return(d.second.svalue);
+//         case BOOL_TYPE: return(to_string(d.second.bvalue));
+//         case VOID_TYPE: return("VOID");
+//     }
+//     return "";
+// }
+// /// @brief copies value of d to inp
+// /// @param inp value to set
+// /// @param d value to copy
+// void copy_valuepair(value_pair& inp, value_pair d)
+// {
+//     switch(d.first)
+//     {
+//         case INT_TYPE: inp.second.ivalue = d.second.ivalue;break;
+//         case FLOAT_TYPE: inp.second.fvalue = d.second.fvalue;break;
+//         case STRING_TYPE: inp.second.svalue = d.second.svalue;break;
+//         case BOOL_TYPE: inp.second.bvalue = d.second.bvalue;break;
+//     }
+// }
+
+
+
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
  *------------------------------------------------------------------------*/
@@ -516,7 +519,7 @@ class CaseLabel : public LabeledStatement
         /// @brief Constructor for CaseLabel
         /// @param lb expression to check for in case
         /// @param st_list statement to execute in said case
-        CaseLabel(Expression* lb, Statement* st) : LabeledStatement(lb, st){};
+        CaseLabel(Expression* lb, Statement* st);
         void print();
 };
 /// @class Class to represent 'default' in the AST. Derives from Statement
@@ -525,7 +528,7 @@ class DefaultLabel : public LabeledStatement
     public:
         /// @brief Constructor for DefaultLabel
         /// @param st_list statement in default case
-        DefaultLabel(Statement* st) : LabeledStatement(NULL, st){};
+        DefaultLabel(Statement* st);
         void print();
 };
 
@@ -540,6 +543,7 @@ class IterationStatement : public Statement
     public:
         /// @brief Constructor for IterationStatement
         IterationStatement(CompoundStatement* b, Expression* cond);
+        void print();
 };
 /// @class Class to represent while loop in the AST. Derives from Statement
 class WhileLoop : public IterationStatement
@@ -668,7 +672,7 @@ class ReturnStatement: public JumpStatement
     protected:
         Expression *return_val;
     public:
-        ReturnStatement(Expression* val) : return_val(val) {};
+        ReturnStatement(Expression* val);
         void print();
 };
 /// @class Class to represent 'break' in the AST. Derives from Statement
