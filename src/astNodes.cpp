@@ -9,7 +9,7 @@
 
 bool is_valid_comparasion(value_pair a, value_pair b)
 {
-    if (a.first==b.first) return true;
+    if (a.first==b.first) return true;//change this when we add families
     
     //int-float
     if (a.first == INT_TYPE && b.first ==FLOAT_TYPE)return true;
@@ -709,6 +709,13 @@ value_pair LogicalNOT::evaluate()
 {
     value_pair result = RHS->evaluate();
     value_pair res;
+    res.first = BOOL_TYPE;
+    if(result.first == BOOL_TYPE||
+        result.first == FLOAT_TYPE||
+        result.first == INT_TYPE)
+        {
+            res.second = !get<result.first>(result.second);
+        }
     if (result.first == INT_TYPE)
     {
         res.first = BOOL_TYPE;
