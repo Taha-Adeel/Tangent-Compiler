@@ -30,8 +30,8 @@ L               [a-zA-Z]
 "void"                 {return VOID;}
 
 {D}+                   {yylval.valuei = atoi(yytext);return INTEGER_LITERAL;}
-{D}+"."{D}+            {return FLOAT_LITERAL;}
-\"([^\\\"]|\\.)*\"     {return STRING_LITERAL;}
+{D}+"."{D}+            {yylval.valuef = atof(yytext);return FLOAT_LITERAL;}
+\"([^\\\"]|\\.)*\"     {*(yytext + yyleng - 1) = '\0'; yytext++; return STRING_LITERAL;}
 "true"                 {yylval.valueb = true; return BOOL_LITERAL;}
 "false"                {yylval.valueb = false; return BOOL_LITERAL;}
 
