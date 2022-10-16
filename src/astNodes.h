@@ -7,7 +7,7 @@
 
 using namespace std;
 
-enum type {INT_TYPE, FLOAT_TYPE, STRING_TYPE, BOOL_TYPE, VOID_TYPE};
+enum type {INT_TYPE=0, FLOAT_TYPE, STRING_TYPE, BOOL_TYPE, VOID_TYPE};
 typedef variant<int,float,string, bool> var_data;
 typedef pair<type, var_data> value_pair;
 
@@ -31,6 +31,8 @@ string enumtypeToString(type t)
 /// @param b second vp
 /// @return true if comparasion is possible. else returns false
 bool is_valid_comparasion(value_pair a, value_pair b);
+bool is_unary_operation_valid(value_pair& a);
+bool is_boolean_operation_valid(value_pair& a, value_pair& b);
 //****************redundant code from old value_pair derfinition**************/////////
 
 /// @brief returns the value stored in valuepair as a string

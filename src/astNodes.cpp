@@ -21,19 +21,28 @@ bool is_valid_comparasion(value_pair a, value_pair b)
 
     return false;
 }
-
+bool is_unary_operation_valid(value_pair& a)
+{
+    if( a.first==INT_TYPE||
+        a.first==FLOAT_TYPE||
+        a.first==BOOL_TYPE)
+        return true;
+    return false;
+}
+bool is_valid_for_boolean_operation(value_pair& a, value_pair& b)
+{
+    return is_unary_operation_valid(a)&&is_unary_operation_valid(b);
+}
 
 IntegerLiteral::IntegerLiteral(int num)
 {
     value.first = INT_TYPE;
     value.second.ivalue = num;
 }
-
 void IntegerLiteral::print()
 {
     cout << value.second.ivalue;
 }
-
 value_pair IntegerLiteral::evaluate()
 {
     cout << "Integer node: operand = " << value.second.ivalue << endl;
@@ -45,12 +54,10 @@ FloatingPointLiteral::FloatingPointLiteral(float num)
     value.first = FLOAT_TYPE;
     value.second.fvalue = num;
 }
-
 void FloatingPointLiteral::print()
 {
     cout << value.second.fvalue;
 }
-
 value_pair FloatingPointLiteral::evaluate()
 {
     cout << "Float node: operand = " << value.second.fvalue << endl;
@@ -62,12 +69,10 @@ StringLiteral::StringLiteral(string s)
     value.first = STRING_TYPE;
     value.second.svalue = &s[0];
 }
-
 void StringLiteral::print()
 {
     cout << value.second.svalue;
 }
-
 value_pair StringLiteral::evaluate()
 {
     cout << "String node: operand = " << value.second.svalue << endl;
@@ -633,32 +638,14 @@ value_pair LogicalAND::evaluate()
     value_pair left_eval = LHS->evaluate();
     value_pair right_eval = RHS->evaluate();
     value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.ivalue && right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.fvalue && right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue && right_eval.second.bvalue;
-        }
-    }
+    result.first = BOOL_TYPE;
+    if (is_valid_comparasion(left_eval,right_eval))
+        result.second = bool(left_eval.second && right_eval.second);
+    else{} //return error
     return result;
 }
 
-LogicalOR::LogicalOR(Expression *L, Expression *R)
-{
-    BinaryOperation(L, R);
-}
-
+LogicalOR::LogicalOR(Expression *L, Expression *R):BinaryOperation(L, R){}
 void LogicalOR::print()
 {
     cout << "(";
@@ -667,70 +654,38 @@ void LogicalOR::print()
     RHS->print();
     cout << ")";
 }
-
 value_pair LogicalOR::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.ivalue || right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.fvalue || right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue || right_eval.second.bvalue;
-        }
-    }
-    return result;
+    //ill come to this later
+
+    // value_pair left_eval = LHS->evaluate();
+    // value_pair right_eval = RHS->evaluate();
+    // value_pair result;
+    // result.first = BOOL_TYPE;
+    // bool left_bool = visit([](auto& a){return a!=0;},left_eval.second);
+    // if (is_boolean_operation_valid(left_eval,right_eval))
+    // {
+
+    // }
+    // else{} //return error
+    // return result;
 }
 
-LogicalNOT::LogicalNOT(Expression *R)
-{
-    UnaryOperation(R);
-}
+LogicalNOT::LogicalNOT(Expression *R):UnaryOperation(R){}
 
 void LogicalNOT::print()
 {
     cout << "!";
     RHS->print();
 }
-
 value_pair LogicalNOT::evaluate()
 {
     value_pair result = RHS->evaluate();
     value_pair res;
     res.first = BOOL_TYPE;
-    if(result.first == BOOL_TYPE||
-        result.first == FLOAT_TYPE||
-        result.first == INT_TYPE)
-        {
-            res.second = !get<result.first>(result.second);
-        }
-    if (result.first == INT_TYPE)
-    {
-        res.first = BOOL_TYPE;
-        res.second.bvalue = !result.second.ivalue;
-    }
-    else if (result.first == FLOAT_TYPE)
-    {
-        res.first = BOOL_TYPE;
-        res.second.bvalue = !result.second.fvalue;
-    }
-    else if (result.first == BOOL_TYPE)
-    {
-        res.first = BOOL_TYPE;
-        res.second.bvalue = !result.second.bvalue;
-    }
+    if      (result.first == INT_TYPE)      res.second = ! get<INT_TYPE>(result.second);
+    else if (result.first == FLOAT_TYPE)    res.second = ! get<FLOAT_TYPE>(result.second);
+    else if (result.first == BOOL_TYPE)     res.second = ! get<BOOL_TYPE>(result.second);
     return res;
 }
 
