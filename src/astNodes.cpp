@@ -7,6 +7,22 @@
 #include <cstring>
 // contains implementations of the member methods and constructors in astNodes.h
 
+bool is_valid_comparasion(value_pair a, value_pair b)
+{
+    if (a.first==b.first) return true;
+    
+    //int-float
+    if (a.first == INT_TYPE && b.first ==FLOAT_TYPE)return true;
+    if (b.first == INT_TYPE && a.first ==FLOAT_TYPE)return true;
+
+    //bool-int
+    if (a.first == BOOL_TYPE && b.first == INT_TYPE)return true;
+    if (b.first == BOOL_TYPE && a.first == INT_TYPE)return true;
+
+    return false;
+}
+
+
 IntegerLiteral::IntegerLiteral(int num)
 {
     value.first = INT_TYPE;
@@ -711,11 +727,7 @@ value_pair LogicalNOT::evaluate()
     return res;
 }
 
-CompGT::CompGT(Expression *L, Expression *R)
-{
-    BinaryOperation(L, R);
-}
-
+CompGT::CompGT(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompGT::print()
 {
     cout << "(";
@@ -724,38 +736,19 @@ void CompGT::print()
     RHS->print();
     cout << ")";
 }
-
 value_pair CompGT::evaluate()
 {
     value_pair left_eval = LHS->evaluate();
     value_pair right_eval = RHS->evaluate();
     value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.ivalue > right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.fvalue > right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue > right_eval.second.bvalue;
-        }
-    }
+    result.first = BOOL_TYPE;
+    if (is_valid_comparasion(left_eval,right_eval))
+        result.second = bool(left_eval.second > right_eval.second);
+    else{} //return error
     return result;
 }
 
-CompLT::CompLT(Expression *L, Expression *R)
-{
-    BinaryOperation(L, R);
-}
-
+CompLT::CompLT(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompLT::print()
 {
     cout << "(";
@@ -764,38 +757,19 @@ void CompLT::print()
     RHS->print();
     cout << ")";
 }
-
 value_pair CompLT::evaluate()
 {
     value_pair left_eval = LHS->evaluate();
     value_pair right_eval = RHS->evaluate();
     value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.ivalue < right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.fvalue < right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue < right_eval.second.bvalue;
-        }
-    }
+    result.first = BOOL_TYPE;
+    if (is_valid_comparasion(left_eval,right_eval))
+        result.second = bool(left_eval.second < right_eval.second);
+    else{} //return error
     return result;
 }
 
-CompGE::CompGE(Expression *L, Expression *R)
-{
-    BinaryOperation(L, R);
-}
-
+CompGE::CompGE(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompGE::print()
 {
     cout << "(";
@@ -810,32 +784,14 @@ value_pair CompGE::evaluate()
     value_pair left_eval = LHS->evaluate();
     value_pair right_eval = RHS->evaluate();
     value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.ivalue >= right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.fvalue >= right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue >= right_eval.second.bvalue;
-        }
-    }
+    result.first = BOOL_TYPE;
+    if (is_valid_comparasion(left_eval,right_eval))
+        result.second = bool(left_eval.second >= right_eval.second);
+    else{} //return error in comparasion
     return result;
 }
 
-CompLE::CompLE(Expression *L, Expression *R)
-{
-    BinaryOperation(L, R);
-}
-
+CompLE::CompLE(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompLE::print()
 {
     cout << "(";
@@ -850,32 +806,14 @@ value_pair CompLE::evaluate()
     value_pair left_eval = LHS->evaluate();
     value_pair right_eval = RHS->evaluate();
     value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.ivalue <= right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.fvalue <= right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue <= right_eval.second.bvalue;
-        }
-    }
+    result.first = BOOL_TYPE;
+    if (is_valid_comparasion(left_eval,right_eval))
+        result.second = bool(left_eval.second <= right_eval.second);
+    else{} //return error
     return result;
 }
 
-CompEQ::CompEQ(Expression *L, Expression *R)
-{
-    BinaryOperation(L, R);
-}
-
+CompEQ::CompEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompEQ::print()
 {
     cout << "(";
@@ -884,38 +822,18 @@ void CompEQ::print()
     RHS->print();
     cout << ")";
 }
-
 value_pair CompEQ::evaluate()
 {
     value_pair left_eval = LHS->evaluate();
     value_pair right_eval = RHS->evaluate();
     value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.ivalue == right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.fvalue == right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue == right_eval.second.bvalue;
-        }
-    }
+    result.first = BOOL_TYPE;
+    if (is_valid_comparasion(left_eval,right_eval))
+        result.second = bool(left_eval.second == right_eval.second);
+    else{} //return error
     return result;
 }
-
-CompNEQ::CompNEQ(Expression *L, Expression *R)
-{
-    BinaryOperation(L, R);
-}
-
+CompNEQ::CompNEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompNEQ::print()
 {
     cout << "(";
@@ -924,30 +842,16 @@ void CompNEQ::print()
     RHS->print();
     cout << ")";
 }
-
 value_pair CompNEQ::evaluate()
 {
+
     value_pair left_eval = LHS->evaluate();
     value_pair right_eval = RHS->evaluate();
     value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.ivalue != right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.fvalue != right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue != right_eval.second.bvalue;
-        }
-    }
+    result.first = BOOL_TYPE;
+    if (is_valid_comparasion(left_eval,right_eval))
+        result.second = bool(left_eval.second != right_eval.second);
+    else{} //return error
     return result;
 }
 
@@ -963,12 +867,10 @@ void ExpressionStatement::print()
     cout << "\n}\n";
 }
 
-Expression* ExpressionStatement::getValue()
+Expression *ExpressionStatement::getValue()
 {
     return exp;
 }
-
-
 
 CompoundStatement::CompoundStatement(list<Statement *> l) : stmt_list(l) {}
 void CompoundStatement::print()
@@ -981,7 +883,6 @@ void CompoundStatement::print()
     }
     cout << "\n}\n";
 }
-
 
 FunctionDefinition::FunctionDefinition(Identifier *_name, type _t, list<Identifier *> _arg_list, CompoundStatement *_stmt) : func_name(_name), return_type(_t), arg_list(_arg_list), func_body(_stmt) {}
 void FunctionDefinition::print()
@@ -1000,8 +901,7 @@ void FunctionDefinition::print()
     cout << "}";
 }
 
-
-VariableDeclaration::VariableDeclaration(type t, list <Identifier*> l): variable_type(t), variable_list(l){}
+VariableDeclaration::VariableDeclaration(type t, list<Identifier *> l) : variable_type(t), variable_list(l) {}
 void VariableDeclaration::print()
 {
     cout << "Variable Declaration: {\n";
@@ -1014,8 +914,7 @@ void VariableDeclaration::print()
     }
 }
 
-
-DriverDefinition::DriverDefinition(CompoundStatement* body):func_body(body){}
+DriverDefinition::DriverDefinition(CompoundStatement *body) : func_body(body) {}
 void DriverDefinition::print()
 {
     cout << "Driver Definition:\n{\n";
@@ -1023,155 +922,161 @@ void DriverDefinition::print()
     cout << "\n}\n";
 }
 
-VariableInitialization::VariableInitialization(type t, AssignmentExp* e): variable_type(t), exp(e){}
+VariableInitialization::VariableInitialization(type t, AssignmentExp *e) : variable_type(t), exp(e) {}
 void VariableInitialization::print()
 {
-    cout<<"Variable Initialisation: \n{\n";
-    cout<<"type: "<<enumtypeToString(variable_type)<<'\n';
+    cout << "Variable Initialisation: \n{\n";
+    cout << "type: " << enumtypeToString(variable_type) << '\n';
     exp->print();
-    cout<<"}\n";
+    cout << "}\n";
 }
 
-LabeledStatement::LabeledStatement(Identifier* l, Statement* st):label(l),stmt(st){}
+LabeledStatement::LabeledStatement(Expression *lb, Statement *st) : label(lb), stmt(st) {}
 void LabeledStatement::print()
 {
-    cout<<"Labelled Statement:\n{\n";
+    cout << "Labelled Statement:\n{\n";
     label->print();
     stmt->print();
-    cout<<"\n}\n";
+    cout << "\n}\n";
 }
 
-CaseLabel::CaseLabel(Expression* lb, list <Statement*> st_list):label(lb), stmt_list(st_list){}
+CaseLabel::CaseLabel(Expression *lb, Statement *st) : LabeledStatement(lb, st){};
 void CaseLabel::print()
 {
-    cout<<"Case Label {\n";
+    cout << "Case Label {\n";
     label->print();
-    cout<<"statements:";
-    for(auto &ele:stmt_list)
-    {
-        cout<<"\n";
-        ele->print();
-    }
-    cout<<"\n}\n";
+    cout << "statements:";
+    stmt->print();
+    cout << "\n}\n";
 }
 
-DefaultLabel::DefaultLabel(list <Statement*> st_list):stmt_list(st_list){}
+DefaultLabel::DefaultLabel(Statement *st) : LabeledStatement(nullptr, st){};
 void DefaultLabel::print()
 {
-    cout<<"Default Label \n{\n";
-    cout<<"statements:";
-    for(auto &ele:stmt_list)
-    {
-        cout<<"\n";
-        ele->print();
-    }
-    cout<<"\n}\n";
+    cout << "Default Label \n{\n";
+    cout << "statements:";
+    cout << "\n";
+    stmt->print();
+    cout << "\n}\n";
 }
 
-IterationStatement::IterationStatement(CompoundStatement* b, Expression* cond):body(b),condition(cond){}
+IterationStatement::IterationStatement(CompoundStatement *b, Expression *cond) : body(b), condition(cond) {}
 void IterationStatement::print()
 {
-    cout<<"Default Label \n{\n";
-    cout<<"body:\n";
+    cout << "Default Label \n{\n";
+    cout << "body:\n";
     body->print();
-    cout<<"condition:\n";
+    cout << "condition:\n";
     condition->print();
-    cout<<"\n}\n";
+    cout << "\n}\n";
 }
 
-
-WhileLoop::WhileLoop(CompoundStatement* b):IterationStatement(b,nullptr){}
-WhileLoop::WhileLoop(CompoundStatement* b, Expression* cond):IterationStatement(b,cond){}
+WhileLoop::WhileLoop(CompoundStatement *b) : IterationStatement(b, nullptr) {}
+WhileLoop::WhileLoop(CompoundStatement *b, Expression *cond) : IterationStatement(b, cond) {}
 void WhileLoop::print()
 {
-    cout<<"While loop:\n{\n";
-    cout<<"condition:\n";
+    cout << "While loop:\n{\n";
+    cout << "condition:\n";
     condition->print();
-    cout<<"body:\n";
+    cout << "body:\n";
     body->print();
-    cout<<"\n}\n";
+    cout << "\n}\n";
 }
 
-ForLoop::ForLoop(CompoundStatement* b, Expression* cond, Expression* init, Expression* update):IterationStatement(b,cond), initialization(init), counter_updation(update){}
+ForLoop::ForLoop(CompoundStatement *b, Expression *cond, Expression *init, Expression *update) : IterationStatement(b, cond), initialization(init), counter_updation(update) {}
 void ForLoop::print()
 {
-    cout<<"For loop:\n{\n";
-    cout<<"initialisation:\n";
-    if(initialization)initialization->print();else cout<<"empty\n";
-    cout<<"condition:\n";
-    if(condition)condition->print();else cout<<"empty\n";
-    cout<<"update:\n";
-    if(counter_updation)counter_updation->print();else cout<<"empty\n";
-    cout<<"body:\n";
-    if(body)body->print();else cout<<"no body\n";
-    cout<<"\n}\n";
+    cout << "For loop:\n{\n";
+    cout << "initialisation:\n";
+    if (initialization)
+        initialization->print();
+    else
+        cout << "empty\n";
+    cout << "condition:\n";
+    if (condition)
+        condition->print();
+    else
+        cout << "empty\n";
+    cout << "update:\n";
+    if (counter_updation)
+        counter_updation->print();
+    else
+        cout << "empty\n";
+    cout << "body:\n";
+    if (body)
+        body->print();
+    else
+        cout << "no body\n";
+    cout << "\n}\n";
 }
 
-//IfElse::IfElse(list <Expression*> l, list <CompoundStatement*> ifs):condition_list(l), if_blocks(ifs){}
-IfElse::IfElse(list <Expression*> l, list <CompoundStatement*> ifs, CompoundStatement* elseb =nullptr):condition_list(l), if_blocks(ifs), else_block(elseb){};
+// IfElse::IfElse(list <Expression*> l, list <CompoundStatement*> ifs):condition_list(l), if_blocks(ifs){}
+IfElse::IfElse(list<Expression *> l, list<CompoundStatement *> ifs, CompoundStatement *elseb = nullptr) : condition_list(l), if_blocks(ifs), else_block(elseb){};
 void IfElse::print()
 {
-    cout<<"If else block:\n{\n";
-    cout<<"condition list:\n";
-    for(auto &ele:condition_list)
+    cout << "If else block:\n{\n";
+    cout << "condition list:\n";
+    for (auto &ele : condition_list)
     {
-        cout<<"\n";
+        cout << "\n";
         ele->print();
     }
-    cout<<"if blocks list:\n";
-    for(auto &ele:if_blocks)
+    cout << "if blocks list:\n";
+    for (auto &ele : if_blocks)
     {
-        cout<<"\n";
+        cout << "\n";
         ele->print();
     }
-    if(else_block)else_block->print();else cout<<"no else block\n";
-    cout<<"\n}\n";   
+    if (else_block)
+        else_block->print();
+    else
+        cout << "no else block\n";
+    cout << "\n}\n";
 }
 
-Switch::Switch(Expression* e, list <CaseLabel*> c):exp(e),cases(c){}
-Switch::Switch(Expression* e, list <CaseLabel*> c, DefaultLabel* _def):exp(e),cases(c),def(_def){}
+Switch::Switch(Expression *e, list<CaseLabel *> c) : exp(e), cases(c) {}
+Switch::Switch(Expression *e, list<CaseLabel *> c, DefaultLabel *_def) : exp(e), cases(c), def(_def) {}
 void Switch::print()
 {
-    cout<<"switch block:\n{\n";
-    cout<<"expression:\n";
+    cout << "switch block:\n{\n";
+    cout << "expression:\n";
     exp->print();
-    cout<<"cases:\n";
-    for(auto &ele:cases)
+    cout << "cases:\n";
+    for (auto &ele : cases)
     {
-        cout<<"\n";
+        cout << "\n";
         ele->print();
     }
-    if(def)def->print();else cout<<"no else block\n";
-    cout<<"\n}\n";   
+    if (def)
+        def->print();
+    else
+        cout << "no else block\n";
+    cout << "\n}\n";
 }
 
-TernaryOperator::TernaryOperator(Expression* cond, Expression* t_eval, Expression* f_eval):condition(cond), true_eval(t_eval), false_eval(f_eval){}
+TernaryOperator::TernaryOperator(Expression *cond, Expression *t_eval, Expression *f_eval) : condition(cond), true_eval(t_eval), false_eval(f_eval) {}
 void TernaryOperator::print()
 {
-    cout<<"ternary:\n{\n";
-    cout<<"condition:\n";
+    cout << "ternary:\n{\n";
+    cout << "condition:\n";
     condition->print();
-    cout<<"if true:\n";
+    cout << "if true:\n";
     true_eval->print();
-    cout<<"if false:\n";
+    cout << "if false:\n";
     false_eval->print();
-    cout<<"\n}\n";  
+    cout << "\n}\n";
 }
 
-ReturnStatement::ReturnStatement(value_pair val):return_value(val){}
+ReturnStatement::ReturnStatement(Expression *val) : return_val(val) {}
 void ReturnStatement::print()
 {
-    cout<<"ternary:\n{\nreturns:\n";
-    
-    cout<<"\n}\n";  
+    cout << "ternary:\n{\nreturns:\n";
+    return_val->print();
+    cout << "\n}\n";
 }
-
 
 /*------------------------------------------------------------------------
- * Program Root Node 
+ * Program Root Node
  *------------------------------------------------------------------------*/
 
-Program :: Program(list <Statement*> *stmts)
-{
-    stmt_list = stmts;
-}
+Program ::Program(list<Statement *> *stmts) : stmt_list(stmts) {}

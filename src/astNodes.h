@@ -26,7 +26,11 @@ string enumtypeToString(type t)
     }
     return "UNRECOGNISED TYPE";
 }
-
+/// @brief checks if comparasion of two values in value_pair is valid or not
+/// @param a first vp
+/// @param b second vp
+/// @return true if comparasion is possible. else returns false
+bool is_valid_comparasion(value_pair a, value_pair b);
 //****************redundant code from old value_pair derfinition**************/////////
 
 /// @brief returns the value stored in valuepair as a string
@@ -515,7 +519,7 @@ class CaseLabel : public LabeledStatement
         /// @brief Constructor for CaseLabel
         /// @param lb expression to check for in case
         /// @param st_list statement to execute in said case
-        CaseLabel(Expression* lb, Statement* st) : LabeledStatement(lb, st){};
+        CaseLabel(Expression* lb, Statement* st);
         void print();
 };
 /// @class Class to represent 'default' in the AST. Derives from Statement
@@ -524,7 +528,7 @@ class DefaultLabel : public LabeledStatement
     public:
         /// @brief Constructor for DefaultLabel
         /// @param st_list statement in default case
-        DefaultLabel(Statement* st) : LabeledStatement(NULL, st){};
+        DefaultLabel(Statement* st);
         void print();
 };
 
@@ -668,7 +672,7 @@ class ReturnStatement: public JumpStatement
     protected:
         Expression *return_val;
     public:
-        ReturnStatement(Expression* val) : return_val(val) {};
+        ReturnStatement(Expression* val);
         void print();
 };
 /// @class Class to represent 'break' in the AST. Derives from Statement
