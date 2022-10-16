@@ -50,11 +50,11 @@ L               [a-zA-Z]
 "]"                    {return ']';}
 ";"                    {return ';';}
 
-{D}+                   {return INTEGER_LITERAL;}
+{D}+                   {yylval.valuei = atoi(yytext);return INTEGER_LITERAL;}
 {D}+"."{D}+            {return FLOAT_LITERAL;}
 \"([^\\\"]|\\.)*\"     {return STRING_LITERAL;}
-"true"                 {return BOOL_LITERAL;}
-"false"                {return BOOL_LITERAL;}
+"true"                 {yylval.valueb = true; return BOOL_LITERAL;}
+"false"                {yylval.valueb = false; return BOOL_LITERAL;}
 "Pi"                   {return PI;}
 
 "bool"                 {return BOOL;}
@@ -126,7 +126,7 @@ L               [a-zA-Z]
 "make_point"           {return MAKE_POINT;}
 "get_color_from_rgb"   {return GET_COLOUR_FROM_RGB;}
 
-{L}({L}|{D}|_)*        {return IDENTIFIER;}
+{L}({L}|{D}|_)*        {yylval.id = yytext; return IDENTIFIER;}
 
 [ \t\v\n\f]*           {}
 

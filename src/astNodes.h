@@ -460,12 +460,12 @@ class VariableDeclaration : public Statement
 {
     protected:
         type variable_type;
-        list <Identifier*> variable_list;
+        list <Expression*> *variable_list;
     public:
         /// @brief Constructor for function declaration 
         /// @param t type of variable
         /// @param l list of identifires
-        VariableDeclaration(type t, list <Identifier*> l);
+        VariableDeclaration(type t, list <Expression*> *l);
         void print();
 };
 /// @class Class to represent definition of driver function in the AST. Derives from CompoundStatement
