@@ -133,6 +133,7 @@ type
 	| IDENTIFIER
 	;
 
+
 literal
 	: INTEGER_LITERAL
 	| FLOAT_LITERAL

@@ -1,3 +1,5 @@
+#ifndef ASTNODES_H
+#define ASTNODES_H
 #include <stdlib.h>
 #include <iostream>
 #include <list>
@@ -705,3 +707,5 @@ class Program : public ASTNode
 // objects at the base of the tree
 extern map <string, value_pair> symTable;
 extern Program *root;
+
+#endif

@@ -15,6 +15,30 @@ L               [a-zA-Z]
     void update_locations();
 
     extern YYLTYPE yylloc;
+
+    #symbol table construction
+    struct symbol {		/* a word */
+    struct ref *reflist;
+    char *name;
+  };
+
+  struct ref {
+    struct ref *next;
+    char *filename;
+    int flags;
+    int lineno;
+  };
+
+  /* simple symtab of fixed size */
+  #define NHASH 9997
+  struct symbol symtab[NHASH];
+
+  struct symbol *lookup(char*);
+  void addref(int, char*, char*, int);
+
+  char *curfilename;		/* name of current input file */
+
+    
 %}
 
 %%
@@ -30,8 +54,8 @@ L               [a-zA-Z]
 "void"                 {return VOID;}
 
 {D}+                   {yylval.valuei = atoi(yytext);return INTEGER_LITERAL;}
-{D}+"."{D}+            {return FLOAT_LITERAL;}
-\"([^\\\"]|\\.)*\"     {return STRING_LITERAL;}
+{D}+"."{D}+            {yylval.valuef = atof(yytext);return FLOAT_LITERAL;}
+\"([^\\\"]|\\.)*\"     {*(yytext + yyleng - 1) = '\0'; yytext++; return STRING_LITERAL;}
 "true"                 {yylval.valueb = true; return BOOL_LITERAL;}
 "false"                {yylval.valueb = false; return BOOL_LITERAL;}
 
