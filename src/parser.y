@@ -35,8 +35,12 @@
 	list <Statement*> *stmt_list;
 	Expression *exp;
 	Statement* stmt;
-	int token;
-	// enum type 
+	type t;
+	string id;
+	int valuei;
+	float valuef;
+	bool valueb;
+	string values;
 }
 
 /* Declaring types to the different non-terminals */
@@ -49,6 +53,7 @@
 %type <stmt> selection_statement compound_statement variable_declaration_list
 
 %type <exp> expression constant_expression
+%type <t> type
 
 /*** TOKEN DECLARATION ***/
 %header
@@ -124,11 +129,11 @@ driver_definition
  * Declarations
  *----------------------------------------------------------------------*/
 type
-	: INT	
-	| FLOAT
-	| STRING
-	| BOOL
-	| VOID
+	: INT		{$$ = INT_TYPE;}
+	| FLOAT		{$$ = FLOAT_TYPE;}
+	| STRING	{$$ = STRING_TYPE;}
+	| BOOL		{$$ = BOOL_TYPE;}
+	| VOID		{$$ = VOID_TYPE;}
 	| POINT
 	| IMAGE 
 	| RECTANGLE
@@ -149,22 +154,22 @@ literal
 	;
 
 variable_declaration
-	: VAR type variable_list ';'
-	| CONST type variable_list ';'
+	: VAR type variable_list ';'	{$$ = VariableDeclaration($2, $3);}	
+	| CONST type variable_list ';'	{$$ = VariableDeclaration($2, $3);} // store variables as const}	
 	;
 
 variable_declaration_list
-	: variable_declaration
+	: variable_declaration			{}
 	| variable_declaration_list variable_declaration
 	;
 
 variable_list
-	: variable
-	| variable_list ',' variable
+	: variable						{$$ = new list <Expression*>(); $$->push_back($1);}
+	| variable_list ',' variable	{$$ = $1; $$->push_back($3);}
 	;
 
 variable
-	: IDENTIFIER ';'
+	: IDENTIFIER ';'				{$$ = new Identifier();} //pass the identifier name somehow
 	| IDENTIFIER ASSIGN expression
 	;
 
