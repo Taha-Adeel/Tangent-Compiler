@@ -15,118 +15,103 @@ L               [a-zA-Z]
     void update_locations();
 
     extern YYLTYPE yylloc;
+
+    #symbol table construction
+    struct symbol {		/* a word */
+    struct ref *reflist;
+    char *name;
+  };
+
+  struct ref {
+    struct ref *next;
+    char *filename;
+    int flags;
+    int lineno;
+  };
+
+  /* simple symtab of fixed size */
+  #define NHASH 9997
+  struct symbol symtab[NHASH];
+
+  struct symbol *lookup(char*);
+  void addref(int, char*, char*, int);
+
+  char *curfilename;		/* name of current input file */
+
+    
 %}
 
 %%
 "#"                    {comment();}
-":="                   {return ASSIGN;}
-"*="                   {return MUL_ASSIGN;}
-"/="                   {return DIV_ASSIGN;}
-"%="                   {return MOD_ASSIGN;}
-"+="                   {return ADD_ASSIGN;}
-"-="                   {return SUB_ASSIGN;}
-"-"                    {return '-';}
-"+"                    {return '+';}
-"*"                    {return '*';}
-"/"                    {return '/';}
-"%"                    {return '%';}
-"<="                   {return LS_THAN_EQ;}
-">="                   {return GR_THAN_EQ;}
-"<"                    {return LS_THAN;}
-">"                    {return GR_THAN;}
-"="                    {return EQ;}
-"!="                   {return NOT_EQ;}
-"&"                    {return LOGICAL_AND;}
-"|"                    {return LOGICAL_OR;}
-"!"                    {return LOGICAL_NOT;}
-">>"                   {return SCOPE_ACCESS;}
-"::"                   {return INHERITS;}  
-"(:"                   {return '{';}
-":)"                   {return '}';}
-("<:"|"(")             {return '(';}
-(":>"|")")             {return ')';}
-","                    {return ',';}
-"["                    {return '[';}
-"]"                    {return ']';}
-";"                    {return ';';}
 
-{D}+                   {yylval.valuei = atoi(yytext);return INTEGER_LITERAL;}
-{D}+"."{D}+            {return FLOAT_LITERAL;}
-\"([^\\\"]|\\.)*\"     {return STRING_LITERAL;}
-"true"                 {yylval.valueb = true; return BOOL_LITERAL;}
-"false"                {yylval.valueb = false; return BOOL_LITERAL;}
-"Pi"                   {return PI;}
+"const"                {return CONST;}
+"var"                  {return VAR;}
 
 "bool"                 {return BOOL;}
 "float"                {return FLOAT;}
 "int"                  {return INT;}
 "string"               {return STRING;}
-
-"Circle"               {return CIRCLE;}
-"Colour"               {return COLOUR;}
-"Curve"                {return CURVE;}
-"draw"                 {return DRAW;}
-"Ellipse"              {return ELLIPSE;}
-"Image"                {return IMAGE;}
-"Path"                 {return PATH;}
-"Point"                {return POINT;}
-"Polygon"              {return POLYGON;}
-"Rectangle"            {return RECTANGLE;}
-
-"break"                {return BREAK;}
-"clear"                {return CLEAR;}
-"case"                 {return CASE;}
-"ceil"                 {return CEIL;}
-"const"                {return CONST;}
-"continue"             {return CONTINUE;}
-"driver"               {return DRIVER;}
-"else"                 {return ELSE;}
-"family"               {return FAMILY;}
-"floor"                {return FLOOR;}
-"for"                  {return FOR;}
-"func"                 {return FUNC;}
-"if"                   {return IF;}
-"me"                   {return ME;}
-"print"                {return PRINT;}
-"private"              {return PRIVATE;}
-"public"               {return PUBLIC;}
-"switch"               {return SWITCH;}
-"send"                 {return SEND;} 
-"to_float"             {return TO_FLOAT;}
-"var"                  {return VAR;}
 "void"                 {return VOID;}
-"while"                {return WHILE;}
 
-"get_x"                {return GET_X;}
-"get_y"                {return GET_Y;}
-"get_points"           {return GET_POINTS;}
-"get_width"            {return GET_WIDTH;}
-"get_length"           {return GET_CENTER;}
-"get_center"           {return GET_SIDES;}
-"get_sides"            {return GET_SIDES;}
-"get_side_length"      {return GET_SIDE_LENGTH;}
-"get_rotation"         {return GET_ROTATION;}
-"get_radius"           {return GET_RADIUS;}
-"get_colour"           {return GET_COLOUR;}
-"get_border_colour"    {return GET_BORDER_COLOUR;}
-"set_x"                {return SET_X;}
-"set_y"                {return SET_Y;}
-"set_points"           {return SET_POINTS;}
-"set_width"            {return SET_WIDTH;}
-"set_length"           {return SET_LENGTH;}
-"set_center"           {return SET_CENTER;}
-"set_sides"            {return SET_SIDES;}
-"set_side_length"      {return SET_SIDE_LENGTH;}
-"set_rotation"         {return SET_ROTATION;}
-"set_radius"           {return SET_RADIUS;}
-"set_colour"           {return SET_COLOUR;}
-"set_border_colour"    {return SET_BORDER_COLOUR;}
-"set_dimension"	       {return SET_DIMENSION;}
-"add_point"            {return ADD_POINT;}
-"make_point"           {return MAKE_POINT;}
-"get_color_from_rgb"   {return GET_COLOUR_FROM_RGB;}
+{D}+                   {yylval.valuei = atoi(yytext);return INTEGER_LITERAL;}
+{D}+"."{D}+            {yylval.valuef = atof(yytext);return FLOAT_LITERAL;}
+\"([^\\\"]|\\.)*\"     {*(yytext + yyleng - 1) = '\0'; yytext++; return STRING_LITERAL;}
+"true"                 {yylval.valueb = true; return BOOL_LITERAL;}
+"false"                {yylval.valueb = false; return BOOL_LITERAL;}
+
+"if"                   {return IF;}
+"else"                 {return ELSE;}
+"switch"               {return SWITCH;}
+"case"                 {return CASE;}
+"default"              {return DEFAULT;}
+"while"                {return WHILE;}
+"for"                  {return FOR;}
+"break"                {return BREAK;}
+"continue"             {return CONTINUE;}
+"send"                 {return SEND;} 
+
+"family"               {return FAMILY;}
+"::"                   {return INHERITS;}  
+"public"               {return PUBLIC;}
+"private"              {return PRIVATE;}
+
+"driver"               {return DRIVER;}
 
 {L}({L}|{D}|_)*        {yylval.id = yytext; return IDENTIFIER;}
+
+","                    {return ',';}
+":="                   {return ASSIGN;}
+"+="                   {return ADD_ASSIGN;}
+"-="                   {return SUB_ASSIGN;}
+"*="                   {return MUL_ASSIGN;}
+"/="                   {return DIV_ASSIGN;}
+"%="                   {return MOD_ASSIGN;}
+"?"                    {return '?';}
+":"                    {return ':';}
+"|"                    {return LOGICAL_OR;}
+"&"                    {return LOGICAL_AND;}
+"="                    {return EQ;}
+"!="                   {return NOT_EQ;}
+"<"                    {return LS_THAN;}
+"<="                   {return LS_THAN_EQ;}
+">"                    {return GR_THAN;}
+">="                   {return GR_THAN_EQ;}
+"+"                    {return '+';}
+"-"                    {return '-';}
+"*"                    {return '*';}
+"/"                    {return '/';}
+"%"                    {return '%';}
+"++"                   {return INC;}
+"--"                   {return DEC;}
+"!"                    {return LOGICAL_NOT;}
+("<:"|"(")             {return '(';}
+(":>"|")")             {return ')';}
+"["                    {return '[';}
+"]"                    {return ']';}
+">>"                   {return SCOPE_ACCESS;}
+"(:"                   {return '{';}
+":)"                   {return '}';}
+";"                    {return ';';}
 
 [ \t\v\n\f]*           {}
 
@@ -165,23 +150,16 @@ void comment(){
 // The token names generated by bison in parser.tab.c. yytname[i] gives the name of the token with enum value 255 + i;
 static const char *const yytname[] =
 {
-    "$end", "error", "$undefined", "IDENTIFIER", "INTEGER_LITERAL",
-    "FLOAT_LITERAL", "STRING_LITERAL", "BOOL_LITERAL", "PI", "INT", "FLOAT",
-    "STRING", "BOOL", "VOID", "CONST", "VAR", "ASSIGN", "MUL_ASSIGN",
-    "DIV_ASSIGN", "MOD_ASSIGN", "ADD_ASSIGN", "SUB_ASSIGN", "EQ", "NOT_EQ",
-    "LS_THAN", "LS_THAN_EQ", "GR_THAN", "GR_THAN_EQ", "LOGICAL_AND",
-    "LOGICAL_OR", "LOGICAL_NOT", "IF", "ELSE", "FOR", "WHILE", "SWITCH",
-    "CASE", "DEFAULT", "BREAK", "CONTINUE", "SEND", "FAMILY", "ME",
-    "INHERITS", "SCOPE_ACCESS", "PUBLIC", "PRIVATE", "POINT", "IMAGE",
-    "RECTANGLE", "CIRCLE", "ELLIPSE", "POLYGON", "CURVE", "PATH", "POINT_X",
-    "POINT_Y", "IMG_DIMS", "IMG_DRAWS", "FUNC", "CLEAR", "DRAW", "PRINT",
-    "FLOOR", "CEIL", "TO_FLOAT", "ADD_POINT", "MAKE_POINT", "GET_X", "GET_Y",
-    "GET_POINTS", "GET_WIDTH", "GET_CENTER", "GET_SIDES", "GET_SIDE_LENGTH",
-    "GET_ROTATION", "GET_RADIUS", "GET_COLOUR", "GET_BORDER_COLOUR", "SET_X",
-    "SET_Y", "SET_POINTS", "SET_WIDTH", "SET_LENGTH", "SET_CENTER",
-    "SET_SIDES", "SET_SIDE_LENGTH", "SET_ROTATION", "SET_RADIUS",
-    "SET_COLOUR", "SET_BORDER_COLOUR", "SET_DIMENSION", "COLOUR", "RED",
-    "BLUE", "GREEN", "GET_COLOUR_FROM_RGB", "DRIVER" 
+    "end of file", "error", "invalid token", "CONST", "VAR", "BOOL",
+    "FLOAT", "INT", "STRING", "VOID", "BOOL_LITERAL", "FLOAT_LITERAL",
+    "INTEGER_LITERAL", "STRING_LITERAL", "IF", "ELSE", "SWITCH", "CASE",
+    "DEFAULT", "WHILE", "FOR", "BREAK", "CONTINUE", "SEND", "FAMILY",
+    "INHERITS", "PUBLIC", "PRIVATE", "DRIVER", "IDENTIFIER", "','", "ASSIGN",
+    "ADD_ASSIGN", "SUB_ASSIGN", "MUL_ASSIGN", "DIV_ASSIGN", "MOD_ASSIGN",
+    "'?'", "':'", "LOGICAL_OR", "LOGICAL_AND", "EQ", "NOT_EQ", "LS_THAN",
+    "LS_THAN_EQ", "GR_THAN", "GR_THAN_EQ", "'+'", "'-'", "'*'", "'/'", "'%'",
+    "INC", "DEC", "INC_POST", "DEC_POST", "UPLUS", "UMINUS", "LOGICAL_NOT",
+    "'('", "')'", "'['", "']'", "SCOPE_ACCESS", "';'", "'{'", "'}'",
 };
 YYLTYPE yylloc;
 
