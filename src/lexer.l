@@ -29,11 +29,11 @@ L               [a-zA-Z]
 "string"               {return STRING;}
 "void"                 {return VOID;}
 
-"true"                 {return BOOL_LITERAL;}
-"false"                {return BOOL_LITERAL;}
+{D}+                   {yylval.valuei = atoi(yytext);return INTEGER_LITERAL;}
 {D}+"."{D}+            {return FLOAT_LITERAL;}
-{D}+                   {return INTEGER_LITERAL;}
 \"([^\\\"]|\\.)*\"     {return STRING_LITERAL;}
+"true"                 {yylval.valueb = true; return BOOL_LITERAL;}
+"false"                {yylval.valueb = false; return BOOL_LITERAL;}
 
 "if"                   {return IF;}
 "else"                 {return ELSE;}
@@ -53,7 +53,7 @@ L               [a-zA-Z]
 
 "driver"               {return DRIVER;}
 
-{L}({L}|{D}|_)*        {return IDENTIFIER;}
+{L}({L}|{D}|_)*        {yylval.id = yytext; return IDENTIFIER;}
 
 ","                    {return ',';}
 ":="                   {return ASSIGN;}
