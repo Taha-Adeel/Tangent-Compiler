@@ -153,10 +153,10 @@ class ArrayAccess : public Expression
 class FunctionCall : public Expression
 {
     protected:
-        Identifier* func_name;
-        list <Identifier*> args_list;
+        Expression* func_name;
+        list <Expression*> args_list;
     public:
-        FunctionCall(Identifier* name, list <Identifier*> l);
+        FunctionCall(Identifier* name, list <Expression*> l = list<Expression*>());
         void print();
         value_pair evaluate();
 };
@@ -409,7 +409,21 @@ class Statement : public ASTNode
 {
     
 };
-
+/// @class Class to represent family declarations 
+class FamilyDecl: public Statement
+{
+    protected:
+        Identifier fam_name;
+        list<FunctionDeclaration*> member_functions;
+        list<VariableDeclaration*> member_variables;
+    public:
+        /// @brief constructor
+        /// @param _fam_name name of family
+        /// @param mem_funcs functions of family
+        /// @param mem_vars variables of family
+        FamilyDecl(Identifier _fam_name, list<FunctionDeclaration*> mem_funcs, list<VariableDeclaration*> mem_vars):
+            fam_name(_fam_name), member_functions(mem_funcs), member_variables(mem_vars){}
+};
 /// @class Class to represent Expression Statements in the AST. Derives from \ref Statement
 class ExpressionStatement : public Statement
 {
@@ -442,7 +456,7 @@ class CompoundStatement : public Statement
 /* Declaration Statements */
 
 /// @class Class to represent Function Definition in the AST. Derives from Statement
-class FunctionDefinition : public Statement
+class FunctionDeclaration : public Statement
 {
     protected:
         Identifier* func_name;
@@ -450,13 +464,13 @@ class FunctionDefinition : public Statement
         CompoundStatement* func_body;
         list<Identifier*> arg_list;
     public:
-        FunctionDefinition() = delete;
+        FunctionDeclaration() = delete;
         /// @brief Constructor for Function Definition Class
         /// @param _name function name
         /// @param _t return type
         /// @param _arg_list list of arguments
         /// @param _stmt list of arguments 
-        FunctionDefinition(Identifier* _name, type _t, list<Identifier*> _arg_list, CompoundStatement* _stmt);
+        FunctionDeclaration(Identifier* _name, type _t, list<Identifier*> _arg_list, CompoundStatement* _stmt);
         /// @brief print the content of function definition
         void print();
 };

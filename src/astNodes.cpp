@@ -846,8 +846,8 @@ void CompoundStatement::print()
     cout << "\n}\n";
 }
 
-FunctionDefinition::FunctionDefinition(Identifier *_name, type _t, list<Identifier *> _arg_list, CompoundStatement *_stmt) : func_name(_name), return_type(_t), arg_list(_arg_list), func_body(_stmt) {}
-void FunctionDefinition::print()
+FunctionDeclaration::FunctionDeclaration(Identifier *_name, type _t, list<Identifier *> _arg_list, CompoundStatement *_stmt) : func_name(_name), return_type(_t), arg_list(_arg_list), func_body(_stmt) {}
+void FunctionDeclaration::print()
 {
     cout << "Function Definition:\n{";
     func_name->print();
@@ -863,7 +863,7 @@ void FunctionDefinition::print()
     cout << "}";
 }
 
-VariableDeclaration::VariableDeclaration(type t, list<Identifier *> l) : variable_type(t), variable_list(l) {}
+VariableDeclaration::VariableDeclaration(type t, list<Expression *> l) : variable_type(t), variable_list(l) {}
 void VariableDeclaration::print()
 {
     cout << "Variable Declaration: {\n";
