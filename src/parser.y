@@ -110,10 +110,10 @@ translation_unit
 	;
 
 external_declaration
-	: driver_definition			{}
-	| function_declaration		{}
-	| variable_declaration		{}
-	| class_declaration			{}
+	: driver_definition			// $$ = $1
+	| variable_declaration		// $$ = $1
+	| function_declaration		// $$ = $1
+	| class_declaration			// $$ = $1
 	;
 
 driver_definition
@@ -135,10 +135,10 @@ type
 
 
 literal
-	: INTEGER_LITERAL
-	| FLOAT_LITERAL
-	| STRING_LITERAL
-	| BOOL_LITERAL
+	: INTEGER_LITERAL	{$$ = new IntegerLiteral($1);}
+	| FLOAT_LITERAL		{$$ = new FloatLiteral($1);}
+	| STRING_LITERAL	{$$ = new StringLiteral($1);}
+	| BOOL_LITERAL		{$$ = new BooleanLiteral($1);}
 	;
 
 variable_declaration
@@ -152,15 +152,15 @@ new_variable_list
 	;
 
 new_variable
-	: IDENTIFIER {$$ = new Identifier($1);} //pass the identifier name somehow
-	| IDENTIFIER ASSIGN expression
-	| IDENTIFIER '(' ')'
-	| IDENTIFIER '(' expression_list ')'
+	: IDENTIFIER {$$ = new Identifier($1);} 
+	| IDENTIFIER ASSIGN expression	{$1 = new Identifier($1); $$ = new AssignmentExp($1, $3);}
+	| IDENTIFIER '(' ')'	{$1 = new Identifier($1); $$ = new FunctionCall($1);}
+	| IDENTIFIER '(' expression_list ')'	{$1 = new Indentifier($1); $$ = new FunctionCall($1, $3);}
 	;
 
 function_declaration
-	: type IDENTIFIER '(' ')' compound_statement
-	| type IDENTIFIER '(' args_list ')' compound_statement
+	: type IDENTIFIER '(' ')' compound_statement	{$2 = new Identifier($2); $$ = FunctionDeclaration($2, $1,)}
+	| type IDENTIFIER '(' args_list ')' compound_statement	{}
 	;
 
 args_list
