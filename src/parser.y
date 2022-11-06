@@ -205,6 +205,16 @@ constructor_declaration
 	: IDENTIFIER '(' args_list ')' compound_statement
 	;
 
+/*
+family my_class
+{
+	public int a;
+	private int b;
+	public int c;
+};
+*/
+
+
 /*------------------------------------------------------------------------
  * Expressions
  *------------------------------------------------------------------------*/
