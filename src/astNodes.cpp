@@ -37,7 +37,7 @@ bool is_valid_for_boolean_operation(value_pair& a, value_pair& b)
 IntegerLiteral::IntegerLiteral(int num)
 {
     value.first = INT_TYPE;
-    value.second.ivalue = num;
+    value.second = num;
 }
 void IntegerLiteral::print()
 {

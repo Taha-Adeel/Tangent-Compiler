@@ -110,10 +110,10 @@ translation_unit
 	;
 
 external_declaration
-	: driver_definition
-	| function_declaration
-	| variable_declaration
-	| class_declaration
+	: driver_definition			{}
+	| function_declaration		{}
+	| variable_declaration		{}
+	| class_declaration			{}
 	;
 
 driver_definition
@@ -130,7 +130,7 @@ type
 	| STRING	{$$ = STRING_TYPE;}
 	| BOOL		{$$ = BOOL_TYPE;}
 	| VOID		{$$ = VOID_TYPE;}
-	| IDENTIFIER
+	| IDENTIFIER  {$$ = new Identifier($1);}
 	;
 
 
@@ -152,7 +152,7 @@ new_variable_list
 	;
 
 new_variable
-	: IDENTIFIER {$$ = new Identifier();} //pass the identifier name somehow
+	: IDENTIFIER {$$ = new Identifier($1);} //pass the identifier name somehow
 	| IDENTIFIER ASSIGN expression
 	| IDENTIFIER '(' ')'
 	| IDENTIFIER '(' expression_list ')'
