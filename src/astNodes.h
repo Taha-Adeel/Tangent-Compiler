@@ -33,38 +33,6 @@ string enumtypeToString(type t)
 bool is_valid_comparasion(value_pair a, value_pair b);
 bool is_unary_operation_valid(value_pair& a);
 bool is_boolean_operation_valid(value_pair& a, value_pair& b);
-//****************redundant code from old value_pair derfinition**************/////////
-
-/// @brief returns the value stored in valuepair as a string
-/// @param d input valuepair
-/// @return content of the value pair
-// string get_valuepair_content(value_pair d)
-// {
-//     switch(d.first)
-//     {
-//         case INT_TYPE: return(to_string(d.second.ivalue));
-//         case FLOAT_TYPE: return(to_string(d.second.fvalue));
-//         case STRING_TYPE: return(d.second.svalue);
-//         case BOOL_TYPE: return(to_string(d.second.bvalue));
-//         case VOID_TYPE: return("VOID");
-//     }
-//     return "";
-// }
-// /// @brief copies value of d to inp
-// /// @param inp value to set
-// /// @param d value to copy
-// void copy_valuepair(value_pair& inp, value_pair d)
-// {
-//     switch(d.first)
-//     {
-//         case INT_TYPE: inp.second.ivalue = d.second.ivalue;break;
-//         case FLOAT_TYPE: inp.second.fvalue = d.second.fvalue;break;
-//         case STRING_TYPE: inp.second.svalue = d.second.svalue;break;
-//         case BOOL_TYPE: inp.second.bvalue = d.second.bvalue;break;
-//     }
-// }
-
-
 
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
@@ -86,7 +54,6 @@ class Expression : public ASTNode
         Expression();
         ~Expression();
         virtual value_pair evaluate() = 0;
-
 };
 
 /* Literals */
@@ -409,22 +376,57 @@ class Statement : public ASTNode
 {
     
 };
-/// @class Class to represent family declarations 
+enum class ACCESS_SPEC{PUBLIC, PRIVATE};
+/// @brief Class to represent family declarations 
 class FamilyDecl: public Statement
 {
     protected:
-        Identifier fam_name;
-        list<FunctionDeclaration*> member_functions;
-        list<VariableDeclaration*> member_variables;
+        Identifier fam_name;                                        /// Identifier of the familie
+        list<FamilyMembers*> members = list<FamilyMembers*>();          /// saves the pouinter to the member vars/ function as a List
+        optional<pair<Identifier, ACCESS_SPEC>> parent_class ={};   /// saves the Identifier and Access specification of the parent class. if there is no parent class, std::optional is not initialised
     public:
-        /// @brief constructor
-        /// @param _fam_name name of family
-        /// @param mem_funcs functions of family
-        /// @param mem_vars variables of family
-        FamilyDecl(Identifier _fam_name, list<FunctionDeclaration*> mem_funcs, list<VariableDeclaration*> mem_vars):
-            fam_name(_fam_name), member_functions(mem_funcs), member_variables(mem_vars){}
+        
+        /**
+         * @brief Construct a new Family Decl object
+         * 
+         * @param fam_name_ Identifier of family
+         * @param members_ List of pointers to the memeber funcs/vars
+         * @param parent_class_ pairent class's Identifier and access specs(public/ private) as a optional. 
+         */
+        FamilyDecl(Identifier fam_name_, list<FamilyMembers*> members_ = list<FamilyMembers*>(), optional<pair<Identifier, ACCESS_SPEC>> parent_class_ = {} ):
+            fam_name(fam_name_), members(members_), parent_class(parent_class_){}
+        /**
+         * @brief Construct a new Family Decl object
+         *
+         * @param fam_name_ Identifier of family
+         * @param parent_class_ pairent class's Identifier and access specs(public/ private) as a optional. 
+         */
+        FamilyDecl(Identifier fam_name_, optional<pair<Identifier, ACCESS_SPEC>> parent_class_ = {} ):
+            fam_name(fam_name_), parent_class(parent_class_){}
+        void print();
 };
-/// @class Class to represent Expression Statements in the AST. Derives from \ref Statement
+class FamilyMembers: public Statement
+{
+    protected:
+        ACCESS_SPEC access_specifier;
+        Statement* member;
+    public:
+        FamilyMembers(ACCESS_SPEC acc_spec, Statement* member_):access_specifier(acc_spec), member(member_){}
+        void print();
+};
+class ConstructorDeclaration: public Statement
+{
+    protected:
+        Identifier class_name;
+        CompoundStatement* body;
+        list<Identifier*> arg_list;
+    public:
+        ConstructorDeclaration(Identifier class_name_, CompoundStatement* body_, list<Identifier*>arg_list_):
+                                class_name(class_name_), body(body_), arg_list(arg_list_){};
+        void print();
+
+};
+/// @brief Class to represent Expression Statements in the AST. Derives from \ref Statement
 class ExpressionStatement : public Statement
 {
     protected:
@@ -439,7 +441,7 @@ class ExpressionStatement : public Statement
         void print();
 };
 
-/// @class Class to represent Compound Statements in the AST. Derives from Statement. Represents a collection of statements
+/// @brief Class to represent Compound Statements in the AST. Derives from Statement. Represents a collection of statements
 class CompoundStatement : public Statement
 {
     protected:
@@ -455,7 +457,7 @@ class CompoundStatement : public Statement
 
 /* Declaration Statements */
 
-/// @class Class to represent Function Definition in the AST. Derives from Statement
+/// @brief Class to represent Function Definition in the AST. Derives from Statement
 class FunctionDeclaration : public Statement
 {
     protected:
@@ -474,20 +476,20 @@ class FunctionDeclaration : public Statement
         /// @brief print the content of function definition
         void print();
 };
-/// @class Class to represent Variable Declaration in the AST. Derives from Statement
+/// @brief Class to represent Variable Declaration in the AST. Derives from Statement
 class VariableDeclaration : public Statement
 {
     protected:
         type variable_type;
-        list <Expression*> *variable_list;
+        list <Expression*> variable_list;
     public:
         /// @brief Constructor for function declaration 
         /// @param t type of variable
         /// @param l list of identifires
-        VariableDeclaration(type t, list <Expression*> *l);
+        VariableDeclaration(type t, list <Expression*> l);
         void print();
 };
-/// @class Class to represent definition of driver function in the AST. Derives from CompoundStatement
+/// @brief Class to represent definition of driver function in the AST. Derives from CompoundStatement
 class DriverDefinition : public Statement
 {
     protected:
@@ -499,7 +501,7 @@ class DriverDefinition : public Statement
         DriverDefinition(CompoundStatement* body) : func_body(body) {};
         void print();
 };
-/// @class Class to represent variable initialization in the AST. Derives from Statement
+/// @brief Class to represent variable initialization in the AST. Derives from Statement
 class VariableInitialization : public Statement
 {
     protected:
@@ -515,7 +517,7 @@ class VariableInitialization : public Statement
 
 /* Labeled Statements */
 
-/// @class Class to represent All Labelled Statements in the AST
+/// @brief Class to represent All Labelled Statements in the AST
 class LabeledStatement : public Statement
 {
     protected:
@@ -528,7 +530,7 @@ class LabeledStatement : public Statement
         LabeledStatement(Expression* lb, Statement* st);
         void print();
 };
-/// @class Class to represent 'case' in the AST. Derives from Statement
+/// @brief Class to represent 'case' in the AST. Derives from Statement
 class CaseLabel : public LabeledStatement
 {
     public:
@@ -538,7 +540,7 @@ class CaseLabel : public LabeledStatement
         CaseLabel(Expression* lb, Statement* st);
         void print();
 };
-/// @class Class to represent 'default' in the AST. Derives from Statement
+/// @brief Class to represent 'default' in the AST. Derives from Statement
 class DefaultLabel : public LabeledStatement
 {
     public:
@@ -550,7 +552,7 @@ class DefaultLabel : public LabeledStatement
 
 /* Iteration Statements */
 
-/// @class Class to represent  iterations in the AST. Derives from Statement. Provides base class to classes like WhileLoop
+/// @brief Class to represent  iterations in the AST. Derives from Statement. Provides base class to classes like WhileLoop
 class IterationStatement : public Statement
 {
     protected:
@@ -561,7 +563,7 @@ class IterationStatement : public Statement
         IterationStatement(CompoundStatement* b, Expression* cond);
         void print();
 };
-/// @class Class to represent while loop in the AST. Derives from Statement
+/// @brief Class to represent while loop in the AST. Derives from Statement
 class WhileLoop : public IterationStatement
 {
     public:
@@ -575,7 +577,7 @@ class WhileLoop : public IterationStatement
         void print();
 };
 
-/// @class Class to represent for loop in the AST. Derives from Statement
+/// @brief Class to represent for loop in the AST. Derives from Statement
 class ForLoop : public IterationStatement
 {
     protected:
@@ -627,7 +629,7 @@ class ForLoop : public IterationStatement
 /*********************************************
  * Selection Statements 
  * *******************************************/
-/// @class Class to represent if - else statements in the AST. Derives from Statement
+/// @brief Class to represent if - else statements in the AST. Derives from Statement
 class IfElse : public Statement
 {
     protected:
@@ -646,7 +648,7 @@ class IfElse : public Statement
         IfElse(list <Expression*> l, list <CompoundStatement*> ifs, CompoundStatement* elseb = nullptr);
         void print();
 };
-/// @class Class to represent switch case statement in the AST. Derives from Statement
+/// @brief Class to represent switch case statement in the AST. Derives from Statement
 class Switch : public Statement
 {
     protected:
@@ -665,7 +667,7 @@ class Switch : public Statement
         Switch(Expression* e, list <CaseLabel*> c, DefaultLabel* _def);
         void print();
 };
-/// @class Class to represent the ternary operator in the AST. Derives from Statement
+/// @brief Class to represent the ternary operator in the AST. Derives from Statement
 class TernaryOperator : public Statement
 {
     protected:
@@ -680,9 +682,9 @@ class TernaryOperator : public Statement
         TernaryOperator(Expression* cond, Expression* t_eval, Expression* f_eval);
         void print();
 };
-/// @class Provides base class for all jump statements
+/// @brief Provides base class for all jump statements
 class JumpStatement : public Statement{};
-/// @class Class to represent 'return' in the AST. Derives from Statement. 
+/// @brief Class to represent 'return' in the AST. Derives from Statement. 
 class ReturnStatement: public JumpStatement
 {
     protected:
@@ -691,13 +693,13 @@ class ReturnStatement: public JumpStatement
         ReturnStatement(Expression* val);
         void print();
 };
-/// @class Class to represent 'break' in the AST. Derives from Statement
+/// @brief Class to represent 'break' in the AST. Derives from Statement
 class BreakStatement: public JumpStatement
 {
     public:
         void print();
 };
-/// @class Class to represent 'continue' in the AST. Derives from Statement
+/// @brief Class to represent 'continue' in the AST. Derives from Statement
 class ContinueStatement: public JumpStatement
 {
     public:
@@ -707,7 +709,7 @@ class ContinueStatement: public JumpStatement
 /*------------------------------------------------------------------------
  * Class to create the AST Root Node 
  *------------------------------------------------------------------------*/
-/// @class Class to represent the actual program as the AST. Derives from Statement
+/// @brief Class to represent the actual program as the AST. Derives from Statement
 class Program : public ASTNode
 {
     protected:

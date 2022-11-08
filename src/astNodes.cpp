@@ -863,7 +863,7 @@ void FunctionDeclaration::print()
     cout << "}";
 }
 
-VariableDeclaration::VariableDeclaration(type t, list<Expression *> l) : variable_type(t), variable_list(l) {}
+VariableDeclaration::VariableDeclaration(type t, list <Expression*> l): variable_type(t), variable_list(l) {}
 void VariableDeclaration::print()
 {
     cout << "Variable Declaration: {\n";
