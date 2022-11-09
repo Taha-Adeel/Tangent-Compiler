@@ -1,14 +1,9 @@
 name: Makefile CI
 
-on:
-  push:
-    branches: 
-      - main
-      - actions
-      - Refactoring-and-Missing-features
+on: push
 
 jobs:
-  build:
+  build-and-test:
 
     runs-on: ubuntu-latest
 
@@ -25,7 +20,11 @@ jobs:
         ./configure
         make
         sudo make install
-      
+    
+    - name: Compile the lexer
+      run : |
+        make lexer
+
     - name: Run Lexer Tests with syntactically correct testcases
       run: |
         make lexer_correct_codes
@@ -33,6 +32,10 @@ jobs:
     - name: Run Lexer Tests with syntactically incorrect testcases
       run: |
         make lexer_incorrect_codes
+
+    - name: Compile the parser
+      run : |
+        make parser
 
     - name: Run Parser Tests with syntactically correct testcases
       run: |

@@ -95,8 +95,8 @@ L               [a-zA-Z]
 
  /* Matches to any invalid tokens not matched to any other rules */
 .                      {
-                        printf("ERROR: %s: Line %d:%d\t%-12s - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
-                        fprintf(stderr, "\033[0;31m   ERROR:\033[0m %s: Line %d:%d - '%s' - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
+                        printf("Error: %s: Line %d:%d\t%-12s - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
+                        fprintf(stderr, "   Error: %s: Line %d:%d - '%s' - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
                         return YYUNDEF;
                        }
 %%
