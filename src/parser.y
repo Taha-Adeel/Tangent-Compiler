@@ -27,6 +27,13 @@
 	#define YYLTYPE_IS_TRIVIAL 1
 }
 
+%code{
+	#include "symbolTable.h"
+
+	SymbolTable global_symbol_table;
+	SymbolTable* cur_symbol_table;
+}
+
 /*** TOKEN DECLARATION ***/
 %header
 
