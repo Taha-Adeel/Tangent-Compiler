@@ -38,3 +38,43 @@ public:
 
 	friend std::ostream operator << (std::ostream& out, const Symbol& symbol);
 };
+
+
+class SymbolTable{
+private:
+	std::map<std::string, Symbol> symbol_table;
+	std::map<std::string, SymbolTable*> children_symbol_tables;
+	SymbolTable* parent = NULL;
+
+public:
+	SymbolTable();
+	~SymbolTable();
+
+	void addSymbol(Symbol symbol);
+	Symbol* lookUpSymbol(std::string name);
+	void printSymbolTable();
+}
+
+void SymbolTable::addSymbol(Symbol symbol){
+	if(lookup(symbol.getName()) != NULL){
+		throw "Symbol already exists";
+	}
+	symbol_table[symbol.getName()] = symbol;
+}
+
+Symbol* SymbolTable::lookUpSymbol(std::string name){
+	if(symbol_table.find(name) != symbol_table.end())
+		return &symbol_table[name];
+	else if(parent != NULL)
+		return parent->lookUpSymbol(name);
+	else
+		return NULL;
+}
+
+void SymbolTable::printSymbolTable(){
+	for(auto it = symbol_table.begin(); it != symbol_table.end(); it++){
+		std::cout << it->second << std::endl;
+	}
+}
+
+#endif
