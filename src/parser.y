@@ -1,5 +1,6 @@
 %code top{
 	#include<stdio.h>
+	#include "astNodes.h"
 
 	extern int yylex();
 	extern void yyrestart(FILE*);
@@ -34,6 +35,38 @@
 	SymbolTable* cur_symbol_table;
 } */
 
+/* Listing the different types of the terminals and non-terminals*/
+%union 
+{
+	Program *pgm;
+	list <Statement*> *stmt_list;
+	Expression *exp;
+	Statement* stmt;
+	type t;
+	string id;
+	int valuei;
+	float valuef;
+	bool valueb;
+	string values;
+	ACCESS_SPEC access_spec;
+	ClassMember class_member;
+	ConstructorDeclaration constructor_decl;
+}
+
+/* Declaring types to the different non-terminals */
+%type <pgm> program
+%type <stmt_list> translation_unit new_variable new_variable_list
+
+%type <stmt> external_declaration 
+%type <stmt> driver_definition function_declaration variable_declaration family_declaration
+%type <stmt> jump_statement iteration_statement labeled_statement expression_statement
+%type <stmt> selection_statement compound_statement variable_declaration_list
+
+%type <exp> expression constant_expression
+%type <t> type
+%type <access_spec> access_specifier
+%type <class_member> class_member class_members
+%type <constructor_decl> constructor_declaration
 /*** TOKEN DECLARATION ***/
 %header
 
@@ -79,24 +112,24 @@
  * Translation unit
  *------------------------------------------------------------------------*/
 program
-	: %empty
-	| translation_unit
+	: %empty				{$$ = new Program(); root = $$;}
+	| translation_unit		{$$ = new Program($1); root = $$;}
 	;
 	
 translation_unit
-	: external_declaration
-	| translation_unit external_declaration
+	: external_declaration					{$$ = new list <Statement*>(); $$->push_back($1);}
+	| translation_unit external_declaration	{$$ = $1; $$->push_back($2);}
 	;
 
 external_declaration
-	: driver_definition
-	| function_declaration
-	| variable_declaration
-	| class_declaration
+	: driver_definition			{}
+	| function_declaration		{}
+	| variable_declaration		{}
+	| family_declaration		{}
 	;
 
 driver_definition
-	: DRIVER '(' ')' compound_statement
+	: DRIVER '(' ')' compound_statement {$$ = new DriverDefinition($4);}
 	;
 
 
@@ -104,13 +137,14 @@ driver_definition
  * Declarations
  *----------------------------------------------------------------------*/
 type
-	: INT
-	| FLOAT
-	| STRING
-	| BOOL
-	| VOID
-	| IDENTIFIER
+	: INT			{$$ = INT_TYPE;}
+	| FLOAT			{$$ = FLOAT_TYPE;}
+	| STRING		{$$ = STRING_TYPE;}
+	| BOOL			{$$ = BOOL_TYPE;}
+	| VOID			{$$ = VOID_TYPE;}
+	| IDENTIFIER  	{$$ = new Identifier($1);}
 	;
+
 
 literal
 	: INTEGER_LITERAL
@@ -120,18 +154,17 @@ literal
 	;
 
 variable_declaration
-	: type new_variable_list ';'
-	| VAR type new_variable_list ';'
-	| CONST type new_variable_list ';'
+	: VAR type new_variable_list ';' 	{$$ = new VariableDeclaration($2, $3);}	
+	| CONST type new_variable_list ';' 	{$$ = new VariableDeclaration($2, $3);} // store variables as const}	
 	;
 
 new_variable_list
-	: new_variable
-	| new_variable_list ',' new_variable
+	: new_variable						 {$$ = new list <Expression*>(); $$->push_back($1);}
+	| new_variable_list ',' new_variable {$$ = $1; $$->push_back($3);}
 	;
 
 new_variable
-	: IDENTIFIER
+	: IDENTIFIER {$$ = new Identifier($1);} //pass the identifier name somehow
 	| IDENTIFIER ASSIGN expression
 	| IDENTIFIER '(' ')'
 	| IDENTIFIER '(' expression_list ')'
@@ -156,32 +189,32 @@ arg
 /*------------------------------------------------------------------------
  * Classes
  *------------------------------------------------------------------------*/
-class_declaration
-	: FAMILY IDENTIFIER '{' '}' ';'
-	| FAMILY IDENTIFIER '{' class_members '}' ';'
-	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';'
-	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' class_members '}' ';'
+family_declaration
+	: FAMILY IDENTIFIER '{' '}' ';'														{$$ = FamilyDecl($2);}
+	| FAMILY IDENTIFIER '{' class_members '}' ';' 										{$$ = FamilyDecl($2, $4);}
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';' 				{$$ = FamilyDecl($2,optional<pair<Identifier, ACCESS_SPEC>>(make_pair($5, $4)));}
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' class_members '}' ';'	{$$ = FamilyDecl($2,$7, optional<pair<Identifier, ACCESS_SPEC>>(make_pair($5, $4)));}
 	;
 
 access_specifier
 	: %empty
-	| PUBLIC
-	| PRIVATE
+	| PUBLIC 	{$$ = ACCESS_SPEC(ACCESS_SPEC::PUBLIC);}
+	| PRIVATE	{$$ = ACCESS_SPEC(ACCESS_SPEC::PRIVATE);}
 	;
 
 class_members
-	: access_specifier class_member
-	| class_members access_specifier class_member
+	: class_member 					{$$ = new list<ClassMember*>($1);}
+	| class_members class_member	{$$ =$1; $$->push_back($2);}
 	;
 
 class_member
-	: variable_declaration
-	| function_declaration
-	| constructor_declaration
+	: access_specifier variable_declaration	{$$ = new ClassMember($1, $2);}
+	| access_specifier function_declaration	{$$ = new ClassMember($1, $2);}
+	| constructor_declaration				{$$ = new ClassMember(ACCESS_SPEC::PUBLIC, $1);}
 	;
 
 constructor_declaration
-	: IDENTIFIER '(' args_list ')' compound_statement
+	: IDENTIFIER '(' args_list ')' compound_statement {$$ = new ConstructorDeclaration($1, $5, $3);}
 	;
 
 /*------------------------------------------------------------------------
@@ -262,8 +295,8 @@ statement_list
 	;
 
 expression_statement
-	: ';'
-	| expression_list ';'
+	: ';'			 
+	| expression_list ';' {$$ = new ExpressionStatement($1);}
 	;
 
 selection_statement
@@ -273,23 +306,24 @@ selection_statement
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement
-	| CASE expression ':' statement
-	| DEFAULT ':' statement
+	: IDENTIFIER ':' statement	{$$ = new LabeledStatement($1, $3);}
+	| CASE expression ':' statement	{$$ = new CaseLabel($2, $4);}
+	| DEFAULT ':' statement		{$$ = new DefaultLabel($3);}
 	;
 
 iteration_statement
-	: WHILE '(' expression ')' statement
-	| FOR '(' expression_statement expression_statement ')' statement
-	| FOR '(' expression_statement expression_statement expression ')' statement
-	| FOR '(' variable_declaration expression_statement ')' statement
-	| FOR '(' variable_declaration expression_statement expression ')' statement
+	: WHILE '(' ')' compound_statement 	{$$ = new WhileLoop($4);}
+	| WHILE '(' expression ')' compound_statement {$$ = new WhileLoop($5, $3);}
+	| FOR '(' expression_statement expression_statement ')' compound_statement 
+	| FOR '(' expression_statement expression_statement expression ')' compound_statement 
+	| FOR '(' variable_declaration expression_statement ')' compound_statement 
+	| FOR '(' variable_declaration expression_statement expression ')' compound_statement
 	;
 
 jump_statement
-	: CONTINUE ';'
-	| BREAK ';'
-	| SEND expression_statement
+	: CONTINUE ';' 	{$$ = new ContinueStatement();}
+	| BREAK ';'		{$$ = new BreakStatement();}
+	| SEND expression_statement	{$$ = new ReturnStatement(($2).getValue());}
 	;
 
 %%
