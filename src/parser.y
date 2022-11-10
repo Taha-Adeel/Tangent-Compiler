@@ -31,7 +31,7 @@
 /* Listing the different types of the terminals and non-terminals*/
 %union 
 {
-	Program *pgm
+	Program *pgm;
 	list <Statement*> *stmt_list;
 	Expression *exp;
 	Statement* stmt;
@@ -41,20 +41,25 @@
 	float valuef;
 	bool valueb;
 	string values;
+	ACCESS_SPEC access_spec;
+	ClassMember class_member;
+	ConstructorDeclaration constructor_decl;
 }
 
 /* Declaring types to the different non-terminals */
 %type <pgm> program
-%type <stmt_list> translation_unit
+%type <stmt_list> translation_unit new_variable new_variable_list
 
 %type <stmt> external_declaration 
-%type <stmt> driver_definition function_definition variable_declaration class_declaration
+%type <stmt> driver_definition function_declaration variable_declaration family_declaration
 %type <stmt> jump_statement iteration_statement labeled_statement expression_statement
 %type <stmt> selection_statement compound_statement variable_declaration_list
 
 %type <exp> expression constant_expression
 %type <t> type
-
+%type <access_spec> access_specifier
+%type <class_member> class_member class_members
+%type <constructor_decl> constructor_declaration
 /*** TOKEN DECLARATION ***/
 %header
 
@@ -101,11 +106,11 @@
  *------------------------------------------------------------------------*/
 program
 	: %empty				{$$ = new Program(); root = $$;}
-	| translation_unit	{$$ = new Program($1); root = $$;}
+	| translation_unit		{$$ = new Program($1); root = $$;}
 	;
 	
 translation_unit
-	: external_declaration		{$$ = new list <Statement*>(); $$->push_back($1);}
+	: external_declaration					{$$ = new list <Statement*>(); $$->push_back($1);}
 	| translation_unit external_declaration	{$$ = $1; $$->push_back($2);}
 	;
 
@@ -125,12 +130,12 @@ driver_definition
  * Declarations
  *----------------------------------------------------------------------*/
 type
-	: INT		{$$ = INT_TYPE;}
-	| FLOAT		{$$ = FLOAT_TYPE;}
-	| STRING	{$$ = STRING_TYPE;}
-	| BOOL		{$$ = BOOL_TYPE;}
-	| VOID		{$$ = VOID_TYPE;}
-	| IDENTIFIER  {$$ = new Identifier($1);}
+	: INT			{$$ = INT_TYPE;}
+	| FLOAT			{$$ = FLOAT_TYPE;}
+	| STRING		{$$ = STRING_TYPE;}
+	| BOOL			{$$ = BOOL_TYPE;}
+	| VOID			{$$ = VOID_TYPE;}
+	| IDENTIFIER  	{$$ = new Identifier($1);}
 	;
 
 
@@ -142,12 +147,12 @@ literal
 	;
 
 variable_declaration
-	: VAR type new_variable_list ';' {$$ = VariableDeclaration($2, $3);}	
-	| CONST type new_variable_list ';' {$$ = VariableDeclaration($2, $3);} // store variables as const}	
+	: VAR type new_variable_list ';' 	{$$ = new VariableDeclaration($2, $3);}	
+	| CONST type new_variable_list ';' 	{$$ = new VariableDeclaration($2, $3);} // store variables as const}	
 	;
 
 new_variable_list
-	: new_variable {$$ = new list <Expression*>(); $$->push_back($1);}
+	: new_variable						 {$$ = new list <Expression*>(); $$->push_back($1);}
 	| new_variable_list ',' new_variable {$$ = $1; $$->push_back($3);}
 	;
 
@@ -177,43 +182,33 @@ arg
 /*------------------------------------------------------------------------
  * Classes
  *------------------------------------------------------------------------*/
-class_declaration
-	: FAMILY IDENTIFIER '{' '}' ';'
-	| FAMILY IDENTIFIER '{' class_members '}' ';'
-	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';'
-	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' class_members '}' ';'
+family_declaration
+	: FAMILY IDENTIFIER '{' '}' ';'														{$$ = FamilyDecl($2);}
+	| FAMILY IDENTIFIER '{' class_members '}' ';' 										{$$ = FamilyDecl($2, $4);}
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';' 				{$$ = FamilyDecl($2,optional<pair<Identifier, ACCESS_SPEC>>(make_pair($5, $4)));}
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' class_members '}' ';'	{$$ = FamilyDecl($2,$7, optional<pair<Identifier, ACCESS_SPEC>>(make_pair($5, $4)));}
 	;
 
 access_specifier
 	: %empty
-	| PUBLIC
-	| PRIVATE
+	| PUBLIC 	{$$ = ACCESS_SPEC(ACCESS_SPEC::PUBLIC);}
+	| PRIVATE	{$$ = ACCESS_SPEC(ACCESS_SPEC::PRIVATE);}
 	;
 
 class_members
-	: access_specifier class_member
-	| class_members access_specifier class_member
+	: class_member 					{$$ = new list<ClassMember*>($1);}
+	| class_members class_member	{$$ =$1; $$->push_back($2);}
 	;
 
 class_member
-	: variable_declaration
-	| function_declaration
-	| constructor_declaration
+	: access_specifier variable_declaration	{$$ = new ClassMember($1, $2);}
+	| access_specifier function_declaration	{$$ = new ClassMember($1, $2);}
+	| constructor_declaration				{$$ = new ClassMember(ACCESS_SPEC::PUBLIC, $1);}
 	;
 
 constructor_declaration
-	: IDENTIFIER '(' args_list ')' compound_statement
+	: IDENTIFIER '(' args_list ')' compound_statement {$$ = new ConstructorDeclaration($1, $5, $3);}
 	;
-
-/*
-family my_class
-{
-	public int a;
-	private int b;
-	public int c;
-};
-*/
-
 
 /*------------------------------------------------------------------------
  * Expressions
