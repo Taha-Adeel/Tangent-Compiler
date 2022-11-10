@@ -155,7 +155,7 @@ new_variable
 	: IDENTIFIER {$$ = new Identifier($1);} 
 	| IDENTIFIER ASSIGN expression	{$1 = new Identifier($1); $$ = new AssignmentExp($1, $3);}
 	| IDENTIFIER '(' ')'	{$1 = new Identifier($1); $$ = new FunctionCall($1);}
-	| IDENTIFIER '(' expression_list ')'	{$1 = new Indentifier($1); $$ = new FunctionCall($1, $3);}
+	| IDENTIFIER '(' expression_list ')'	{$1 = new Identifier($1); $$ = new FunctionCall($1, $3);}
 	;
 
 function_declaration
