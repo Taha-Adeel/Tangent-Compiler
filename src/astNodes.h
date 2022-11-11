@@ -136,6 +136,17 @@ class ArrayAccess : public Variable
         value_pair evaluate();
 };
 
+class Argument: public Expression
+{
+    protected:
+        type t;
+        Identifier* id;
+    public:
+        Argument(type t_, Identifier* id_);
+        void print();
+        value_pair evaluate();
+};
+
 /* Function Call */
 
 class FunctionCall : public Expression
@@ -212,11 +223,74 @@ class ModAssign : public AssignmentExp
 
 class UnaryOperation : public Expression
 {
+
+};
+
+class UnaryIncrement : public UnaryOperation
+{
     protected:
-        Expression* RHS;
+        Variable* var;
+};
+
+class PostfixInc : public UnaryIncrement
+{
     public:
-        UnaryOperation();
-        UnaryOperation(Expression* R);
+        PostfixInc(Variable* v);
+        void print();
+        value_pair evaluate();
+};
+
+class PrefixInc : public UnaryIncrement
+{
+    public:
+        PrefixInc(Variable* v);
+        void print();
+        value_pair evaluate();
+};
+
+
+class UnaryDecrement : public UnaryOperation
+{
+    protected:
+        Variable* var;
+    public:
+        UnaryDecrement(Variable* v);
+        void print();
+        value_pair evaluate();
+};
+
+class PostfixDec : public UnaryDecrement
+{
+    public:
+        PostfixDec(Variable* v);
+        void print();
+        value_pair evaluate();
+};
+
+class PrefixDec : public UnaryDecrement
+{
+    public:
+        PrefixDec(Variable* v);
+        void print();
+        value_pair evaluate();
+};
+
+class UnaryPlus : public UnaryOperation
+{
+    protected:
+        Expression* exp;
+    public:
+        UnaryPlus(Expression* e);
+        void print();
+        value_pair evaluate();
+};
+
+class UnaryMinus : public UnaryOperation
+{
+    protected:
+        Expression* exp;
+    public:
+        UnaryMinus(Expression* e);
         void print();
         value_pair evaluate();
 };
@@ -338,8 +412,10 @@ class LogicalOR : public BinaryOperation
 
 class LogicalNOT : public UnaryOperation
 {
+    protected:
+        Expression* exp;
     public:
-        LogicalNOT(Expression* R);
+        LogicalNOT(Expression* e);
         void print();
         value_pair evaluate();
 };
@@ -501,7 +577,7 @@ class FunctionDeclaration : public Statement
         Identifier* func_name;
         type return_type;
         CompoundStatement* func_body;
-        list<Expression*> arg_list;
+        list<Argument*> arg_list;
     public:
         FunctionDeclaration() = delete;
         /// @brief Constructor for Function Definition Class
@@ -509,7 +585,7 @@ class FunctionDeclaration : public Statement
         /// @param _t return type
         /// @param _arg_list list of arguments
         /// @param _stmt list of arguments 
-        FunctionDeclaration(Identifier* _name, type _t, CompoundStatement* _stmt, list<Expression*> _arg_list = list<Expression*>());
+        FunctionDeclaration(Identifier* _name, type _t, CompoundStatement* _stmt, list<Argument*> _arg_list = list<Argument*>());
         /// @brief print the content of function definition
         void print();
 };

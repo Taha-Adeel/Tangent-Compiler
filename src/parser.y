@@ -169,14 +169,14 @@ function_declaration
 	;
 
 args_list
-	: arg	
-	| args_list ',' arg
+	: arg				{$$ = new list <Argument*>(); $$->push_back($1);}
+	| args_list ',' arg	{$$ = $1; $$->push_back($3);}
 	;
 
 arg
-	: type IDENTIFIER
-	| VAR type IDENTIFIER
-	| CONST type IDENTIFIER
+	: type IDENTIFIER	{$$ = new Argument($1, $2);}
+	| VAR type IDENTIFIER	{$$ = new Argument($2, $3);}
+	| CONST type IDENTIFIER	{$$ = new Argument($2, $3);}
 	;
 
 /*------------------------------------------------------------------------
@@ -228,28 +228,28 @@ variable
 	;
 
 expression
-	: primary_expression			//$$ = $1
-	| '+' expression %prec UPLUS
-	| '-' expression %prec UMINUS
-	| expression '*' expression
-	| expression '/' expression
-	| expression '%' expression
-	| expression '+' expression
-	| expression '-' expression
-	| expression EQ expression
-	| expression NOT_EQ expression
-	| expression LS_THAN expression
-	| expression LS_THAN_EQ expression
-	| expression GR_THAN expression
-	| expression GR_THAN_EQ expression
-	| expression LOGICAL_AND expression
-	| expression LOGICAL_OR expression
-	| LOGICAL_NOT expression
-	| INC variable
-	| DEC variable
-	| variable INC %prec INC_POST
-	| variable DEC %prec DEC_POST
-	| variable ASSIGN expression
+	: primary_expression						//$$ = $1
+	| '+' expression %prec UPLUS				{$$ = new UnaryPlus($2);}
+	| '-' expression %prec UMINUS				{$$ = new UnaryMinus($2);}
+	| expression '*' expression					{$$ = new Multiplication($1, $3);}
+	| expression '/' expression					{$$ = new Division($1, $3);}
+	| expression '%' expression					{$$ = new ModularDiv($1, $3);}
+	| expression '+' expression					{$$ = new Addition($1, $3);}
+	| expression '-' expression					{$$ = new Subtraction($1, $3);}
+	| expression EQ expression					{$$ = new CompEQ($1, $3);}
+	| expression NOT_EQ expression				{$$ = new CompNEQ($1, $3);}
+	| expression LS_THAN expression				{$$ = new CompLT($1, $3);}
+	| expression LS_THAN_EQ expression			{$$ = new CompLE($1, $3);}
+	| expression GR_THAN expression				{$$ = new CompGT($1, $3);}
+	| expression GR_THAN_EQ expression			{$$ = new CompGE($1, $3);}
+	| expression LOGICAL_AND expression			{$$ = new LogicalAND($1, $3);}
+	| expression LOGICAL_OR expression			{$$ = new LogicalOR($1, $3);}
+	| LOGICAL_NOT expression					{$$ = new LogicalNOT($2);}
+	| INC variable								{$$ = new PrefixInc($2);}
+	| DEC variable								{$$ = new PostfixDec($2);}
+	| variable INC %prec INC_POST				{$$ = new PostfixInc($1);}
+	| variable DEC %prec DEC_POST				{$$ = new PostfixDec($1);}
+	| variable ASSIGN expression				{$$ = new AssisgnmentExp($1, $3);}
 	| variable MUL_ASSIGN expression			{$$ = new MulAssign($1, $3);}
 	| variable DIV_ASSIGN expression			{$$ = new DivAssign($1, $3);}
 	| variable MOD_ASSIGN expression			{$$ = new ModAssign($1, $3);}
