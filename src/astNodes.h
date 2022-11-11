@@ -464,7 +464,7 @@ class FunctionDeclaration : public Statement
         Identifier* func_name;
         type return_type;
         CompoundStatement* func_body;
-        list<Identifier*> arg_list;
+        list<Expression*> arg_list;
     public:
         FunctionDeclaration() = delete;
         /// @brief Constructor for Function Definition Class
@@ -472,7 +472,7 @@ class FunctionDeclaration : public Statement
         /// @param _t return type
         /// @param _arg_list list of arguments
         /// @param _stmt list of arguments 
-        FunctionDeclaration(Identifier* _name, type _t, list<Identifier*> _arg_list, CompoundStatement* _stmt);
+        FunctionDeclaration(Identifier* _name, type _t, CompoundStatement* _stmt, list<Expression*> _arg_list = list<Expression*>());
         /// @brief print the content of function definition
         void print();
 };
@@ -581,7 +581,8 @@ class WhileLoop : public IterationStatement
 class ForLoop : public IterationStatement
 {
     protected:
-        Expression* initialization;
+        ExpressionStatement* initialization;
+        ExpressionStatement* condition;
         Expression* counter_updation;
     public:
 
@@ -622,7 +623,7 @@ class ForLoop : public IterationStatement
         /// @param init initialization expression
         /// @param cond entry condition for for loop
         /// @param update update expression in for loop
-        ForLoop(CompoundStatement* b, Expression* cond, Expression* init, Expression* update);
+        ForLoop(CompoundStatement* b, ExpressionStatement* init, ExpressionStatement* cond, Expression* update);
         void print();
 };
 

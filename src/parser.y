@@ -164,12 +164,12 @@ new_variable
 	;
 
 function_declaration
-	: type IDENTIFIER '(' ')' compound_statement	{$2 = new Identifier($2); $$ = FunctionDeclaration($2, $1,)}
-	| type IDENTIFIER '(' args_list ')' compound_statement	{}
+	: type IDENTIFIER '(' ')' compound_statement	{$2 = new Identifier($2); $$ = FunctionDeclaration($2, $1, $5);}
+	| type IDENTIFIER '(' args_list ')' compound_statement	{$2 = new Identifier($2); $$ = FunctionDeclaration($2, $1, $6, $4);}
 	;
 
 args_list
-	: arg
+	: arg	
 	| args_list ',' arg
 	;
 
@@ -307,10 +307,10 @@ labeled_statement
 iteration_statement
 	: WHILE '(' ')' compound_statement 	{$$ = new WhileLoop($4);}
 	| WHILE '(' expression ')' compound_statement {$$ = new WhileLoop($5, $3);}
-	| FOR '(' expression_statement expression_statement ')' compound_statement 
-	| FOR '(' expression_statement expression_statement expression ')' compound_statement 
-	| FOR '(' variable_declaration expression_statement ')' compound_statement 
-	| FOR '(' variable_declaration expression_statement expression ')' compound_statement
+	| FOR '(' expression_statement expression_statement ')' compound_statement {$$ = new ForLoop($6, $3, $4, NULL);}
+	| FOR '(' expression_statement expression_statement expression ')' compound_statement {$$ = new ForLoop($7, $3, $4, $5);}
+	| FOR '(' variable_declaration expression_statement ')' compound_statement {$$ = new ForLoop($6, $3, $4, NULL);} 
+	| FOR '(' variable_declaration expression_statement expression ')' compound_statement {$$ = new ForLoop($7, $3, $4, $5);}
 	;
 
 jump_statement
