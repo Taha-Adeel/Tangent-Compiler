@@ -33,6 +33,7 @@
 {
 	Program *pgm;
 	list <Statement*> *stmt_list;
+	list <Expression*> *exp_list;
 	Expression *exp;
 	Statement* stmt;
 	type t;
@@ -43,23 +44,26 @@
 	string values;
 	ACCESS_SPEC access_spec;
 	ClassMember class_member;
-	ConstructorDeclaration constructor_decl;
 }
 
 /* Declaring types to the different non-terminals */
 %type <pgm> program
-%type <stmt_list> translation_unit new_variable new_variable_list
+%type <stmt_list> translation_unit statement_list
+%type <exp_list> new_variable_list args_list expression_list
 
-%type <stmt> external_declaration 
+%type <stmt> external_declaration statement
 %type <stmt> driver_definition function_declaration variable_declaration family_declaration
 %type <stmt> jump_statement iteration_statement labeled_statement expression_statement
-%type <stmt> selection_statement compound_statement variable_declaration_list
+%type <stmt> selection_statement compound_statement
+%type <stmt> constructor_declaration error
 
-%type <exp> expression constant_expression
+%type <exp> expression primary_expression
+%type <exp> new_variable literal arg variable
+
 %type <t> type
 %type <access_spec> access_specifier
 %type <class_member> class_member class_members
-%type <constructor_decl> constructor_declaration
+
 /*** TOKEN DECLARATION ***/
 %header
 
@@ -69,7 +73,10 @@
 %token BOOL FLOAT INT STRING VOID 
 
 /* Literals */
-%token BOOL_LITERAL FLOAT_LITERAL INTEGER_LITERAL STRING_LITERAL
+%token <valuei> INTEGER_LITERAL
+%token <valuef> FLOAT_LITERAL
+%token <valueb> BOOL_LITERAL
+%token <values> STRING_LITERAL
 
 /* Control flow keywords */
 %token IF ELSE SWITCH CASE DEFAULT WHILE FOR BREAK CONTINUE SEND
@@ -82,7 +89,7 @@
 %token DRIVER
 
 /* Variables */
-%token IDENTIFIER
+%token <id> IDENTIFIER
 
 /* The operator precedence and associativity rules for the language. The higher precedence operators are listed below the lower precedence rules. */
 %left ','
@@ -118,7 +125,7 @@ external_declaration
 	: driver_definition			// $$ = $1
 	| variable_declaration		// $$ = $1
 	| function_declaration		// $$ = $1
-	| class_declaration			// $$ = $1
+	| family_declaration		// $$ = $1
 	;
 
 driver_definition
@@ -137,7 +144,6 @@ type
 	| VOID			{$$ = VOID_TYPE;}
 	| IDENTIFIER  	{$$ = new Identifier($1);}
 	;
-
 
 literal
 	: INTEGER_LITERAL	{$$ = new IntegerLiteral($1);}
@@ -190,7 +196,7 @@ family_declaration
 	;
 
 access_specifier
-	: %empty
+	: %empty	{$$ = ACCESS_SPEC(ACCESS_SPEC::PUBLIC);} //default access specifier is public
 	| PUBLIC 	{$$ = ACCESS_SPEC(ACCESS_SPEC::PUBLIC);}
 	| PRIVATE	{$$ = ACCESS_SPEC(ACCESS_SPEC::PRIVATE);}
 	;
