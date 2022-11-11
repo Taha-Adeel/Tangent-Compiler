@@ -450,7 +450,7 @@ class CompoundStatement : public Statement
     public:
         /// @brief Constructor for Comppund Statement Class
         /// @param l list of statements
-        CompoundStatement(list <Statement*> l);
+        CompoundStatement(list <Statement*> l = new list<Statement*>());
         /// @brief print the content of compound statement
         void print();
 };
@@ -585,44 +585,6 @@ class ForLoop : public IterationStatement
         ExpressionStatement* condition;
         Expression* counter_updation;
     public:
-
-        //removed most constructor beacuse there is no way to distinguish between them on basis of arguments passed
-
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // ForLoop(CompoundStatement* b);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param cond entry condition for for loop
-        // ForLoop(CompoundStatement* b, Expression* cond);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param init initialization expression
-        // ForLoop(CompoundStatement* b, Expression* init);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param update update expression in for loop
-        // ForLoop(CompoundStatement* b, Expression* update);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param init initialization expression
-        // /// @param cond entry condition for for loop
-        // ForLoop(CompoundStatement* b, Expression* cond, Expression* init);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param cond entry condition for for loop
-        // /// @param update update expression in for loop
-        // ForLoop(CompoundStatement* b, Expression* cond, Expression* update);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param init initialization expression
-        // /// @param update update expression in for loop
-        // ForLoop(CompoundStatement* b, Expression* init, Expression* update);
-        /// @brief Constructor for ForLoop
-        /// @param b body of for loop
-        /// @param init initialization expression
-        /// @param cond entry condition for for loop
-        /// @param update update expression in for loop
         ForLoop(CompoundStatement* b, ExpressionStatement* init, ExpressionStatement* cond, Expression* update);
         void print();
 };
@@ -631,41 +593,32 @@ class ForLoop : public IterationStatement
  * Selection Statements 
  * *******************************************/
 /// @brief Class to represent if - else statements in the AST. Derives from Statement
-class IfElse : public Statement
+class IfStatement : public Statement
 {
     protected:
-        list <Expression*> condition_list;
-        list <CompoundStatement*> if_blocks;
-        CompoundStatement* else_block;
+        Expression* condition;
+        CompoundStatement* if_block;
     public:
-        // /// @brief Constructor for IfElse
-        // /// @param l list of if statements
-        // /// @param ifs block of code for corresponding statement
-        // IfElse(list <Expression*> l, list <CompoundStatement*> ifs);
-        /// @brief Constructor for IfElse
-        /// @param l list of if statements
-        /// @param ifs block of code for corresponding statement
-        /// @param elseb block of code for else block
-        IfElse(list <Expression*> l, list <CompoundStatement*> ifs, CompoundStatement* elseb = nullptr);
+        If(Expression* e, CompoundStatement* block);
+        void print();
+}
+class IfElseStatement : public Statement
+{
+    protected:
+        Expression* if_condition;
+        CompoundStatement* if_block, else_block;
+    public:
+        IfElseStatement(Expression* cond, CompoundStatement* block1, CompoundStatement* block2);
         void print();
 };
 /// @brief Class to represent switch case statement in the AST. Derives from Statement
-class Switch : public Statement
+class SwitchStatement : public Statement
 {
     protected:
         Expression* exp;
-        list <CaseLabel*> cases;
-        DefaultLabel* def;
+        CompoundStatement* block;
     public:
-        /// @brief Constructor for Switch statement
-        /// @param e switch expression
-        /// @param c cases for switch
-        Switch(Expression* e, list <CaseLabel*> c);
-        /// @brief Constructor for Switch statement
-        /// @param e switch expression
-        /// @param c cases for switch
-        /// @param _def default case for switch
-        Switch(Expression* e, list <CaseLabel*> c, DefaultLabel* _def);
+        Switch(Expression* e, CompoundStatement* b);
         void print();
 };
 /// @brief Class to represent the ternary operator in the AST. Derives from Statement

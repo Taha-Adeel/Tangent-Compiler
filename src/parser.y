@@ -267,35 +267,35 @@ expression_list
  * Statements
  *------------------------------------------------------------------------*/
 statement
-	: labeled_statement
-	| compound_statement
-	| variable_declaration
-	| expression_statement
-	| selection_statement
-	| iteration_statement
-	| jump_statement
+	: labeled_statement  		//$$ = $1     
+	| compound_statement		//$$ = $1
+	| variable_declaration		//$$ = $1
+	| expression_statement		//$$ = $1
+	| selection_statement		//$$ = $1
+	| iteration_statement		//$$ = $1
+	| jump_statement			//$$ = $1
 	| error ';'
 	;
 
 compound_statement
-	: '{' '}'
-	| '{' statement_list '}'
+	: '{' '}'					{$$ = new CompoundStatement();}
+	| '{' statement_list '}'	{$$ = new CompoundStatement($2);}
 	;
 
 statement_list
-	: statement
-	| statement_list statement
+	: statement					{$$ = new list <Statement*>(); ($$)->push_back($1);}
+	| statement_list statement	{$$ = $1; ($$)->push_back($2);}
 	;
 
 expression_statement
-	: ';'			 
+	: ';'			 	  {$$ = new ExpressionStatement(NULL);}
 	| expression_list ';' {$$ = new ExpressionStatement($1);}
 	;
 
 selection_statement
-	: IF '(' expression ')' compound_statement
-	| IF '(' expression ')' compound_statement ELSE compound_statement
-	| SWITCH '(' expression ')' statement
+	: IF '(' expression ')' compound_statement	{$$ = new IfStatement($3, $5);}
+	| IF '(' expression ')' compound_statement ELSE compound_statement {$$ = new IfElseStatement($3, $5, $7);}
+	| SWITCH '(' expression ')' statement	{$$ = new SwitchStatement($3, $5);}
 	;
 
 labeled_statement
