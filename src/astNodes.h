@@ -57,7 +57,12 @@ class Expression : public ASTNode
 };
 
 /* Literals */
-class IntegerLiteral : public Expression
+
+class Literal : public Expression
+{
+
+};
+class IntegerLiteral : public Literal
 {
     public:
         IntegerLiteral(int num);
@@ -65,7 +70,7 @@ class IntegerLiteral : public Expression
         value_pair evaluate();
 };
 
-class FloatingPointLiteral : public Expression
+class FloatingPointLiteral : public Literal
 {
     public:
         FloatingPointLiteral(float num);
@@ -73,7 +78,7 @@ class FloatingPointLiteral : public Expression
         value_pair evaluate();
 };
 
-class StringLiteral : public Expression
+class StringLiteral : public Literal
 {
     public:
         StringLiteral(string s);
@@ -81,7 +86,7 @@ class StringLiteral : public Expression
         value_pair evaluate();
 };
 
-class BooleanLiteral : public Expression
+class BooleanLiteral : public Literal
 {
     public:
         BooleanLiteral(bool b);
@@ -91,7 +96,12 @@ class BooleanLiteral : public Expression
 
 /* Identifiers */
 
-class Identifier : public Expression
+class Variable : public Expression
+{
+
+};
+
+class Identifier : public Variable
 {
     protected:
         string id;
@@ -102,15 +112,26 @@ class Identifier : public Expression
         value_pair evaluate();
 };
 
-/* Array Element Access */
-
-class ArrayAccess : public Expression
+class MemberAccess : public Variable
 {
     protected:
-        Identifier* array_name;
-        int index;
+        Variable* accessor_name;
+        string id;
+    public: 
+        MemberAccess(Variable* v, string s);
+        void print();
+        value_pair evaluate();
+};
+
+/* Array Element Access */
+
+class ArrayAccess : public Variable
+{
+    protected:
+        Variable* array_name;
+        Expression* index;
     public:
-        ArrayAccess(Identifier* name, int i);
+        ArrayAccess(Identifier* name, Expression* ind);
         void print();
         value_pair evaluate();
 };
@@ -120,10 +141,10 @@ class ArrayAccess : public Expression
 class FunctionCall : public Expression
 {
     protected:
-        Expression* func_name;
+        Variable* func_name;
         list <Expression*> args_list;
     public:
-        FunctionCall(Identifier* name, list <Expression*> l = list<Expression*>());
+        FunctionCall(Variable* name, list <Expression*> l = list<Expression*>());
         void print();
         value_pair evaluate();
 };
@@ -133,11 +154,11 @@ class FunctionCall : public Expression
 class AssignmentExp : public Expression
 {
     protected:
-        Identifier* id;
+        Variable* LHS;
         Expression* RHS;
     public:
         AssignmentExp();
-        AssignmentExp(Identifier* name, Expression* R);
+        AssignmentExp(Variable* L, Expression* R);
         void print();
         value_pair evaluate();
 };
@@ -145,7 +166,7 @@ class AssignmentExp : public Expression
 class AddAssign : public AssignmentExp
 {
     public:
-        AddAssign(Identifier* name, Expression* R); // uses the constructor if AssignmentExp
+        AddAssign(Variable* L, Expression* R); // uses the constructor if AssignmentExp
         void print();
         value_pair evaluate(); // evaluation is different from AssignmentExp
 
@@ -154,7 +175,7 @@ class AddAssign : public AssignmentExp
 class SubAssign : public AssignmentExp
 {
     public:
-        SubAssign(Identifier* name, Expression* R); // uses the constructor if AssignmentExp
+        SubAssign(Variable* L, Expression* R); // uses the constructor if AssignmentExp
         void print();
         value_pair evaluate(); // evaluation is different from AssignmentExp
 
@@ -163,7 +184,7 @@ class SubAssign : public AssignmentExp
 class MulAssign : public AssignmentExp
 {
     public:
-        MulAssign(Identifier* name, Expression* R); // uses the constructor if AssignmentExp
+        MulAssign(Variable* L, Expression* R); // uses the constructor if AssignmentExp
         void print();
         value_pair evaluate(); // evaluation is different from AssignmentExp
 
@@ -172,7 +193,7 @@ class MulAssign : public AssignmentExp
 class DivAssign : public AssignmentExp
 {
     public:
-        DivAssign(Identifier* name, Expression* R); // uses the constructor if AssignmentExp
+        DivAssign(Variable* L, Expression* R); // uses the constructor if AssignmentExp
         void print();
         value_pair evaluate(); // evaluation is different from AssignmentExp
 
@@ -181,7 +202,7 @@ class DivAssign : public AssignmentExp
 class ModAssign : public AssignmentExp
 {
     public:
-        ModAssign(Identifier* name, Expression* R); // uses the constructor if AssignmentExp
+        ModAssign(Variable* L, Expression* R); // uses the constructor if AssignmentExp
         void print();
         value_pair evaluate(); // evaluation is different from AssignmentExp
 
@@ -210,6 +231,22 @@ class BinaryOperation : public Expression
         BinaryOperation(Expression* L, Expression* R);
         void print();
         value_pair evaluate();
+};
+
+/// @brief Class to represent the ternary operator in the AST. Derives from Statement
+class TernaryOperator : public Expression
+{
+    protected:
+        Expression* condition;
+        Expression* true_eval;
+        Expression* false_eval;
+    public:
+        /// @brief Constructor for TernaryOperator
+        /// @param cond conditon
+        /// @param t_eval expression to eval on cond == true
+        /// @param f_eval expression to eval on cond == false
+        TernaryOperator(Expression* cond, Expression* t_eval, Expression* f_eval);
+        void print();
 };
 
 /* Arithmetic Operations */
@@ -599,9 +636,9 @@ class IfStatement : public Statement
         Expression* condition;
         CompoundStatement* if_block;
     public:
-        If(Expression* e, CompoundStatement* block);
+        IfStatement(Expression* e, CompoundStatement* block);
         void print();
-}
+};
 class IfElseStatement : public Statement
 {
     protected:
@@ -621,21 +658,7 @@ class SwitchStatement : public Statement
         Switch(Expression* e, CompoundStatement* b);
         void print();
 };
-/// @brief Class to represent the ternary operator in the AST. Derives from Statement
-class TernaryOperator : public Statement
-{
-    protected:
-        Expression* condition;
-        Expression* true_eval;
-        Expression* false_eval;
-    public:
-        /// @brief Constructor for TernaryOperator
-        /// @param cond conditon
-        /// @param t_eval expression to eval on cond == true
-        /// @param f_eval expression to eval on cond == false
-        TernaryOperator(Expression* cond, Expression* t_eval, Expression* f_eval);
-        void print();
-};
+
 /// @brief Provides base class for all jump statements
 class JumpStatement : public Statement{};
 /// @brief Class to represent 'return' in the AST. Derives from Statement. 

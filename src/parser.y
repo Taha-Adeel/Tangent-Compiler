@@ -214,21 +214,21 @@ constructor_declaration
  * Expressions
  *------------------------------------------------------------------------*/
 primary_expression
-	: literal
-	| variable
-	| variable '(' ')'
-	| variable '(' expression_list ')'
-	| '(' expression ')'
+	: literal			// $$ = $1
+	| variable			// $$ = $1
+	| variable '(' ')'	{$$ = new FunctionCall($1);}
+	| variable '(' expression_list ')'	{$$ = new FunctionCall($1, $3);}
+	| '(' expression ')'	{$$ = $2;}
 	;
 
 variable
-	: IDENTIFIER
-	| variable SCOPE_ACCESS IDENTIFIER
-	| variable '[' expression ']'
+	: IDENTIFIER		{$$ = new Identifier($1);}
+	| variable SCOPE_ACCESS IDENTIFIER	{$$ = new MemberAccess($1, $3);}
+	| variable '[' expression ']'	{$$ = new ArrayAccess($1, $3);}
 	;
 
 expression
-	: primary_expression
+	: primary_expression			//$$ = $1
 	| '+' expression %prec UPLUS
 	| '-' expression %prec UMINUS
 	| expression '*' expression
@@ -250,17 +250,17 @@ expression
 	| variable INC %prec INC_POST
 	| variable DEC %prec DEC_POST
 	| variable ASSIGN expression
-	| variable MUL_ASSIGN expression
-	| variable DIV_ASSIGN expression
-	| variable MOD_ASSIGN expression
-	| variable ADD_ASSIGN expression
-	| variable SUB_ASSIGN expression
-	| expression '?' expression ':' expression
+	| variable MUL_ASSIGN expression			{$$ = new MulAssign($1, $3);}
+	| variable DIV_ASSIGN expression			{$$ = new DivAssign($1, $3);}
+	| variable MOD_ASSIGN expression			{$$ = new ModAssign($1, $3);}
+	| variable ADD_ASSIGN expression			{$$ = new AddAssign($1, $3);}
+	| variable SUB_ASSIGN expression			{$$ = new SubAssign($1, $3);}
+	| expression '?' expression ':' expression	{$$ = new TernaryOperation($1, $3, $5);}
 	;
 
 expression_list
-	: expression
-	| expression_list ',' expression
+	: expression					{$$ = new list <Expression*>(); ($$)->push_back($1);}
+	| expression_list ',' expression	{$$ = $1; ($$)->push_back($3);}
 	;
 
 /*------------------------------------------------------------------------
