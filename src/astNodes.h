@@ -374,21 +374,21 @@ class ModularDiv : public BinaryOperation
 
 };
 
-class UnaryPlus : public UnaryOperation
-{
-    public:
-        UnaryPlus(Expression* R);
-        void print();
-        value_pair evaluate();
-};
+// class UnaryPlus : public UnaryOperation
+// {
+//     public:
+//         UnaryPlus(Expression* R);
+//         void print();
+//         value_pair evaluate();
+// };
 
-class UnaryMinus : public UnaryOperation
-{
-    public:
-        UnaryMinus(Expression* R);
-        void print();
-        value_pair evaluate();
-};
+// class UnaryMinus : public UnaryOperation
+// {
+//     public:
+//         UnaryMinus(Expression* R);
+//         void print();
+//         value_pair evaluate();
+// };
 
 /* Logical Operations */
 
@@ -489,8 +489,47 @@ class Statement : public ASTNode
 {
     
 };
+/// @brief Class to represent Expression Statements in the AST. Derives from \ref Statement
+class ExpressionStatement : public Statement
+{
+    protected:
+        Expression* exp; ///
+    public:
+        ExpressionStatement() = delete;
+        /// @brief Constructor for class
+        /// @param e input expression
+        ExpressionStatement(Expression* e):exp(e){};
+        /// @brief print the content of expression statement
+        Expression* getValue();
+        void print();
+};
+
+/// @brief Class to represent Compound Statements in the AST. Derives from Statement. Represents a collection of statements
+class CompoundStatement : public Statement
+{
+    protected:
+        list <Statement*> stmt_list;
+        CompoundStatement() = default;
+    public:
+        /// @brief Constructor for Comppund Statement Class
+        /// @param l list of statements
+        CompoundStatement(list <Statement*> l);
+        /// @brief print the content of compound statement
+        void print();
+};
+
+/* Family */
 enum class ACCESS_SPEC{PUBLIC, PRIVATE};
 /// @brief Class to represent family declarations 
+class FamilyMembers: public Statement
+{
+    protected:
+        ACCESS_SPEC access_specifier;
+        Statement* member;
+    public:
+        FamilyMembers(ACCESS_SPEC acc_spec, Statement* member_):access_specifier(acc_spec), member(member_){}
+        void print();
+};
 class FamilyDecl: public Statement
 {
     protected:
@@ -518,15 +557,6 @@ class FamilyDecl: public Statement
             fam_name(fam_name_), parent_class(parent_class_){}
         void print();
 };
-class FamilyMembers: public Statement
-{
-    protected:
-        ACCESS_SPEC access_specifier;
-        Statement* member;
-    public:
-        FamilyMembers(ACCESS_SPEC acc_spec, Statement* member_):access_specifier(acc_spec), member(member_){}
-        void print();
-};
 class ConstructorDeclaration: public Statement
 {
     protected:
@@ -539,34 +569,8 @@ class ConstructorDeclaration: public Statement
         void print();
 
 };
-/// @brief Class to represent Expression Statements in the AST. Derives from \ref Statement
-class ExpressionStatement : public Statement
-{
-    protected:
-        Expression* exp; ///
-    public:
-        ExpressionStatement() = delete;
-        /// @brief Constructor for class
-        /// @param e input expression
-        ExpressionStatement(Expression* e):exp(e){};
-        /// @brief print the content of expression statement
-        Expression* getValue();
-        void print();
-};
 
-/// @brief Class to represent Compound Statements in the AST. Derives from Statement. Represents a collection of statements
-class CompoundStatement : public Statement
-{
-    protected:
-        list <Statement*> stmt_list;
-        CompoundStatement() = default;
-    public:
-        /// @brief Constructor for Comppund Statement Class
-        /// @param l list of statements
-        CompoundStatement(list <Statement*> l = new list<Statement*>());
-        /// @brief print the content of compound statement
-        void print();
-};
+
 
 /* Declaration Statements */
 
@@ -731,7 +735,7 @@ class SwitchStatement : public Statement
         Expression* exp;
         CompoundStatement* block;
     public:
-        Switch(Expression* e, CompoundStatement* b);
+        SwitchStatement(Expression* e, CompoundStatement* b);
         void print();
 };
 

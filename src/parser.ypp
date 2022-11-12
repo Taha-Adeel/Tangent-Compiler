@@ -41,9 +41,9 @@
 	int valuei;
 	float valuef;
 	bool valueb;
-	string values;
+	//string values;
 	ACCESS_SPEC access_spec;
-	ClassMember class_member;
+	FamilyMembers class_member;
 }
 
 /* Declaring types to the different non-terminals */
@@ -202,14 +202,14 @@ access_specifier
 	;
 
 class_members
-	: class_member 					{$$ = new list<ClassMember*>($1);}
+	: class_member 					{$$ = new list<FamilyMembers*>($1);}
 	| class_members class_member	{$$ =$1; $$->push_back($2);}
 	;
 
 class_member
-	: access_specifier variable_declaration	{$$ = new ClassMember($1, $2);}
-	| access_specifier function_declaration	{$$ = new ClassMember($1, $2);}
-	| constructor_declaration				{$$ = new ClassMember(ACCESS_SPEC::PUBLIC, $1);}
+	: access_specifier variable_declaration	{$$ = new FamilyMembers($1, $2);}
+	| access_specifier function_declaration	{$$ = new FamilyMembers($1, $2);}
+	| constructor_declaration				{$$ = new FamilyMembers(ACCESS_SPEC::PUBLIC, $1);}
 	;
 
 constructor_declaration
