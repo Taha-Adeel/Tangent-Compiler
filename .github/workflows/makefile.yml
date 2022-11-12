@@ -1,31 +1,43 @@
 name: Makefile CI
 
-on:
-  push:
-    branches: 
-      - main
-      - actions
-      - Refactoring-and-Missing-features
+on: push
 
 jobs:
-  build:
-
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
       
-    - name: Install dependencies
+    - name: Install flex
       run: |
-        sudo apt-get update
         sudo apt-get -y install flex
+    
+    - name: Load bison from cache
+      id: bison-cache
+      uses: actions/cache@v3
+      with:
+        path: bison-3.8.2
+        key: bison3
+
+    - name: Compile bison-3.8
+      if: steps.bison-cache.outputs.cache-hit != 'true'
+      run: |
         wget https://ftp.gnu.org/gnu/bison/bison-3.8.2.tar.gz
         tar -xf bison-3.8.2.tar.gz
         cd bison-3.8.2
         ./configure
         make
+
+    - name: Install bison
+      run: |
+        cd bison-3.8.2
         sudo make install
-      
+    
+    - name: Compile the lexer
+      run : |
+        make lexer
+
     - name: Run Lexer Tests with syntactically correct testcases
       run: |
         make lexer_correct_codes
@@ -33,6 +45,10 @@ jobs:
     - name: Run Lexer Tests with syntactically incorrect testcases
       run: |
         make lexer_incorrect_codes
+
+    - name: Compile the parser
+      run : |
+        make parser
 
     - name: Run Parser Tests with syntactically correct testcases
       run: |

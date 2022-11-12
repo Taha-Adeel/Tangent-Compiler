@@ -1,4 +1,5 @@
 %option noyywrap yylineno nodefault
+/* %option c++ */
 
 D               [0-9]
 L               [a-zA-Z]
@@ -8,7 +9,7 @@ L               [a-zA-Z]
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
-    #include "parser.tab.h"
+    #include "parser.tab.hh"
 
     #define YY_USER_ACTION update_locations(); // Called before each token
     void comment();
@@ -93,8 +94,8 @@ L               [a-zA-Z]
 
  /* Matches to any invalid tokens not matched to any other rules */
 .                      {
-                        printf("ERROR: %s: Line %d:%d\t%-12s - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
-                        fprintf(stderr, "\033[0;31m   ERROR:\033[0m %s: Line %d:%d - '%s' - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
+                        printf("Error: %s: Line %d:%d\t%-12s - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
+                        fprintf(stderr, "   Error: %s: Line %d:%d - '%s' - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
                         return YYUNDEF;
                        }
 %%
@@ -117,7 +118,7 @@ void update_locations(){
 
 void comment(){
         char c;
-        while( (c = input()) != '\n' )
+        while( (c = yyinput()) != '\n' )
             ; /* eats up any line starting with '#' */
 }
 
@@ -152,7 +153,7 @@ void print_tokens_matched(){
     printf("\n");
 }
 
-void init_yylloc(char* filename){
+void init_yylloc(const char* filename){
 	yylloc.first_line = yylloc.last_line = yylineno = 1;
 	yylloc.first_column = yylloc.last_column = 0;
 	yylloc.filename = filename;

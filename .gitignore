@@ -1,4 +1,4 @@
 .vscode
 build
 test_outputs
-# documentation/*.html
+documentation/*.html
