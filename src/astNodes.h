@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <variant>
+#include <optional>
 
 using namespace std;
 
@@ -511,12 +512,12 @@ class ExpressionStatement : public Statement
 class CompoundStatement : public Statement
 {
     protected:
-        list <Statement*> stmt_list;
+        list <Statement*> *stmt_list;
         CompoundStatement() = default;
     public:
         /// @brief Constructor for Comppund Statement Class
         /// @param l list of statements
-        CompoundStatement(list <Statement*> l);
+        CompoundStatement(list <Statement*> *l = new list <Statement*>()): stmt_list(l){}
         /// @brief print the content of compound statement
         void print();
 };
@@ -538,7 +539,7 @@ class FamilyDecl: public Statement
     protected:
         Identifier fam_name;                                        /// Identifier of the familie
         list<FamilyMembers*> members = list<FamilyMembers*>();          /// saves the pouinter to the member vars/ function as a List
-        optional<pair<Identifier, ACCESS_SPEC>> parent_class ={};   /// saves the Identifier and Access specification of the parent class. if there is no parent class, std::optional is not initialised
+        std::optional<pair<Identifier, ACCESS_SPEC>> parent_class ={};   /// saves the Identifier and Access specification of the parent class. if there is no parent class, std::optional is not initialised
     public:
         
         /**
@@ -618,7 +619,8 @@ class DriverDefinition : public Statement
         DriverDefinition() = delete;
         /// @brief Constructor for DriverFunction
         /// @param body the Compound Statements that take make up the driver function
-        DriverDefinition(CompoundStatement* body) : func_body(body) {};
+        //DriverDefinition(CompoundStatement* body) : func_body(body) {};
+        DriverDefinition(Statement* body): func_body((CompoundStatement*)body){}
         void print();
 };
 /// @brief Class to represent variable initialization in the AST. Derives from Statement
@@ -776,6 +778,7 @@ class Program : public ASTNode
         list <Statement*> *stmt_list;
     public:
         Program(list <Statement*> *stmts = new list <Statement*> ());
+        void print();
 };
 
 // objects at the base of the tree

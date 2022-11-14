@@ -41,11 +41,11 @@ IntegerLiteral::IntegerLiteral(int num)
 }
 void IntegerLiteral::print()
 {
-    cout << value.second.ivalue;
+    std::cout << value.second.ivalue;
 }
 value_pair IntegerLiteral::evaluate()
 {
-    cout << "Integer node: operand = " << value.second.ivalue << endl;
+    std::cout << "Integer node: operand = " << value.second.ivalue << endl;
     return value;
 }
 
@@ -56,11 +56,11 @@ FloatingPointLiteral::FloatingPointLiteral(float num)
 }
 void FloatingPointLiteral::print()
 {
-    cout << value.second.fvalue;
+    std::cout << value.second.fvalue;
 }
 value_pair FloatingPointLiteral::evaluate()
 {
-    cout << "Float node: operand = " << value.second.fvalue << endl;
+    std::cout << "Float node: operand = " << value.second.fvalue << endl;
     return value;
 }
 
@@ -71,11 +71,11 @@ StringLiteral::StringLiteral(string s)
 }
 void StringLiteral::print()
 {
-    cout << value.second.svalue;
+    std::cout << value.second.svalue;
 }
 value_pair StringLiteral::evaluate()
 {
-    cout << "String node: operand = " << value.second.svalue << endl;
+    std::cout << "String node: operand = " << value.second.svalue << endl;
     return value;
 }
 
@@ -87,12 +87,12 @@ BooleanLiteral::BooleanLiteral(bool b)
 
 void BooleanLiteral::print()
 {
-    cout << value.second.bvalue;
+    std::cout << value.second.bvalue;
 }
 
 value_pair BooleanLiteral::evaluate()
 {
-    cout << "Bool node: operand = " << value.second.bvalue << endl;
+    std::cout << "Bool node: operand = " << value.second.bvalue << endl;
     return value;
 }
 
@@ -103,7 +103,7 @@ Identifier::Identifier(string name)
 
 void Identifier::print()
 {
-    cout << id;
+    std::cout << id;
 }
 
 string Identifier::ret_id()
@@ -113,22 +113,22 @@ string Identifier::ret_id()
 
 value_pair Identifier::evaluate()
 {
-    cout << "Identifier node: " << id << " = ";
+    std::cout << "Identifier node: " << id << " = ";
     if (symTable[id].first == INT_TYPE)
     {
-        cout << symTable[id].second.ivalue << endl;
+        std::cout << symTable[id].second.ivalue << endl;
     }
     else if (symTable[id].first == FLOAT_TYPE)
     {
-        cout << symTable[id].second.fvalue << endl;
+        std::cout << symTable[id].second.fvalue << endl;
     }
     else if (symTable[id].first == STRING_TYPE)
     {
-        cout << symTable[id].second.svalue << endl;
+        std::cout << symTable[id].second.svalue << endl;
     }
     else if (symTable[id].first == BOOL_TYPE)
     {
-        cout << symTable[id].second.bvalue << endl;
+        std::cout << symTable[id].second.bvalue << endl;
     }
     return symTable[id];
 }
@@ -141,7 +141,7 @@ ArrayAccess::ArrayAccess(Identifier *name, int i)
 void ArrayAccess::print()
 {
     array_name->print();
-    cout << "[" << index << "]";
+    std::cout << "[" << index << "]";
 }
 
 value_pair ArrayAccess::evaluate()
@@ -157,13 +157,13 @@ FunctionCall::FunctionCall(Identifier *name, list<Identifier *> l)
 void FunctionCall::print()
 {
     func_name->print();
-    cout << "(";
+    std::cout << "(";
     for (auto const &v : args_list)
     {
         v->print();
-        cout << ",";
+        std::cout << ",";
     }
-    cout << ")";
+    std::cout << ")";
 }
 
 value_pair FunctionCall::evaluate()
@@ -179,7 +179,7 @@ AssignmentExp::AssignmentExp(Identifier *name, Expression *R)
 void AssignmentExp::print()
 {
     id->print();
-    cout << " = ";
+    std::cout << " = ";
     RHS->print();
 }
 
@@ -198,7 +198,7 @@ AddAssign::AddAssign(Identifier *name, Expression *R)
 void AddAssign::print()
 {
     id->print();
-    cout << " += ";
+    std::cout << " += ";
     RHS->print();
 }
 
@@ -239,7 +239,7 @@ SubAssign::SubAssign(Identifier *name, Expression *R)
 void SubAssign::print()
 {
     id->print();
-    cout << " -= ";
+    std::cout << " -= ";
     RHS->print();
 }
 
@@ -272,7 +272,7 @@ MulAssign::MulAssign(Identifier *name, Expression *R)
 void MulAssign::print()
 {
     id->print();
-    cout << " *= ";
+    std::cout << " *= ";
     RHS->print();
 }
 
@@ -305,7 +305,7 @@ DivAssign::DivAssign(Identifier *name, Expression *R)
 void DivAssign::print()
 {
     id->print();
-    cout << " /= ";
+    std::cout << " /= ";
     RHS->print();
 }
 
@@ -338,7 +338,7 @@ ModAssign::ModAssign(Identifier *name, Expression *R)
 void ModAssign::print()
 {
     id->print();
-    cout << " %= ";
+    std::cout << " %= ";
     RHS->print();
 }
 
@@ -377,11 +377,11 @@ Addition::Addition(Expression *L, Expression *R)
 
 void Addition::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " + ";
+    std::cout << " + ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 
 value_pair Addition::evaluate()
@@ -425,11 +425,11 @@ Subtraction::Subtraction(Expression *L, Expression *R)
 
 void Subtraction::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " - ";
+    std::cout << " - ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 
 value_pair Subtraction::evaluate()
@@ -465,11 +465,11 @@ Multiplication::Multiplication(Expression *L, Expression *R)
 
 void Multiplication::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " * ";
+    std::cout << " * ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 
 value_pair Multiplication::evaluate()
@@ -505,11 +505,11 @@ Division::Division(Expression *L, Expression *R)
 
 void Division::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " / ";
+    std::cout << " / ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 
 value_pair Division::evaluate()
@@ -545,11 +545,11 @@ ModularDiv::ModularDiv(Expression *L, Expression *R)
 
 void ModularDiv::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " % ";
+    std::cout << " % ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 
 value_pair ModularDiv::evaluate()
@@ -580,7 +580,7 @@ UnaryPlus::UnaryPlus(Expression *R)
 
 void UnaryPlus::print()
 {
-    cout << "+";
+    std::cout << "+";
     RHS->print();
 }
 
@@ -597,7 +597,7 @@ UnaryMinus::UnaryMinus(Expression *R)
 
 void UnaryMinus::print()
 {
-    cout << "-";
+    std::cout << "-";
     RHS->print();
 }
 
@@ -626,11 +626,11 @@ LogicalAND::LogicalAND(Expression *L, Expression *R)
 
 void LogicalAND::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " & ";
+    std::cout << " & ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 
 value_pair LogicalAND::evaluate()
@@ -648,11 +648,11 @@ value_pair LogicalAND::evaluate()
 LogicalOR::LogicalOR(Expression *L, Expression *R):BinaryOperation(L, R){}
 void LogicalOR::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " | ";
+    std::cout << " | ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 value_pair LogicalOR::evaluate()
 {
@@ -675,7 +675,7 @@ LogicalNOT::LogicalNOT(Expression *R):UnaryOperation(R){}
 
 void LogicalNOT::print()
 {
-    cout << "!";
+    std::cout << "!";
     RHS->print();
 }
 value_pair LogicalNOT::evaluate()
@@ -692,11 +692,11 @@ value_pair LogicalNOT::evaluate()
 CompGT::CompGT(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompGT::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " > ";
+    std::cout << " > ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 value_pair CompGT::evaluate()
 {
@@ -713,11 +713,11 @@ value_pair CompGT::evaluate()
 CompLT::CompLT(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompLT::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " < ";
+    std::cout << " < ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 value_pair CompLT::evaluate()
 {
@@ -734,11 +734,11 @@ value_pair CompLT::evaluate()
 CompGE::CompGE(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompGE::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " >= ";
+    std::cout << " >= ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 
 value_pair CompGE::evaluate()
@@ -756,11 +756,11 @@ value_pair CompGE::evaluate()
 CompLE::CompLE(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompLE::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " <= ";
+    std::cout << " <= ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 
 value_pair CompLE::evaluate()
@@ -778,11 +778,11 @@ value_pair CompLE::evaluate()
 CompEQ::CompEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompEQ::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " = ";
+    std::cout << " = ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 value_pair CompEQ::evaluate()
 {
@@ -798,11 +798,11 @@ value_pair CompEQ::evaluate()
 CompNEQ::CompNEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompNEQ::print()
 {
-    cout << "(";
+    std::cout << "(";
     LHS->print();
-    cout << " != ";
+    std::cout << " != ";
     RHS->print();
-    cout << ")";
+    std::cout << ")";
 }
 value_pair CompNEQ::evaluate()
 {
@@ -824,9 +824,9 @@ value_pair CompNEQ::evaluate()
 ExpressionStatement::ExpressionStatement(Expression *e) : exp(e) {}
 void ExpressionStatement::print()
 {
-    cout << "Expression Statement:\n{ \n->";
+    std::cout << "Expression Statement:\n{ \n->";
     exp->print();
-    cout << "\n}\n";
+    std::cout << "\n}\n";
 }
 
 Expression *ExpressionStatement::getValue()
@@ -837,204 +837,204 @@ Expression *ExpressionStatement::getValue()
 CompoundStatement::CompoundStatement(list<Statement *> l) : stmt_list(l) {}
 void CompoundStatement::print()
 {
-    cout << "Compound Statement:\n{";
+    std::cout << "Compound Statement:\n{";
     for (auto ele : stmt_list)
     {
-        cout << "\n->";
+        std::cout << "\n->";
         ele->print();
     }
-    cout << "\n}\n";
+    std::cout << "\n}\n";
 }
 
 FunctionDeclaration::FunctionDeclaration(Identifier *_name, type _t, list<Identifier *> _arg_list, CompoundStatement *_stmt) : func_name(_name), return_type(_t), arg_list(_arg_list), func_body(_stmt) {}
 void FunctionDeclaration::print()
 {
-    cout << "Function Definition:\n{";
+    std::cout << "Function Definition:\n{";
     func_name->print();
-    cout << "\nReturn type : " << enumtypeToString(return_type) << "\n";
-    cout << "list of arguments";
+    std::cout << "\nReturn type : " << enumtypeToString(return_type) << "\n";
+    std::cout << "list of arguments";
     for (auto &ele : arg_list)
     {
-        cout << "\n";
+        std::cout << "\n";
         ele->print();
     }
-    cout << "\nfunction body:\n";
+    std::cout << "\nfunction body:\n";
     func_body->print();
-    cout << "}";
+    std::cout << "}";
 }
 
 VariableDeclaration::VariableDeclaration(type t, list <Expression*> l): variable_type(t), variable_list(l) {}
 void VariableDeclaration::print()
 {
-    cout << "Variable Declaration: {\n";
-    cout << "type : " << enumtypeToString(variable_type) << '\n';
-    cout << "list of identifiers";
+    std::cout << "Variable Declaration: {\n";
+    std::cout << "type : " << enumtypeToString(variable_type) << '\n';
+    std::cout << "list of identifiers";
     for (auto &ele : variable_list)
     {
         ele->print();
-        cout << "\n";
+        std::cout << "\n";
     }
 }
 
 DriverDefinition::DriverDefinition(CompoundStatement *body) : func_body(body) {}
 void DriverDefinition::print()
 {
-    cout << "Driver Definition:\n{\n";
+    std::cout << "Driver Definition:\n{\n";
     func_body->print();
-    cout << "\n}\n";
+    std::cout << "\n}\n";
 }
 
 VariableInitialization::VariableInitialization(type t, AssignmentExp *e) : variable_type(t), exp(e) {}
 void VariableInitialization::print()
 {
-    cout << "Variable Initialisation: \n{\n";
-    cout << "type: " << enumtypeToString(variable_type) << '\n';
+    std::cout << "Variable Initialisation: \n{\n";
+    std::cout << "type: " << enumtypeToString(variable_type) << '\n';
     exp->print();
-    cout << "}\n";
+    std::cout << "}\n";
 }
 
 LabeledStatement::LabeledStatement(Expression *lb, Statement *st) : label(lb), stmt(st) {}
 void LabeledStatement::print()
 {
-    cout << "Labelled Statement:\n{\n";
+    std::cout << "Labelled Statement:\n{\n";
     label->print();
     stmt->print();
-    cout << "\n}\n";
+    std::cout << "\n}\n";
 }
 
 CaseLabel::CaseLabel(Expression *lb, Statement *st) : LabeledStatement(lb, st){};
 void CaseLabel::print()
 {
-    cout << "Case Label {\n";
+    std::cout << "Case Label {\n";
     label->print();
-    cout << "statements:";
+    std::cout << "statements:";
     stmt->print();
-    cout << "\n}\n";
+    std::cout << "\n}\n";
 }
 
 DefaultLabel::DefaultLabel(Statement *st) : LabeledStatement(nullptr, st){};
 void DefaultLabel::print()
 {
-    cout << "Default Label \n{\n";
-    cout << "statements:";
-    cout << "\n";
+    std::cout << "Default Label \n{\n";
+    std::cout << "statements:";
+    std::cout << "\n";
     stmt->print();
-    cout << "\n}\n";
+    std::cout << "\n}\n";
 }
 
 IterationStatement::IterationStatement(CompoundStatement *b, Expression *cond) : body(b), condition(cond) {}
 void IterationStatement::print()
 {
-    cout << "Default Label \n{\n";
-    cout << "body:\n";
+    std::cout << "Default Label \n{\n";
+    std::cout << "body:\n";
     body->print();
-    cout << "condition:\n";
+    std::cout << "condition:\n";
     condition->print();
-    cout << "\n}\n";
+    std::cout << "\n}\n";
 }
 
 WhileLoop::WhileLoop(CompoundStatement *b) : IterationStatement(b, nullptr) {}
 WhileLoop::WhileLoop(CompoundStatement *b, Expression *cond) : IterationStatement(b, cond) {}
 void WhileLoop::print()
 {
-    cout << "While loop:\n{\n";
-    cout << "condition:\n";
+    std::cout << "While loop:\n{\n";
+    std::cout << "condition:\n";
     condition->print();
-    cout << "body:\n";
+    std::cout << "body:\n";
     body->print();
-    cout << "\n}\n";
+    std::cout << "\n}\n";
 }
 
 ForLoop::ForLoop(CompoundStatement *b, Expression *cond, Expression *init, Expression *update) : IterationStatement(b, cond), initialization(init), counter_updation(update) {}
 void ForLoop::print()
 {
-    cout << "For loop:\n{\n";
-    cout << "initialisation:\n";
+    std::cout << "For loop:\n{\n";
+    std::cout << "initialisation:\n";
     if (initialization)
         initialization->print();
     else
-        cout << "empty\n";
-    cout << "condition:\n";
+        std::cout << "empty\n";
+    std::cout << "condition:\n";
     if (condition)
         condition->print();
     else
-        cout << "empty\n";
-    cout << "update:\n";
+        std::cout << "empty\n";
+    std::cout << "update:\n";
     if (counter_updation)
         counter_updation->print();
     else
-        cout << "empty\n";
-    cout << "body:\n";
+        std::cout << "empty\n";
+    std::cout << "body:\n";
     if (body)
         body->print();
     else
-        cout << "no body\n";
-    cout << "\n}\n";
+        std::cout << "no body\n";
+    std::cout << "\n}\n";
 }
 
 // IfElse::IfElse(list <Expression*> l, list <CompoundStatement*> ifs):condition_list(l), if_blocks(ifs){}
 IfElse::IfElse(list<Expression *> l, list<CompoundStatement *> ifs, CompoundStatement *elseb = nullptr) : condition_list(l), if_blocks(ifs), else_block(elseb){};
 void IfElse::print()
 {
-    cout << "If else block:\n{\n";
-    cout << "condition list:\n";
+    std::cout << "If else block:\n{\n";
+    std::cout << "condition list:\n";
     for (auto &ele : condition_list)
     {
-        cout << "\n";
+        std::cout << "\n";
         ele->print();
     }
-    cout << "if blocks list:\n";
+    std::cout << "if blocks list:\n";
     for (auto &ele : if_blocks)
     {
-        cout << "\n";
+        std::cout << "\n";
         ele->print();
     }
     if (else_block)
         else_block->print();
     else
-        cout << "no else block\n";
-    cout << "\n}\n";
+        std::cout << "no else block\n";
+    std::cout << "\n}\n";
 }
 
 Switch::Switch(Expression *e, list<CaseLabel *> c) : exp(e), cases(c) {}
 Switch::Switch(Expression *e, list<CaseLabel *> c, DefaultLabel *_def) : exp(e), cases(c), def(_def) {}
 void Switch::print()
 {
-    cout << "switch block:\n{\n";
-    cout << "expression:\n";
+    std::cout << "switch block:\n{\n";
+    std::cout << "expression:\n";
     exp->print();
-    cout << "cases:\n";
+    std::cout << "cases:\n";
     for (auto &ele : cases)
     {
-        cout << "\n";
+        std::cout << "\n";
         ele->print();
     }
     if (def)
         def->print();
     else
-        cout << "no else block\n";
-    cout << "\n}\n";
+        std::cout << "no else block\n";
+    std::cout << "\n}\n";
 }
 
 TernaryOperator::TernaryOperator(Expression *cond, Expression *t_eval, Expression *f_eval) : condition(cond), true_eval(t_eval), false_eval(f_eval) {}
 void TernaryOperator::print()
 {
-    cout << "ternary:\n{\n";
-    cout << "condition:\n";
+    std::cout << "ternary:\n{\n";
+    std::cout << "condition:\n";
     condition->print();
-    cout << "if true:\n";
+    std::cout << "if true:\n";
     true_eval->print();
-    cout << "if false:\n";
+    std::cout << "if false:\n";
     false_eval->print();
-    cout << "\n}\n";
+    std::cout << "\n}\n";
 }
 
 ReturnStatement::ReturnStatement(Expression *val) : return_val(val) {}
 void ReturnStatement::print()
 {
-    cout << "ternary:\n{\nreturns:\n";
+    std::cout << "ternary:\n{\nreturns:\n";
     return_val->print();
-    cout << "\n}\n";
+    std::cout << "\n}\n";
 }
 
 /*------------------------------------------------------------------------

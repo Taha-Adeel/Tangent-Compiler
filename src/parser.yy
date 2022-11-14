@@ -1,6 +1,5 @@
 %require "3.8"
 /* %language "c++" */
-
 %code top{
 	#include <stdio.h>
 	#include <string>
@@ -48,13 +47,13 @@
 	Expression *exp;
 	Statement* stmt;
 	type t;
-	string id;
+	string *id;
 	int valuei;
 	float valuef;
 	bool valueb;
-	/* string values; */
-	ACCESS_SPEC access_spec;
-	FamilyMembers class_member;
+	string *values;
+	ACCESS_SPEC *access_spec;
+	FamilyMembers *class_member;
 }
 
 /* Declaring types to the different non-terminals */
@@ -126,17 +125,17 @@ program
 	: %empty				{$$ = new Program(); root = $$;}
 	| translation_unit		{$$ = new Program($1); root = $$;}
 	;
-	
+
 translation_unit
 	: external_declaration					{$$ = new list <Statement*>(); $$->push_back($1);}
 	| translation_unit external_declaration	{$$ = $1; $$->push_back($2);}
 	;
 
 external_declaration
-	: driver_definition			// $$ = $1
-	| variable_declaration		// $$ = $1
-	| function_declaration		// $$ = $1
-	| family_declaration		// $$ = $1
+	: driver_definition
+	| variable_declaration
+	| function_declaration
+	| family_declaration
 	;
 
 driver_definition
@@ -174,14 +173,14 @@ new_variable_list
 	;
 
 new_variable
-	: IDENTIFIER {$$ = new Identifier($1);} 
-	| IDENTIFIER ASSIGN expression	{$1 = new Identifier($1); $$ = new AssignmentExp($1, $3);}
-	| IDENTIFIER '(' ')'	{$1 = new Identifier($1); $$ = new FunctionCall($1);}
+	: IDENTIFIER 							{$$ = new Identifier($1);} 
+	| IDENTIFIER ASSIGN expression			{auto temp = new Identifier($1); $$ = new AssignmentExp(temp, $3);}
+	| IDENTIFIER '(' ')'					{$1 = new Identifier($1); $$ = new FunctionCall($1);}
 	| IDENTIFIER '(' expression_list ')'	{$1 = new Identifier($1); $$ = new FunctionCall($1, $3);}
 	;
 
 function_declaration
-	: type IDENTIFIER '(' ')' compound_statement	{$2 = new Identifier($2); $$ = FunctionDeclaration($2, $1, $5);}
+	: type IDENTIFIER '(' ')' compound_statement			{$2 = new Identifier($2); $$ = FunctionDeclaration($2, $1, $5);}
 	| type IDENTIFIER '(' args_list ')' compound_statement	{$2 = new Identifier($2); $$ = FunctionDeclaration($2, $1, $6, $4);}
 	;
 
@@ -191,7 +190,7 @@ args_list
 	;
 
 arg
-	: type IDENTIFIER	{$$ = new Argument($1, $2);}
+	: type IDENTIFIER		{$$ = new Argument($1, $2);}
 	| VAR type IDENTIFIER	{$$ = new Argument($2, $3);}
 	| CONST type IDENTIFIER	{$$ = new Argument($2, $3);}
 	;
@@ -233,15 +232,15 @@ constructor_declaration
 primary_expression
 	: literal			// $$ = $1
 	| variable			// $$ = $1
-	| variable '(' ')'	{$$ = new FunctionCall($1);}
+	| variable '(' ')'					{$$ = new FunctionCall($1);}
 	| variable '(' expression_list ')'	{$$ = new FunctionCall($1, $3);}
-	| '(' expression ')'	{$$ = $2;}
+	| '(' expression ')'				{$$ = $2;}
 	;
 
 variable
-	: IDENTIFIER		{$$ = new Identifier($1);}
+	: IDENTIFIER						{$$ = new Identifier($1);}
 	| variable SCOPE_ACCESS IDENTIFIER	{$$ = new MemberAccess($1, $3);}
-	| variable '[' expression ']'	{$$ = new ArrayAccess($1, $3);}
+	| variable '[' expression ']'		{$$ = new ArrayAccess($1, $3);}
 	;
 
 expression
@@ -276,21 +275,21 @@ expression
 	;
 
 expression_list
-	: expression					{$$ = new list <Expression*>(); ($$)->push_back($1);}
+	: expression						{$$ = new list <Expression*>(); ($$)->push_back($1);}
 	| expression_list ',' expression	{$$ = $1; ($$)->push_back($3);}
 	;
 
 /*------------------------------------------------------------------------
  * Statements
  *------------------------------------------------------------------------*/
-statement
-	: labeled_statement  		//$$ = $1     
-	| compound_statement		//$$ = $1
-	| variable_declaration		//$$ = $1
-	| expression_statement		//$$ = $1
-	| selection_statement		//$$ = $1
-	| iteration_statement		//$$ = $1
-	| jump_statement			//$$ = $1
+	statement
+	: labeled_statement
+	| compound_statement
+	| variable_declaration
+	| expression_statement
+	| selection_statement
+	| iteration_statement
+	| jump_statement
 	| error ';'
 	;
 
@@ -310,29 +309,29 @@ expression_statement
 	;
 
 selection_statement
-	: IF '(' expression ')' compound_statement	{$$ = new IfStatement($3, $5);}
-	| IF '(' expression ')' compound_statement ELSE compound_statement {$$ = new IfElseStatement($3, $5, $7);}
-	| SWITCH '(' expression ')' statement	{$$ = new SwitchStatement($3, $5);}
+	: IF '(' expression ')' compound_statement							{$$ = new IfStatement($3, $5);}
+	| IF '(' expression ')' compound_statement ELSE compound_statement 	{$$ = new IfElseStatement($3, $5, $7);}
+	| SWITCH '(' expression ')' statement								{$$ = new SwitchStatement($3, $5);}
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement	{$$ = new LabeledStatement($1, $3);}
+	: IDENTIFIER ':' statement		{$$ = new LabeledStatement($1, $3);}
 	| CASE expression ':' statement	{$$ = new CaseLabel($2, $4);}
-	| DEFAULT ':' statement		{$$ = new DefaultLabel($3);}
+	| DEFAULT ':' statement			{$$ = new DefaultLabel($3);}
 	;
 
 iteration_statement
-	: WHILE '(' ')' compound_statement 	{$$ = new WhileLoop($4);}
-	| WHILE '(' expression ')' compound_statement {$$ = new WhileLoop($5, $3);}
-	| FOR '(' expression_statement expression_statement ')' compound_statement {$$ = new ForLoop($6, $3, $4, NULL);}
-	| FOR '(' expression_statement expression_statement expression ')' compound_statement {$$ = new ForLoop($7, $3, $4, $5);}
-	| FOR '(' variable_declaration expression_statement ')' compound_statement {$$ = new ForLoop($6, $3, $4, NULL);} 
-	| FOR '(' variable_declaration expression_statement expression ')' compound_statement {$$ = new ForLoop($7, $3, $4, $5);}
+	: WHILE '(' ')' compound_statement														{$$ = new WhileLoop($4);}
+	| WHILE '(' expression ')' compound_statement											{$$ = new WhileLoop($5, $3);}
+	| FOR '(' expression_statement expression_statement ')' compound_statement				{$$ = new ForLoop($6, $3, $4, NULL);}
+	| FOR '(' expression_statement expression_statement expression ')' compound_statement 	{$$ = new ForLoop($7, $3, $4, $5);}
+	| FOR '(' variable_declaration expression_statement ')' compound_statement 				{$$ = new ForLoop($6, $3, $4, NULL);} 
+	| FOR '(' variable_declaration expression_statement expression ')' compound_statement 	{$$ = new ForLoop($7, $3, $4, $5);}
 	;
 
 jump_statement
-	: CONTINUE ';' 	{$$ = new ContinueStatement();}
-	| BREAK ';'		{$$ = new BreakStatement();}
+	: CONTINUE ';' 				{$$ = new ContinueStatement();}
+	| BREAK ';'					{$$ = new BreakStatement();}
 	| SEND expression_statement	{$$ = new ReturnStatement(($2).getValue());}
 	;
 

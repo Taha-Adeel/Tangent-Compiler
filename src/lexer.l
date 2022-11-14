@@ -9,6 +9,7 @@ L               [a-zA-Z]
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
+    #include "../src/astNodes.h"
     #include "parser.tab.hh"
 
     #define YY_USER_ACTION update_locations(); // Called before each token
