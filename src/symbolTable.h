@@ -23,7 +23,6 @@ private:
 	std::string name;
 	SYMBOL_TYPE type;
 	std::string type_name;
-	void* value;
 	YYLTYPE* location;
 	// Properties
 
@@ -34,12 +33,9 @@ public:
 	std::string getName() { return name; }
 	SYMBOL_TYPE getType() { return type; }
 	std::string getTypeName() { return type_name; }
-	void* getValue() { return value; }
 	YYLTYPE* getLocation() { return location; }
 
-	void setValue();
-
-	friend std::ostream operator << (std::ostream& out, const Symbol& symbol);
+	friend std::ostream& operator << (std::ostream& out, const Symbol& symbol);
 };
 
 

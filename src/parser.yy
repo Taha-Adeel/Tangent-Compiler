@@ -46,11 +46,7 @@
 	list <Expression*> *exp_list;
 	Expression *exp;
 	Statement* stmt;
-<<<<<<< HEAD
-	TYPE t;
-=======
 	TYPE *t;
->>>>>>> 0590620 (shifted constructor from .cpp to .h)
 	string *id;
 	int valuei;
 	float valuef;
@@ -210,8 +206,7 @@ family_declaration
 	;
 
 access_specifier
-	: %empty	{$$ = ACCESS_SPEC(ACCESS_SPEC::PUBLIC);} //default access specifier is public
-	| PUBLIC 	{$$ = ACCESS_SPEC(ACCESS_SPEC::PUBLIC);}
+	: PUBLIC 	{$$ = ACCESS_SPEC(ACCESS_SPEC::PUBLIC);}
 	| PRIVATE	{$$ = ACCESS_SPEC(ACCESS_SPEC::PRIVATE);}
 	;
 
