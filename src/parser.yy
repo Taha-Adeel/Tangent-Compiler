@@ -46,7 +46,7 @@
 	list <Expression*> *exp_list;
 	Expression *exp;
 	Statement* stmt;
-	type t;
+	TYPE t;
 	string *id;
 	int valuei;
 	float valuef;
