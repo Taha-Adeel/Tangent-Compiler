@@ -12,42 +12,10 @@
 using namespace std;
 
 enum class TYPE {INT, FLOAT, STRING, BOOL, VOID};
-typedef variant<int, float, string, bool> var_data;
-typedef pair<TYPE, var_data> value_pair;
-
-// /// @brief returns type of variable as string
-// /// @param t input type
-// /// @return type of variable
-// string enumtypeToString(TYPE t)
-// {
-//     switch (t)
-//     {
-//         case INT_TYPE: return "INT";
-//         case FLOAT_TYPE: return "FLOAT";
-//         case STRING_TYPE: return "STRING";
-//         case BOOL_TYPE: return "BOOL";
-//         case VOID_TYPE: return "VOID";
-//     }
-//     return "UNRECOGNISED TYPE";
-// }
-
-/// @brief checks if comparasion of two values in value_pair is valid or not
-/// @param a first vp
-/// @param b second vp
-/// @return true if comparasion is possible. else returns false
-bool is_valid_comparasion(value_pair a, value_pair b);
-bool is_unary_operation_valid(value_pair &a);
-bool is_boolean_operation_valid(value_pair &a, value_pair &b);
-
+typedef variant<int, float, string, bool> datatype;
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
  *------------------------------------------------------------------------*/
-
-
-/**
- * @brief Base Class for all nodes of AST
- * 
- */
 class ASTNode
 {
 public:
@@ -66,7 +34,7 @@ public:
 class Expression : public ASTNode
 {
 protected:
-    value_pair value;   ///holds the value of the current node as pair of TYPE of value and the actual value
+    datatype value;   ///holds the value of the current node as pair of TYPE of value and the actual value
 
 public:
     Expression();
@@ -74,9 +42,10 @@ public:
     /**
      * @brief Evaluates the value of the current Expression based on current value and the children of the nodes if they exist
      * 
-     * @return value_pair 
+     * @return datatype 
      */
-    virtual value_pair evaluate() = 0;
+    virtual datatype evaluate() = 0;
+    TYPE get_type();
 };
 
 /********* Literals ***********/
@@ -85,6 +54,7 @@ public:
 */
 class Literal : public Expression
 {
+    datatype evaluate();
 };
 /**
  * @brief Integer Literal
@@ -98,9 +68,9 @@ public:
      * 
      * @param val the value of the int literal
      */
-    IntegerLiteral(int val) { value = make_pair(TYPE::INT, val); }
+    IntegerLiteral(int val);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 /**
  * @brief Float Literals
@@ -114,9 +84,9 @@ public:
      * 
      * @param val value of float literal
      */
-    FloatingPointLiteral(float val) { value = make_pair(TYPE::FLOAT, val); }
+    FloatingPointLiteral(float val);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 /**
@@ -131,9 +101,9 @@ public:
      * 
      * @param val value of the string literal
      */
-    StringLiteral(string val) { value = make_pair(TYPE::STRING, val); }
+    StringLiteral(string val);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 /**
  * @brief Boolean Literal
@@ -147,9 +117,9 @@ public:
      * 
      * @param val value of boolean literal
      */
-    BooleanLiteral(bool val) { value = make_pair(TYPE::BOOL, val); }
+    BooleanLiteral(bool val);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 /* Identifiers */
@@ -174,7 +144,7 @@ public:
     Identifier(char* name):id(string(name)){};
     void print();
     string ret_id();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 /**
@@ -196,7 +166,7 @@ public:
     */
     MemberAccess(Variable *v, string s);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 /**
@@ -212,7 +182,7 @@ protected:
 public:
     ArrayAccess(Identifier *name, Expression *ind):array_name((Variable*)name),index(ind){}
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class Argument : public Expression
@@ -223,7 +193,7 @@ protected:
 public:
     Argument(TYPE t_, Identifier *id_);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 /* Function Call */
@@ -237,7 +207,7 @@ protected:
 public:
     FunctionCall(Variable *name, list<Expression *> l = list<Expression *>());
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 /* Assignment */
@@ -252,7 +222,7 @@ public:
     AssignmentExp();
     AssignmentExp(Variable *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class AddAssign : public AssignmentExp
@@ -260,7 +230,7 @@ class AddAssign : public AssignmentExp
 public:
     AddAssign(Variable *L, Expression *R); // uses the constructor if AssignmentExp
     void print();
-    value_pair evaluate(); // evaluation is different from AssignmentExp
+    datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
 class SubAssign : public AssignmentExp
@@ -268,7 +238,7 @@ class SubAssign : public AssignmentExp
 public:
     SubAssign(Variable *L, Expression *R); // uses the constructor if AssignmentExp
     void print();
-    value_pair evaluate(); // evaluation is different from AssignmentExp
+    datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
 class MulAssign : public AssignmentExp
@@ -276,7 +246,7 @@ class MulAssign : public AssignmentExp
 public:
     MulAssign(Variable *L, Expression *R); // uses the constructor if AssignmentExp
     void print();
-    value_pair evaluate(); // evaluation is different from AssignmentExp
+    datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
 class DivAssign : public AssignmentExp
@@ -284,7 +254,7 @@ class DivAssign : public AssignmentExp
 public:
     DivAssign(Variable *L, Expression *R); // uses the constructor if AssignmentExp
     void print();
-    value_pair evaluate(); // evaluation is different from AssignmentExp
+    datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
 class ModAssign : public AssignmentExp
@@ -292,7 +262,7 @@ class ModAssign : public AssignmentExp
 public:
     ModAssign(Variable *L, Expression *R); // uses the constructor if AssignmentExp
     void print();
-    value_pair evaluate(); // evaluation is different from AssignmentExp
+    datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
 /* Base Classes for Unary and Binary Operations */
@@ -312,7 +282,7 @@ class PostfixInc : public UnaryIncrement
 public:
     PostfixInc(Variable *v);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class PrefixInc : public UnaryIncrement
@@ -320,7 +290,7 @@ class PrefixInc : public UnaryIncrement
 public:
     PrefixInc(Variable *v);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class UnaryDecrement : public UnaryOperation
@@ -331,7 +301,7 @@ protected:
 public:
     UnaryDecrement(Variable *v);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class PostfixDec : public UnaryDecrement
@@ -339,7 +309,7 @@ class PostfixDec : public UnaryDecrement
 public:
     PostfixDec(Variable *v);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class PrefixDec : public UnaryDecrement
@@ -347,7 +317,7 @@ class PrefixDec : public UnaryDecrement
 public:
     PrefixDec(Variable *v);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class UnaryPlus : public UnaryOperation
@@ -358,7 +328,7 @@ protected:
 public:
     UnaryPlus(Expression *e);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class UnaryMinus : public UnaryOperation
@@ -369,7 +339,7 @@ protected:
 public:
     UnaryMinus(Expression *e);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class BinaryOperation : public Expression
@@ -382,7 +352,7 @@ public:
     BinaryOperation();
     BinaryOperation(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 /// @brief Class to represent the ternary operator in the AST. Derives from Statement
@@ -409,7 +379,7 @@ class Addition : public BinaryOperation
 public:
     Addition(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
     /*
     Note : in the implmentation of evaluate function, check the type of both expressions
     and proceed accordingly
@@ -422,7 +392,7 @@ class Subtraction : public BinaryOperation
 public:
     Subtraction(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class Multiplication : public BinaryOperation
@@ -430,7 +400,7 @@ class Multiplication : public BinaryOperation
 public:
     Multiplication(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class Division : public BinaryOperation
@@ -438,7 +408,7 @@ class Division : public BinaryOperation
 public:
     Division(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class ModularDiv : public BinaryOperation
@@ -446,7 +416,7 @@ class ModularDiv : public BinaryOperation
 public:
     ModularDiv(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 // class UnaryPlus : public UnaryOperation
@@ -454,7 +424,7 @@ public:
 //     public:
 //         UnaryPlus(Expression* R);
 //         void print();
-//         value_pair evaluate();
+//         datatype evaluate();
 // };
 
 // class UnaryMinus : public UnaryOperation
@@ -462,7 +432,7 @@ public:
 //     public:
 //         UnaryMinus(Expression* R);
 //         void print();
-//         value_pair evaluate();
+//         datatype evaluate();
 // };
 
 /* Logical Operations */
@@ -472,7 +442,7 @@ class LogicalAND : public BinaryOperation
 public:
     LogicalAND(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class LogicalOR : public BinaryOperation
@@ -480,7 +450,7 @@ class LogicalOR : public BinaryOperation
 public:
     LogicalOR(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class LogicalNOT : public UnaryOperation
@@ -491,7 +461,7 @@ protected:
 public:
     LogicalNOT(Expression *e);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 /* Comparison Operations */
@@ -502,7 +472,7 @@ class CompGT : public BinaryOperation
 public:
     CompGT(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class CompLT : public BinaryOperation
@@ -511,7 +481,7 @@ class CompLT : public BinaryOperation
 public:
     CompLT(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class CompGE : public BinaryOperation
@@ -520,7 +490,7 @@ class CompGE : public BinaryOperation
 public:
     CompGE(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class CompLE : public BinaryOperation
@@ -529,7 +499,7 @@ class CompLE : public BinaryOperation
 public:
     CompLE(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class CompEQ : public BinaryOperation
@@ -538,7 +508,7 @@ class CompEQ : public BinaryOperation
 public:
     CompEQ(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 class CompNEQ : public BinaryOperation
@@ -547,7 +517,7 @@ class CompNEQ : public BinaryOperation
 public:
     CompNEQ(Expression *L, Expression *R);
     void print();
-    value_pair evaluate();
+    datatype evaluate();
 };
 
 /*------------------------------------------------------------------------
@@ -858,7 +828,7 @@ public:
 };
 
 // objects at the base of the tree
-extern map<string, value_pair> symTable;
+extern map<string, datatype> symTable;
 extern Program *root;
 
 #endif

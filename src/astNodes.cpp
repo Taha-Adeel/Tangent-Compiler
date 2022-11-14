@@ -6,166 +6,119 @@
 #include <string>
 #include <map>
 #include <list>
-
-
-/////////////////////////////////
-//      UTILITY FUNCTIONS      //
-/////////////////////////////////
-bool is_valid_comparasion(value_pair a, value_pair b)
-{
-    if (a.first==b.first) return true;//change this when we add families
-    
-    //int-float
-    if (a.first == INT_TYPE && b.first ==FLOAT_TYPE)return true;
-    if (b.first == INT_TYPE && a.first ==FLOAT_TYPE)return true;
-
-    //bool-int
-    if (a.first == BOOL_TYPE && b.first == INT_TYPE)return true;
-    if (b.first == BOOL_TYPE && a.first == INT_TYPE)return true;
-
-    return false;
-}
-// bool is_unary_operation_valid(value_pair& a)
-// {
-//     if( a.first==INT_TYPE||
-//         a.first==FLOAT_TYPE||
-//         a.first==BOOL_TYPE)
-//         return true;
-//     return false;
-//}
-bool is_valid_for_boolean_operation(value_pair& a, value_pair& b)
-{
-    return is_unary_operation_valid(a)&&is_unary_operation_valid(b);
-}
-
+using namespace std;
 
 ////////////////////////////////////////////////////
 //            AST FUNCTION DEFINITION           ////
 ////////////////////////////////////////////////////
 
+/* Function to return the type of an expression*/
+TYPE Expression::get_type()
+{
+    int t = value.index();
+    switch (t)
+    {
+    case 0:
+        return TYPE::INT;
+    case 1:
+        return TYPE::FLOAT;
+    case 2:
+        return TYPE::STRING;
+    case 3:
+        return TYPE::BOOL;
+    default:
+        return TYPE::VOID;
+    }
+}
+
+/* Evaluate and print functions for Literals*/
+datatype Literal::evaluate()
+{
+    return value;
+}
+
 void IntegerLiteral::print()
 {
-    std::cout << value.second.ivalue;
+    cout << get<int>(value);
 }
-value_pair IntegerLiteral::evaluate()
-{
-    std::cout << "Integer node: operand = " << value.second.ivalue << endl;
-    return value;
-}
-
 void FloatingPointLiteral::print()
 {
-    std::cout << value.second.fvalue;
+    cout << get<float>(value);
 }
-value_pair FloatingPointLiteral::evaluate()
-{
-    std::cout << "Float node: operand = " << value.second.fvalue << endl;
-    return value;
-}
-
 void StringLiteral::print()
 {
-    std::cout << value.second.svalue;
+    cout << get<string>(value);
 }
-value_pair StringLiteral::evaluate()
-{
-    std::cout << "String node: operand = " << value.second.svalue << endl;
-    return value;
-}
-
 void BooleanLiteral::print()
 {
-    std::cout << value.second.bvalue;
-}
-
-value_pair BooleanLiteral::evaluate()
-{
-    std::cout << "Bool node: operand = " << value.second.bvalue << endl;
-    return value;
-}
-
-Identifier::Identifier(string name)
-{
-    id = name;
+    cout << get<bool>(value);
 }
 
 void Identifier::print()
 {
-    std::cout << id;
+    cout << id;
 }
 
 string Identifier::ret_id()
 {
     return id;
 }
-value_pair Identifier::evaluate()
+datatype Identifier::evaluate()
 {
-    std::cout << "Identifier node: " << id << " = ";
-    if (symTable[id].first == INT_TYPE)
-    {
-        std::cout << symTable[id].second.ivalue << endl;
-    }
-    else if (symTable[id].first == FLOAT_TYPE)
-    {
-        std::cout << symTable[id].second.fvalue << endl;
-    }
-    else if (symTable[id].first == STRING_TYPE)
-    {
-        std::cout << symTable[id].second.svalue << endl;
-    }
-    else if (symTable[id].first == BOOL_TYPE)
-    {
-        std::cout << symTable[id].second.bvalue << endl;
-    }
-    return symTable[id];
+    // use symbol table
+    return value;
 }
 
 void ArrayAccess::print()
 {
     array_name->print();
-    std::cout << "[" << index << "]";
+    cout << "[" << index << "]";
 }
-value_pair ArrayAccess::evaluate()
+datatype ArrayAccess::evaluate()
 {
+    return value;
 }
 
 void FunctionCall::print()
 {
     func_name->print();
-    std::cout << "(";
+    cout << "(";
     for (auto const &v : args_list)
     {
         v->print();
-        std::cout << ",";
+        cout << ",";
     }
-    std::cout << ")";
+    cout << ")";
 }
-value_pair FunctionCall::evaluate()
+datatype FunctionCall::evaluate()
 {
+    
 }
 
 void AssignmentExp::print()
 {
-    id->print();
-    std::cout << " = ";
+    LHS->print();
+    cout << " = ";
     RHS->print();
 }
-value_pair AssignmentExp::evaluate()
+datatype AssignmentExp::evaluate()
 {
-    value_pair result = RHS->evaluate();
-    symTable[id->ret_id()] = result;
-    return result;
+    datatype result = RHS->evaluate();
+    // store result in the symbol table
+    // symTable[id->ret_id()] = result; 
+    value = result;
+    return value;
 }
 
 void AddAssign::print()
 {
-    id->print();
-    std::cout << " += ";
+    LHS->print();
+    cout << " += ";
     RHS->print();
 }
-value_pair AddAssign::evaluate()
+datatype AddAssign::evaluate()
 {
-    value_pair result = RHS->evaluate();
+    datatype result = RHS->evaluate();
     if (result.first == symTable[id->ret_id()].first)
     {
         if (result.first == INT_TYPE)
@@ -194,13 +147,13 @@ value_pair AddAssign::evaluate()
 
 void SubAssign::print()
 {
-    id->print();
-    std::cout << " -= ";
+    LHS->print();
+    cout << " -= ";
     RHS->print();
 }
-value_pair SubAssign::evaluate()
+datatype SubAssign::evaluate()
 {
-    value_pair result = RHS->evaluate();
+    datatype result = RHS->evaluate();
     if (result.first == symTable[id->ret_id()].first)
     {
         if (result.first == INT_TYPE)
@@ -221,13 +174,13 @@ value_pair SubAssign::evaluate()
 
 void MulAssign::print()
 {
-    id->print();
-    std::cout << " *= ";
+    LHS->print();
+    cout << " *= ";
     RHS->print();
 }
-value_pair MulAssign::evaluate()
+datatype MulAssign::evaluate()
 {
-    value_pair result = RHS->evaluate();
+    datatype result = RHS->evaluate();
     if (result.first == symTable[id->ret_id()].first)
     {
         if (result.first == INT_TYPE)
@@ -248,13 +201,13 @@ value_pair MulAssign::evaluate()
 
 void DivAssign::print()
 {
-    id->print();
-    std::cout << " /= ";
+    LHS->print();
+    cout << " /= ";
     RHS->print();
 }
-value_pair DivAssign::evaluate()
+datatype DivAssign::evaluate()
 {
-    value_pair result = RHS->evaluate();
+    datatype result = RHS->evaluate();
     if (result.first == symTable[id->ret_id()].first)
     {
         if (result.first == INT_TYPE && result.second.ivalue != 0)
@@ -275,13 +228,13 @@ value_pair DivAssign::evaluate()
 
 void ModAssign::print()
 {
-    id->print();
-    std::cout << " %= ";
+    LHS->print();
+    cout << " %= ";
     RHS->print();
 }
-value_pair ModAssign::evaluate()
+datatype ModAssign::evaluate()
 {
-    value_pair result = RHS->evaluate();
+    datatype result = RHS->evaluate();
     if (result.first == symTable[id->ret_id()].first)
     {
         if (result.first == INT_TYPE && result.second.ivalue != 0)
@@ -298,17 +251,17 @@ value_pair ModAssign::evaluate()
 
 void Addition::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " + ";
+    cout << " + ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair Addition::evaluate()
+datatype Addition::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     if (left_eval.first == right_eval.first)
     {
         if (left_eval.first == INT_TYPE)
@@ -340,17 +293,17 @@ value_pair Addition::evaluate()
 
 void Subtraction::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " - ";
+    cout << " - ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair Subtraction::evaluate()
+datatype Subtraction::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     if (left_eval.first == right_eval.first)
     {
         if (left_eval.first == INT_TYPE)
@@ -374,17 +327,17 @@ value_pair Subtraction::evaluate()
 
 void Multiplication::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " * ";
+    cout << " * ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair Multiplication::evaluate()
+datatype Multiplication::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     if (left_eval.first == right_eval.first)
     {
         if (left_eval.first == INT_TYPE)
@@ -408,17 +361,17 @@ value_pair Multiplication::evaluate()
 
 void Division::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " / ";
+    cout << " / ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair Division::evaluate()
+datatype Division::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     if (left_eval.first == right_eval.first)
     {
         if (left_eval.first == INT_TYPE && right_eval.second.ivalue != 0)
@@ -442,17 +395,17 @@ value_pair Division::evaluate()
 
 void ModularDiv::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " % ";
+    cout << " % ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair ModularDiv::evaluate()
+datatype ModularDiv::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     if (left_eval.first == right_eval.first)
     {
         if (left_eval.first == INT_TYPE && right_eval.second.ivalue != 0)
@@ -471,23 +424,23 @@ value_pair ModularDiv::evaluate()
 
 void UnaryPlus::print()
 {
-    std::cout << "+";
+    cout << "+";
     RHS->print();
 }
-value_pair UnaryPlus::evaluate()
+datatype UnaryPlus::evaluate()
 {
-    value_pair result = RHS->evaluate();
+    datatype result = RHS->evaluate();
     return result;
 }
 
 void UnaryMinus::print()
 {
-    std::cout << "-";
+    cout << "-";
     RHS->print();
 }
-value_pair UnaryMinus::evaluate()
+datatype UnaryMinus::evaluate()
 {
-    value_pair result = RHS->evaluate();
+    datatype result = RHS->evaluate();
     if (result.first == INT_TYPE)
     {
         result.second.ivalue = -result.second.ivalue;
@@ -505,17 +458,17 @@ value_pair UnaryMinus::evaluate()
 
 void LogicalAND::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " & ";
+    cout << " & ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair LogicalAND::evaluate()
+datatype LogicalAND::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     result.first = BOOL_TYPE;
     if (is_valid_comparasion(left_eval,right_eval))
         result.second = bool(left_eval.second && right_eval.second);
@@ -525,19 +478,19 @@ value_pair LogicalAND::evaluate()
 
 void LogicalOR::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " | ";
+    cout << " | ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair LogicalOR::evaluate()
+datatype LogicalOR::evaluate()
 {
     //ill come to this later
 
-    // value_pair left_eval = LHS->evaluate();
-    // value_pair right_eval = RHS->evaluate();
-    // value_pair result;
+    // datatype left_eval = LHS->evaluate();
+    // datatype right_eval = RHS->evaluate();
+    // datatype result;
     // result.first = BOOL_TYPE;
     // bool left_bool = visit([](auto& a){return a!=0;},left_eval.second);
     // if (is_boolean_operation_valid(left_eval,right_eval))
@@ -550,13 +503,13 @@ value_pair LogicalOR::evaluate()
 
 void LogicalNOT::print()
 {
-    std::cout << "!";
+    cout << "!";
     RHS->print();
 }
-value_pair LogicalNOT::evaluate()
+datatype LogicalNOT::evaluate()
 {
-    value_pair result = RHS->evaluate();
-    value_pair res;
+    datatype result = RHS->evaluate();
+    datatype res;
     res.first = BOOL_TYPE;
     if      (result.first == INT_TYPE)      res.second = ! get<INT_TYPE>(result.second);
     else if (result.first == FLOAT_TYPE)    res.second = ! get<FLOAT_TYPE>(result.second);
@@ -566,17 +519,17 @@ value_pair LogicalNOT::evaluate()
 
 void CompGT::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " > ";
+    cout << " > ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair CompGT::evaluate()
+datatype CompGT::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     result.first = BOOL_TYPE;
     if (is_valid_comparasion(left_eval,right_eval))
         result.second = bool(left_eval.second > right_eval.second);
@@ -586,17 +539,17 @@ value_pair CompGT::evaluate()
 
 void CompLT::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " < ";
+    cout << " < ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair CompLT::evaluate()
+datatype CompLT::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     result.first = BOOL_TYPE;
     if (is_valid_comparasion(left_eval,right_eval))
         result.second = bool(left_eval.second < right_eval.second);
@@ -606,17 +559,17 @@ value_pair CompLT::evaluate()
 
 void CompGE::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " >= ";
+    cout << " >= ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair CompGE::evaluate()
+datatype CompGE::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     result.first = BOOL_TYPE;
     if (is_valid_comparasion(left_eval,right_eval))
         result.second = bool(left_eval.second >= right_eval.second);
@@ -626,17 +579,17 @@ value_pair CompGE::evaluate()
 
 void CompLE::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " <= ";
+    cout << " <= ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair CompLE::evaluate()
+datatype CompLE::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     result.first = BOOL_TYPE;
     if (is_valid_comparasion(left_eval,right_eval))
         result.second = bool(left_eval.second <= right_eval.second);
@@ -646,17 +599,17 @@ value_pair CompLE::evaluate()
 
 void CompEQ::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " = ";
+    cout << " = ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair CompEQ::evaluate()
+datatype CompEQ::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     result.first = BOOL_TYPE;
     if (is_valid_comparasion(left_eval,right_eval))
         result.second = bool(left_eval.second == right_eval.second);
@@ -666,18 +619,17 @@ value_pair CompEQ::evaluate()
 
 void CompNEQ::print()
 {
-    std::cout << "(";
+    cout << "(";
     LHS->print();
-    std::cout << " != ";
+    cout << " != ";
     RHS->print();
-    std::cout << ")";
+    cout << ")";
 }
-value_pair CompNEQ::evaluate()
+datatype CompNEQ::evaluate()
 {
-
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    datatype result;
     result.first = BOOL_TYPE;
     if (is_valid_comparasion(left_eval,right_eval))
         result.second = bool(left_eval.second != right_eval.second);
@@ -691,9 +643,9 @@ value_pair CompNEQ::evaluate()
 
 void ExpressionStatement::print()
 {
-    std::cout << "Expression Statement:\n{ \n->";
+    cout << "Expression Statement:\n{ \n->";
     exp->print();
-    std::cout << "\n}\n";
+    cout << "\n}\n";
 }
 
 Expression *ExpressionStatement::getValue()
@@ -703,187 +655,187 @@ Expression *ExpressionStatement::getValue()
 
 void CompoundStatement::print()
 {
-    std::cout << "Compound Statement:\n{";
+    cout << "Compound Statement:\n{";
     for (auto ele : stmt_list)
     {
-        std::cout << "\n->";
+        cout << "\n->";
         ele->print();
     }
-    std::cout << "\n}\n";
+    cout << "\n}\n";
 }
 
 void FunctionDeclaration::print()
 {
-    std::cout << "Function Definition:\n{";
+    cout << "Function Definition:\n{";
     func_name->print();
-    std::cout << "\nReturn type : " << enumtypeToString(return_type) << "\n";
-    std::cout << "list of arguments";
+    cout << "\nReturn type : " << enumtypeToString(return_type) << "\n";
+    cout << "list of arguments";
     for (auto &ele : arg_list)
     {
-        std::cout << "\n";
+        cout << "\n";
         ele->print();
     }
-    std::cout << "\nfunction body:\n";
+    cout << "\nfunction body:\n";
     func_body->print();
-    std::cout << "}";
+    cout << "}";
 }
 
 void VariableDeclaration::print()
 {
-    std::cout << "Variable Declaration: {\n";
-    std::cout << "type : " << enumtypeToString(variable_type) << '\n';
-    std::cout << "list of identifiers";
+    cout << "Variable Declaration: {\n";
+    cout << "type : " << enumtypeToString(variable_type) << '\n';
+    cout << "list of identifiers";
     for (auto &ele : variable_list)
     {
         ele->print();
-        std::cout << "\n";
+        cout << "\n";
     }
 }
 
 void DriverDefinition::print()
 {
-    std::cout << "Driver Definition:\n{\n";
+    cout << "Driver Definition:\n{\n";
     func_body->print();
-    std::cout << "\n}\n";
+    cout << "\n}\n";
 }
 
 void VariableInitialization::print()
 {
-    std::cout << "Variable Initialisation: \n{\n";
-    std::cout << "type: " << enumtypeToString(variable_type) << '\n';
+    cout << "Variable Initialisation: \n{\n";
+    cout << "type: " << enumtypeToString(variable_type) << '\n';
     exp->print();
-    std::cout << "}\n";
+    cout << "}\n";
 }
 
 void LabeledStatement::print()
 {
-    std::cout << "Labelled Statement:\n{\n";
+    cout << "Labelled Statement:\n{\n";
     label->print();
     stmt->print();
-    std::cout << "\n}\n";
+    cout << "\n}\n";
 }
 
 void CaseLabel::print()
 {
-    std::cout << "Case Label {\n";
+    cout << "Case Label {\n";
     label->print();
-    std::cout << "statements:";
+    cout << "statements:";
     stmt->print();
-    std::cout << "\n}\n";
+    cout << "\n}\n";
 }
 
 void DefaultLabel::print()
 {
-    std::cout << "Default Label \n{\n";
-    std::cout << "statements:";
-    std::cout << "\n";
+    cout << "Default Label \n{\n";
+    cout << "statements:";
+    cout << "\n";
     stmt->print();
-    std::cout << "\n}\n";
+    cout << "\n}\n";
 }
 
 void IterationStatement::print()
 {
-    std::cout << "Default Label \n{\n";
-    std::cout << "body:\n";
+    cout << "Default Label \n{\n";
+    cout << "body:\n";
     body->print();
-    std::cout << "condition:\n";
+    cout << "condition:\n";
     condition->print();
-    std::cout << "\n}\n";
+    cout << "\n}\n";
 }
 
 void WhileLoop::print()
 {
-    std::cout << "While loop:\n{\n";
-    std::cout << "condition:\n";
+    cout << "While loop:\n{\n";
+    cout << "condition:\n";
     condition->print();
-    std::cout << "body:\n";
+    cout << "body:\n";
     body->print();
-    std::cout << "\n}\n";
+    cout << "\n}\n";
 }
 
 void ForLoop::print()
 {
-    std::cout << "For loop:\n{\n";
-    std::cout << "initialisation:\n";
+    cout << "For loop:\n{\n";
+    cout << "initialisation:\n";
     if (initialization)
         initialization->print();
     else
-        std::cout << "empty\n";
-    std::cout << "condition:\n";
+        cout << "empty\n";
+    cout << "condition:\n";
     if (condition)
         condition->print();
     else
-        std::cout << "empty\n";
-    std::cout << "update:\n";
+        cout << "empty\n";
+    cout << "update:\n";
     if (counter_updation)
         counter_updation->print();
     else
-        std::cout << "empty\n";
-    std::cout << "body:\n";
+        cout << "empty\n";
+    cout << "body:\n";
     if (body)
         body->print();
     else
-        std::cout << "no body\n";
-    std::cout << "\n}\n";
+        cout << "no body\n";
+    cout << "\n}\n";
 }
 
 void IfElse::print()
 {
-    std::cout << "If else block:\n{\n";
-    std::cout << "condition list:\n";
+    cout << "If else block:\n{\n";
+    cout << "condition list:\n";
     for (auto &ele : condition_list)
     {
-        std::cout << "\n";
+        cout << "\n";
         ele->print();
     }
-    std::cout << "if blocks list:\n";
+    cout << "if blocks list:\n";
     for (auto &ele : if_blocks)
     {
-        std::cout << "\n";
+        cout << "\n";
         ele->print();
     }
     if (else_block)
         else_block->print();
     else
-        std::cout << "no else block\n";
-    std::cout << "\n}\n";
+        cout << "no else block\n";
+    cout << "\n}\n";
 }
 
 void Switch::print()
 {
-    std::cout << "switch block:\n{\n";
-    std::cout << "expression:\n";
+    cout << "switch block:\n{\n";
+    cout << "expression:\n";
     exp->print();
-    std::cout << "cases:\n";
+    cout << "cases:\n";
     for (auto &ele : cases)
     {
-        std::cout << "\n";
+        cout << "\n";
         ele->print();
     }
     if (def)
         def->print();
     else
-        std::cout << "no else block\n";
-    std::cout << "\n}\n";
+        cout << "no else block\n";
+    cout << "\n}\n";
 }
 
 void TernaryOperator::print()
 {
-    std::cout << "ternary:\n{\n";
-    std::cout << "condition:\n";
+    cout << "ternary:\n{\n";
+    cout << "condition:\n";
     condition->print();
-    std::cout << "if true:\n";
+    cout << "if true:\n";
     true_eval->print();
-    std::cout << "if false:\n";
+    cout << "if false:\n";
     false_eval->print();
-    std::cout << "\n}\n";
+    cout << "\n}\n";
 }
 
 void ReturnStatement::print()
 {
-    std::cout << "ternary:\n{\nreturns:\n";
+    cout << "ternary:\n{\nreturns:\n";
     return_val->print();
-    std::cout << "\n}\n";
+    cout << "\n}\n";
 }
 
 /*------------------------------------------------------------------------
