@@ -46,7 +46,11 @@
 	list <Expression*> *exp_list;
 	Expression *exp;
 	Statement* stmt;
+<<<<<<< HEAD
 	TYPE t;
+=======
+	TYPE *t;
+>>>>>>> 0590620 (shifted constructor from .cpp to .h)
 	string *id;
 	int valuei;
 	float valuef;
@@ -147,12 +151,12 @@ driver_definition
  * Declarations
  *----------------------------------------------------------------------*/
 type
-	: INT			{$$ = INT_TYPE;}
-	| FLOAT			{$$ = FLOAT_TYPE;}
-	| STRING		{$$ = STRING_TYPE;}
-	| BOOL			{$$ = BOOL_TYPE;}
-	| VOID			{$$ = VOID_TYPE;}
-	| IDENTIFIER  	{$$ = new Identifier($1);}
+	: INT			{$$ = new TYPE(TYPE::INT);}
+	| FLOAT			{$$ = new TYPE(TYPE::FLOAT);}
+	| STRING		{$$ = new TYPE(TYPE::STRING);}
+	| BOOL			{$$ = new TYPE(TYPE::BOOL);}
+	| VOID			{$$ = new TYPE(TYPE::VOID);}
+	| IDENTIFIER  	{$$ = new Identifier(*($1));}
 	;
 
 literal
@@ -174,9 +178,9 @@ new_variable_list
 
 new_variable
 	: IDENTIFIER 							{$$ = new Identifier($1);} 
-	| IDENTIFIER ASSIGN expression			{auto temp = new Identifier($1); $$ = new AssignmentExp(temp, $3);}
-	| IDENTIFIER '(' ')'					{$1 = new Identifier($1); $$ = new FunctionCall($1);}
-	| IDENTIFIER '(' expression_list ')'	{$1 = new Identifier($1); $$ = new FunctionCall($1, $3);}
+	| IDENTIFIER ASSIGN expression			{Variable* temp = new Identifier($1); $$ = new AssignmentExp(temp, $3);}
+	| IDENTIFIER '(' ')'					{Variable* temp = new Identifier($1); $$ = new FunctionCall(temp);}
+	| IDENTIFIER '(' expression_list ')'	{Variable* temp = new Identifier($1); $$ = new FunctionCall(temp, $3);}
 	;
 
 function_declaration
