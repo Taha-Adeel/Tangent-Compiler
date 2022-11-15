@@ -71,10 +71,10 @@
 %token BOOL FLOAT INT STRING VOID 
 
 /* Literals */
-%token INTEGER_LITERAL
-%token FLOAT_LITERAL
-%token BOOL_LITERAL
-%token STRING_LITERAL
+%token<int> INTEGER_LITERAL
+%token<float> FLOAT_LITERAL
+%token<bool> BOOL_LITERAL
+%token<std::string> STRING_LITERAL
 
 /* Control flow keywords */
 %token IF ELSE SWITCH CASE DEFAULT WHILE FOR BREAK CONTINUE SEND
@@ -87,7 +87,7 @@
 %token DRIVER
 
 /* Variables */
-%token IDENTIFIER
+%token<std::string> IDENTIFIER
 
 /* The operator precedence and associativity rules for the language. The higher precedence operators are listed below the lower precedence rules. */
 %left ','
@@ -326,6 +326,8 @@ jump_statement
 
 int main(int argc, char **argv){
 	yy::parser parser;
+	parser.set_debug_level(1);
+	parser.set_debug_output(std::cout);
 	if(argc < 2)
 		parser.parse();
     else{
