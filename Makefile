@@ -72,7 +72,7 @@ NC := \e[0m
 tests: lexer_tests parser_tests
 
 # Lexer Tests
-lexer_tests: lexer_correct_codes lexer_incorrect_codes
+lexer_tests: lexer_incorrect_codes lexer_correct_codes
 
 lexer_correct_codes: $(LEXER_CORRECT_CODES) lexer
 	@echo "$(WHITE)\n###################################################################################$(NC)\n"; \
@@ -92,7 +92,7 @@ lexer_correct_codes: $(LEXER_CORRECT_CODES) lexer
 	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
 		echo "$(GREEN)$(B)Success: All valid Lexical Analyzer testcases passed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
 	else \
-		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; exit 1; fi; \
+		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
 
 lexer_incorrect_codes: $(LEXER_INCORRECT_CODES) lexer
 	@echo "$(WHITE)\n###################################################################################$(NC)\n"; \
@@ -112,10 +112,10 @@ lexer_incorrect_codes: $(LEXER_INCORRECT_CODES) lexer
 	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
 		echo "$(GREEN)$(B)Success: All invalid tokens were rejected by the Lexical Analyzer.$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
 	else \
-		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; exit 1; fi; \
+		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
 
 # Parser Tests
-parser_tests: parser parser_correct_codes parser_incorrect_codes
+parser_tests: parser parser_incorrect_codes parser_correct_codes
 
 parser_correct_codes: $(PARSER_CORRECT_CODES) parser
 	@echo "$(WHITE)\n########################################################################$(NC)\n"; \
@@ -135,7 +135,7 @@ parser_correct_codes: $(PARSER_CORRECT_CODES) parser
 	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
 		echo "$(GREEN)$(B)Success: All syntactically valid testcases passed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
 	else \
-		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; exit 1; fi; \
+		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
 
 parser_incorrect_codes: $(PARSER_INCORRECT_CODES) parser
 	@echo "$(WHITE)\n########################################################################$(NC)\n"; \
@@ -155,4 +155,4 @@ parser_incorrect_codes: $(PARSER_INCORRECT_CODES) parser
 	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
 		echo "$(GREEN)$(B)Success: All syntax errors were caught by the parser!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
 	else \
-		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; exit 1; fi; \
+		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
