@@ -11,7 +11,7 @@
 
 using namespace std;
 
-enum class TYPE {INT, FLOAT, STRING, BOOL, VOID};
+//enum class TYPE {INT, FLOAT, STRING, BOOL, VOID};
 typedef variant<int, float, string, bool> datatype;
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
@@ -34,7 +34,7 @@ public:
 class Expression : public ASTNode
 {
 protected:
-    datatype value;   ///holds the value of the current node as pair of TYPE of value and the actual value
+    datatype value;   ///holds the value of the current node as pair of Identifier of value and the actual value
 
 public:
     Expression();
@@ -45,7 +45,7 @@ public:
      * @return datatype 
      */
     virtual datatype evaluate() = 0;
-    TYPE get_type();
+    datatype get_type();
 };
 
 /********* Literals ***********/
@@ -76,7 +76,7 @@ public:
  * @brief Float Literals
  * 
  */
-class FloatingPointLiteral : public Literal
+class FloatLiteral : public Literal
 {
 public:
     /**
@@ -84,7 +84,7 @@ public:
      * 
      * @param val value of float literal
      */
-    FloatingPointLiteral(float val);
+    FloatLiteral(float val);
     void print();
     datatype evaluate();
 };
@@ -142,6 +142,7 @@ protected:
 
 public:
     Identifier(char* name):id(string(name)){};
+    Identifier(string name):id(name){};
     void print();
     string ret_id();
     datatype evaluate();
@@ -188,10 +189,10 @@ public:
 class Argument : public Expression
 {
 protected:
-    TYPE t;
+    Identifier t;
     Identifier *id;
 public:
-    Argument(TYPE t_, Identifier *id_);
+    Argument(Identifier t_, Identifier *id_);
     void print();
     datatype evaluate();
 };
@@ -616,7 +617,7 @@ class FunctionDeclaration : public Statement
 {
 protected:
     Identifier *func_name;
-    TYPE return_type;
+    Identifier return_type;
     CompoundStatement *func_body;
     list<Argument *> arg_list;
 
@@ -627,7 +628,7 @@ public:
     /// @param _t return type
     /// @param _arg_list list of arguments
     /// @param _stmt list of arguments
-    FunctionDeclaration(Identifier *_name, TYPE _t, CompoundStatement *_stmt, list<Argument *> _arg_list = list<Argument *>());
+    FunctionDeclaration(Identifier *_name, Identifier _t, CompoundStatement *_stmt, list<Argument *> _arg_list = list<Argument *>());
     /// @brief print the content of function definition
     void print();
 };
@@ -635,14 +636,15 @@ public:
 class VariableDeclaration : public Statement
 {
 protected:
-    TYPE variable_type;
+    Identifier variable_type;
     list<Expression *> variable_list;
 
 public:
     /// @brief Constructor for function declaration
     /// @param t type of variable
     /// @param l list of identifires
-    VariableDeclaration(TYPE t, list<Expression *> l);
+    VariableDeclaration(Identifier t, list<Expression *> l = list<Expression*>())
+        :variable_type(t), variable_list(l){}
     void print();
 };
 /// @brief Class to represent definition of driver function in the AST. Derives from CompoundStatement
@@ -663,14 +665,14 @@ public:
 class VariableInitialization : public Statement
 {
 protected:
-    TYPE variable_type;
+    Identifier variable_type;
     AssignmentExp *exp;
 
 public:
     /// @brief Constructor for VariableInitiailization
     /// @param t type of variable
     /// @param e paired assignment expression
-    VariableInitialization(TYPE t, AssignmentExp *e);
+    VariableInitialization(Identifier t, AssignmentExp *e);
     void print();
 };
 

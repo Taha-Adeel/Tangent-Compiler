@@ -41,7 +41,7 @@ void IntegerLiteral::print()
 {
     cout << get<int>(value);
 }
-void FloatingPointLiteral::print()
+void FloatLiteral::print()
 {
     cout << get<float>(value);
 }

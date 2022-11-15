@@ -46,7 +46,7 @@
 	list <Expression*> *exp_list;
 	Expression *exp;
 	Statement* stmt;
-	TYPE *t;
+	Identifier *t;
 	string *id;
 	int valuei;
 	float valuef;
@@ -80,7 +80,7 @@
 
 /* Primitive data types */
 %token CONST VAR
-%token BOOL FLOAT INT STRING VOID 
+%token <id> BOOL FLOAT INT STRING VOID 
 
 /* Literals */
 %token <valuei> INTEGER_LITERAL
@@ -146,25 +146,25 @@ driver_definition
 /*----------------------------------------------------------------------
  * Declarations
  *----------------------------------------------------------------------*/
-type
-	: INT			{$$ = new TYPE(TYPE::INT);}
-	| FLOAT			{$$ = new TYPE(TYPE::FLOAT);}
-	| STRING		{$$ = new TYPE(TYPE::STRING);}
-	| BOOL			{$$ = new TYPE(TYPE::BOOL);}
-	| VOID			{$$ = new TYPE(TYPE::VOID);}
-	| IDENTIFIER  	{$$ = new Identifier(*($1));}
+ type
+	: INT   		{$$ = new Identifier(*($1));}
+	| FLOAT   		{$$ = new Identifier(*($1));}
+	| STRING   		{$$ = new Identifier(*($1));}
+	| BOOL   		{$$ = new Identifier(*($1));}
+	| VOID		   	{$$ = new Identifier(*($1));}
+	| IDENTIFIER   	{$$ = new Identifier(*($1));}
 	;
 
 literal
 	: INTEGER_LITERAL	{$$ = new IntegerLiteral($1);}
 	| FLOAT_LITERAL		{$$ = new FloatLiteral($1);}
-	| STRING_LITERAL	{$$ = new StringLiteral($1);}
+	| STRING_LITERAL	{$$ = new StringLiteral(*($1));}
 	| BOOL_LITERAL		{$$ = new BooleanLiteral($1);}
 	;
 
 variable_declaration
-	: VAR type new_variable_list ';' 	{$$ = new VariableDeclaration($2, $3);}	
-	| CONST type new_variable_list ';' 	{$$ = new VariableDeclaration($2, $3);} // store variables as const}	
+	: VAR type new_variable_list ';' 	{$$ = new VariableDeclaration(*($2), *($3));}	
+	| CONST type new_variable_list ';' 	{$$ = new VariableDeclaration(*($2), *($3));} // store variables as const}	
 	;
 
 new_variable_list
