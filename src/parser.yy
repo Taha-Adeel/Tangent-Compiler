@@ -275,17 +275,17 @@ expression
 	| expression LOGICAL_AND expression			{$$ = new LogicalAND($1, $3);}
 	| expression LOGICAL_OR expression			{$$ = new LogicalOR($1, $3);}
 	| LOGICAL_NOT expression					{$$ = new LogicalNOT($2);}
-	| INC variable								{$$ = new PrefixInc($2);}
-	| DEC variable								{$$ = new PostfixDec($2);}
-	| variable INC %prec INC_POST				{$$ = new PostfixInc($1);}
-	| variable DEC %prec DEC_POST				{$$ = new PostfixDec($1);}
-	| variable ASSIGN expression				{$$ = new AssisgnmentExp($1, $3);}
-	| variable MUL_ASSIGN expression			{$$ = new MulAssign($1, $3);}
-	| variable DIV_ASSIGN expression			{$$ = new DivAssign($1, $3);}
-	| variable MOD_ASSIGN expression			{$$ = new ModAssign($1, $3);}
-	| variable ADD_ASSIGN expression			{$$ = new AddAssign($1, $3);}
-	| variable SUB_ASSIGN expression			{$$ = new SubAssign($1, $3);}
-	| expression '?' expression ':' expression	{$$ = new TernaryOperation($1, $3, $5);}
+	| INC variable								{$$ = new PrefixInc((Variable*)$2);}
+	| DEC variable								{$$ = new PostfixDec((Variable*)$2);}
+	| variable INC %prec INC_POST				{$$ = new PostfixInc((Variable*)$1);}
+	| variable DEC %prec DEC_POST				{$$ = new PostfixDec((Variable*)$1);}
+	| variable ASSIGN expression				{$$ = new AssignmentExp((Variable*)$1, $3);}
+	| variable MUL_ASSIGN expression			{$$ = new MulAssign((Variable*)$1, $3);}
+	| variable DIV_ASSIGN expression			{$$ = new DivAssign((Variable*)$1, $3);}
+	| variable MOD_ASSIGN expression			{$$ = new ModAssign((Variable*)$1, $3);}
+	| variable ADD_ASSIGN expression			{$$ = new AddAssign((Variable*)$1, $3);}
+	| variable SUB_ASSIGN expression			{$$ = new SubAssign((Variable*)$1, $3);}
+	| expression '?' expression ':' expression	{$$ = new TernaryOperator($1, $3, $5);}
 	;
 
 expression_list
@@ -308,8 +308,8 @@ expression_list
 	;
 
 compound_statement
-	: '{' '}'					{$$ = new CompoundStatement();}
-	| '{' statement_list '}'	{$$ = new CompoundStatement($2);}
+	: '{' '}'					{$$ = new CompoundStatement(list<Statement*>());}
+	| '{' statement_list '}'	{$$ = new CompoundStatement(*($2));}
 	;
 
 statement_list
@@ -318,35 +318,35 @@ statement_list
 	;
 
 expression_statement
-	: ';'			 	  {$$ = new ExpressionStatement(NULL);}
+	: ';'			 	  {$$ = new ExpressionStatement();}
 	| expression_list ';' {$$ = new ExpressionStatement($1);}
 	;
 
 selection_statement
-	: IF '(' expression ')' compound_statement							{$$ = new IfStatement($3, $5);}
-	| IF '(' expression ')' compound_statement ELSE compound_statement 	{$$ = new IfElseStatement($3, $5, $7);}
-	| SWITCH '(' expression ')' statement								{$$ = new SwitchStatement($3, $5);}
+	: IF '(' expression ')' compound_statement							{$$ = new IfStatement($3, (CompoundStatement*)$5);}
+	| IF '(' expression ')' compound_statement ELSE compound_statement 	{$$ = new IfElseStatement($3, (CompoundStatement*)$5, (CompoundStatement*)$7);}
+	| SWITCH '(' expression ')' statement								{$$ = new SwitchStatement($3, (CompoundStatement*)$5);}
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement		{$$ = new LabeledStatement($1, $3);}
+	: IDENTIFIER ':' statement		{Expression* temp = new Identifier(*($1));$$ = new LabeledStatement(temp, $3);}
 	| CASE expression ':' statement	{$$ = new CaseLabel($2, $4);}
 	| DEFAULT ':' statement			{$$ = new DefaultLabel($3);}
 	;
 
 iteration_statement
-	: WHILE '(' ')' compound_statement														{$$ = new WhileLoop($4);}
-	| WHILE '(' expression ')' compound_statement											{$$ = new WhileLoop($5, $3);}
-	| FOR '(' expression_statement expression_statement ')' compound_statement				{$$ = new ForLoop($6, $3, $4, NULL);}
-	| FOR '(' expression_statement expression_statement expression ')' compound_statement 	{$$ = new ForLoop($7, $3, $4, $5);}
-	| FOR '(' variable_declaration expression_statement ')' compound_statement 				{$$ = new ForLoop($6, $3, $4, NULL);} 
-	| FOR '(' variable_declaration expression_statement expression ')' compound_statement 	{$$ = new ForLoop($7, $3, $4, $5);}
+	: WHILE '(' ')' compound_statement														{$$ = new WhileLoop((CompoundStatement*)$4);}
+	| WHILE '(' expression ')' compound_statement											{$$ = new WhileLoop((CompoundStatement*)$5, $3);}
+	| FOR '(' expression_statement expression_statement ')' compound_statement				{$$ = new ForLoop((CompoundStatement*)$6, (ExpressionStatement*)$3, (ExpressionStatement*)$4, NULL);}
+	| FOR '(' expression_statement expression_statement expression ')' compound_statement 	{$$ = new ForLoop((CompoundStatement*)$7, (ExpressionStatement*)$3, (ExpressionStatement*)$4, $5);}
+	| FOR '(' variable_declaration expression_statement ')' compound_statement 				{$$ = new ForLoop((CompoundStatement*)$6, (ExpressionStatement*)$3, (ExpressionStatement*)$4, NULL);} 
+	| FOR '(' variable_declaration expression_statement expression ')' compound_statement 	{$$ = new ForLoop((CompoundStatement*)$7, (ExpressionStatement*)$3, (ExpressionStatement*)$4, $5);}
 	;
 
 jump_statement
 	: CONTINUE ';' 				{$$ = new ContinueStatement();}
 	| BREAK ';'					{$$ = new BreakStatement();}
-	| SEND expression_statement	{$$ = new ReturnStatement(($2).getValue());}
+	| SEND expression_statement	{$$ = new ReturnStatement(((ExpressionStatement*)$2)->getValue());}
 	;
 
 %%

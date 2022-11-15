@@ -373,6 +373,7 @@ public:
     /// @param f_eval expression to eval on cond == false
     TernaryOperator(Expression *cond, Expression *t_eval, Expression *f_eval);
     void print();
+    datatype evaluate();
 };
 
 /* Arithmetic Operations */
@@ -533,12 +534,12 @@ class Statement : public ASTNode
 class ExpressionStatement : public Statement
 {
 protected:
-    Expression *exp; ///
+    list<Expression *> *exp; ///
 public:
-    ExpressionStatement() = delete;
+    ExpressionStatement():exp(nullptr){}
     /// @brief Constructor for class
     /// @param e input expression
-    ExpressionStatement(Expression *e) : exp(e){};
+    ExpressionStatement(list<Expression *>*e) : exp(e){};
     /// @brief print the content of expression statement
     Expression *getValue();
     void print();
@@ -548,13 +549,13 @@ public:
 class CompoundStatement : public Statement
 {
 protected:
-    list<Statement *> *stmt_list;
-    CompoundStatement() = default;
+    list<Statement *> stmt_list;
+    CompoundStatement() = delete;
 
 public:
     /// @brief Constructor for Comppund Statement Class
     /// @param l list of statements
-    CompoundStatement(list<Statement *> *l = new list<Statement *>()) : stmt_list(l) {}
+    CompoundStatement(list<Statement *> l = list<Statement *>()) : stmt_list(l) {}
     /// @brief print the content of compound statement
     void print();
 };

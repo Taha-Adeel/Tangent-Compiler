@@ -15,7 +15,7 @@
 
 using namespace std;
 
-enum class TYPE {INT, FLOAT, STRING, BOOL, VOID, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR, FAMILY}; 
+enum class TYPE {INT, FLOAT, STRING, BOOL, FAMILY, VOID, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR}; 
 class Family
 {
     string name;
@@ -38,7 +38,7 @@ enum class SYMBOL_TYPE{
 struct YYLTYPE;
 
 /**
- * @brief Symbol table entry
+ * @brief Represents an entry in a Symbol Table
  */
 class Symbol{
 private:
