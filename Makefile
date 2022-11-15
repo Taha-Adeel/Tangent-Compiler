@@ -18,23 +18,23 @@ $(BUILD_DIR)/lex.yy.cc: $(SRC_DIR)/lexer.l
 	mkdir -p $(@D)
 	flex -o $@ $^
 
-$(BUILD_DIR)/parser.tab.cc \
-$(BUILD_DIR)/parser.tab.hh: $(SRC_DIR)/parser.yy
+$(BUILD_DIR)/parser.cc \
+$(BUILD_DIR)/parser.hh: $(SRC_DIR)/parser.yy
 	mkdir -p $(@D)
-	bison -o $(BUILD_DIR)/parser.tab.cc $^
+	bison -o $(BUILD_DIR)/parser.cc $^
 
 # Build an executable to scan the input tangent code and output the matched tokens
-lexer: $(BUILD_DIR)/lex.yy.cc $(BUILD_DIR)/parser.tab.hh
+lexer: $(BUILD_DIR)/lex.yy.cc $(BUILD_DIR)/parser.hh
 	$(CC) -o $(BUILD_DIR)/$@ $< -D STANDALONE_LEXER
 
 # Build an executable to parse the input tangent code files according to the grammar rules
-parser: $(BUILD_DIR)/parser.tab.cc $(BUILD_DIR)/lex.yy.cc
+parser: $(BUILD_DIR)/parser.cc $(BUILD_DIR)/lex.yy.cc
 	$(CC) -o $(BUILD_DIR)/$@ $^ --debug
 
 # Generate HTML documentation describing our grammar and the DFA representing the parser.
 parser_documentation: $(SRC_DIR)/parser.yy
 	mkdir -p $(BUILD_DIR)
-	bison -o $(BUILD_DIR)/parser.tab.cc $< --verbose --xml=$(BUILD_DIR)/$(<F:%.y=%.xml)
+	bison -o $(BUILD_DIR)/parser.cc $< --verbose --xml=$(BUILD_DIR)/$(<F:%.y=%.xml)
 	xsltproc $$(bison --print-datadir)/xslt/xml2xhtml.xsl $(BUILD_DIR)/$(<F:%.y=%.xml) > ./documentation/$(<F:%.y=%.html)
 	xdg-open ./documentation/$(<F:%.y=%.html)
 

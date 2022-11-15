@@ -1,5 +1,4 @@
-%option noyywrap yylineno nodefault
-/* %option c++ */
+%option noyywrap yylineno nodefault 
 
 D               [0-9]
 L               [a-zA-Z]
@@ -9,118 +8,122 @@ L               [a-zA-Z]
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
-    #include "../src/astNodes.h"
-    #include "parser.tab.hh"
+    // #include "../src/astNodes.h"
+    #include "parser.hh"
+    #include "location.hh"
 
     #define YY_USER_ACTION update_locations(); // Called before each token
     void comment();
     void update_locations();
-
-    extern YYLTYPE yylloc;
+    
+    typedef yy::parser::token token;
 %}
 
 %%
 "#"                    {comment();}
 
-"const"                {return CONST;}
-"var"                  {return VAR;}
+"const"                {return token::CONST;}
+"var"                  {return token::VAR;}
 
-"bool"                 {return BOOL;}
-"float"                {return FLOAT;}
-"int"                  {return INT;}
-"string"               {return STRING;}
-"void"                 {return VOID;}
+"bool"                 {return token::BOOL;}
+"float"                {return token::FLOAT;}
+"int"                  {return token::INT;}
+"string"               {return token::STRING;}
+"void"                 {return token::VOID;}
 
-{D}+                   {yylval.valuei = atoi(yytext);return INTEGER_LITERAL;}
-{D}+"."{D}+            {yylval.valuef = atof(yytext);return FLOAT_LITERAL;}
-\"([^\\\"]|\\.)*\"     {*(yytext + yyleng - 1) = '\0'; yytext++; return STRING_LITERAL;}
-"true"                 {yylval.valueb = true; return BOOL_LITERAL;}
-"false"                {yylval.valueb = false; return BOOL_LITERAL;}
+{D}+                   {yylval->emplace<int>(atoi(yytext)); return token::INTEGER_LITERAL;}
+{D}+"."{D}+            {/* yylval.valuef = atof(yytext); */return token::FLOAT_LITERAL;}
+\"([^\\\"]|\\.)*\"     {/* *(yytext + yyleng - 1) = '\0'; yytext++; */ return token::STRING_LITERAL;}
+"true"                 {/* yylval.valueb = true; */ return token::BOOL_LITERAL;}
+"false"                {/* yylval.valueb = false; */ return token::BOOL_LITERAL;}
 
-"if"                   {return IF;}
-"else"                 {return ELSE;}
-"switch"               {return SWITCH;}
-"case"                 {return CASE;}
-"default"              {return DEFAULT;}
-"while"                {return WHILE;}
-"for"                  {return FOR;}
-"break"                {return BREAK;}
-"continue"             {return CONTINUE;}
-"send"                 {return SEND;} 
+"if"                   {return token::IF;}
+"else"                 {return token::ELSE;}
+"switch"               {return token::SWITCH;}
+"case"                 {return token::CASE;}
+"default"              {return token::DEFAULT;}
+"while"                {return token::WHILE;}
+"for"                  {return token::FOR;}
+"break"                {return token::BREAK;}
+"continue"             {return token::CONTINUE;}
+"send"                 {return token::SEND;} 
 
-"family"               {return FAMILY;}
-"::"                   {return INHERITS;}  
-"public"               {return PUBLIC;}
-"private"              {return PRIVATE;}
+"family"               {return token::FAMILY;}
+"::"                   {return token::INHERITS;}  
+"public"               {return token::PUBLIC;}
+"private"              {return token::PRIVATE;}
 
-"driver"               {return DRIVER;}
+"driver"               {return token::DRIVER;}
 
-{L}({L}|{D}|_)*        {yylval.id = yytext; return IDENTIFIER;}
+{L}({L}|{D}|_)*        {/* yylval.id = yytext; */ return token::IDENTIFIER;}
 
 ","                    {return ',';}
-":="                   {return ASSIGN;}
-"+="                   {return ADD_ASSIGN;}
-"-="                   {return SUB_ASSIGN;}
-"*="                   {return MUL_ASSIGN;}
-"/="                   {return DIV_ASSIGN;}
-"%="                   {return MOD_ASSIGN;}
+":="                   {return token::ASSIGN;}
+"+="                   {return token::ADD_ASSIGN;}
+"-="                   {return token::SUB_ASSIGN;}
+"*="                   {return token::MUL_ASSIGN;}
+"/="                   {return token::DIV_ASSIGN;}
+"%="                   {return token::MOD_ASSIGN;}
 "?"                    {return '?';}
 ":"                    {return ':';}
-"|"                    {return LOGICAL_OR;}
-"&"                    {return LOGICAL_AND;}
-"="                    {return EQ;}
-"!="                   {return NOT_EQ;}
-"<"                    {return LS_THAN;}
-"<="                   {return LS_THAN_EQ;}
-">"                    {return GR_THAN;}
-">="                   {return GR_THAN_EQ;}
+"|"                    {return token::LOGICAL_OR;}
+"&"                    {return token::LOGICAL_AND;}
+"="                    {return token::EQ;}
+"!="                   {return token::NOT_EQ;}
+"<"                    {return token::LS_THAN;}
+"<="                   {return token::LS_THAN_EQ;}
+">"                    {return token::GR_THAN;}
+">="                   {return token::GR_THAN_EQ;}
 "+"                    {return '+';}
 "-"                    {return '-';}
 "*"                    {return '*';}
 "/"                    {return '/';}
 "%"                    {return '%';}
-"++"                   {return INC;}
-"--"                   {return DEC;}
-"!"                    {return LOGICAL_NOT;}
+"++"                   {return token::INC;}
+"--"                   {return token::DEC;}
+"!"                    {return token::LOGICAL_NOT;}
 ("<:"|"(")             {return '(';}
 (":>"|")")             {return ')';}
 "["                    {return '[';}
 "]"                    {return ']';}
-">>"                   {return SCOPE_ACCESS;}
+">>"                   {return token::SCOPE_ACCESS;}
 "(:"                   {return '{';}
 ":)"                   {return '}';}
 ";"                    {return ';';}
 
 [ \t\v\n\f]*           {}
+<<EOF>>                {return token::YYEOF;}
 
  /* Matches to any invalid tokens not matched to any other rules */
 .                      {
-                        printf("Error: %s: Line %d:%d\t%-12s - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
-                        fprintf(stderr, "   Error: %s: Line %d:%d - '%s' - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
-                        return YYUNDEF;
+                            std::cout << "Invalid token: " << yytext << "at location" << *yylloc << std::endl;
+                            std::cerr << "Invalid token: " << yytext << "at location" << *yylloc << std::endl;
+                        // printf("Error: %s: Line %d:%d\t%-12s - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
+                        // fprintf(stderr, "   Error: %s: Line %d:%d - '%s' - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
+                        return token::YYUNDEF;
                        }
 %%
 
 void update_locations(){
-    yylloc.first_line = yylloc.last_line = yylineno;
+    /* yylloc.first_line = yylloc.last_line = yylineno;
     yylloc.first_column = yylloc.last_column;
 
-    for(int i = 0; yytext[i] != '\0'; i++) {
-        if(yytext[i] == '\n'){
+    for(auto& c: std::string(yytext)) {
+        if(c == '\n'){
             yylloc.last_line++;
             yylloc.last_column = 0;
         }
-        else if(yytext[i] == '\t')
+        else if(c == '\t')
             yylloc.last_column += 4 - (yylloc.last_column % 4);
         else
             yylloc.last_column++;
-    }
+    } */
 }
 
 void comment(){
-        char c;
-        while( (c = yyinput()) != '\n' )
-            ; /* eats up any line starting with '#' */
+    char c;
+    while( (c = yyinput()) != '\n' )
+        ; /* eats up any line starting with '#' */
 }
 
 #ifdef STANDALONE_LEXER
@@ -139,35 +142,30 @@ static const char *const yytname[] =
     "INC", "DEC", "INC_POST", "DEC_POST", "UPLUS", "UMINUS", "LOGICAL_NOT",
     "'('", "')'", "'['", "']'", "SCOPE_ACCESS", "';'", "'{'", "'}'",
 };
-YYLTYPE yylloc;
 
 void print_tokens_matched(){
     int token;
-    while(token = yylex()){
+    yy::parser::semantic_type yylval;
+    yy::parser::location_type yylloc;
+    while(token = yylex(&yylval, &yylloc)){
         char token_name[20] = "'''";
         if(token < 255) 
             token_name[1] = token;
         else
             strcpy(token_name, yytname[token - 255]);
-        printf("%s: Line %d:%d\t%-12s was matched to the token %-20s (= %d) \n", yylloc.filename, yylloc.first_line, yylloc.first_column, yytext, token_name, token);
+        /* printf("%s: Line %d:%d\t%-12s was matched to the token %-20s (= %d) \n", yylloc.filename, yylloc.first_line, yylloc.first_column, yytext, token_name, token); */
     }
     printf("\n");
 }
 
-void init_yylloc(const char* filename){
-	yylloc.first_line = yylloc.last_line = yylineno = 1;
-	yylloc.first_column = yylloc.last_column = 0;
-	yylloc.filename = filename;
-}
-
 int main(int argc, char* argv[]){
     if(argc < 2){ /* just read stdin */
-        init_yylloc("(stdin)");
+        /* init_yylloc("(stdin)"); */
         print_tokens_matched();
     }
     else{
         for(int i = 1; i < argc; i++){
-            init_yylloc(argv[i]);
+            /* init_yylloc(argv[i]); */
             FILE *file = fopen(argv[i], "r");
             if(file == NULL){ 
                 perror(argv[i]); 
