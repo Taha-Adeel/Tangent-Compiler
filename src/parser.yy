@@ -82,10 +82,10 @@
 %header
 
 
-/* Primitive data types */
+/* data types */
 %token CONST VAR
 %token <id> BOOL FLOAT INT STRING VOID 
-
+%token <id> POINT PATH IMAGE RECTANGLE CIRCLE ELLIPSE POLYGON CURVE FUNC PI COLOUR
 /* Literals */
 %token <valuei> INTEGER_LITERAL
 %token <valuef> FLOAT_LITERAL
@@ -157,6 +157,17 @@ driver_definition
 	| BOOL   		{$$ = new Identifier(*($1));}
 	| VOID		   	{$$ = new Identifier(*($1));}
 	| IDENTIFIER   	{$$ = new Identifier(*($1));}
+	| POINT 		{$$ = new Identifier(*($1));}
+	| PATH			{$$ = new Identifier(*($1));}
+	| IMAGE			{$$ = new Identifier(*($1));}
+	| RECTANGLE 	{$$ = new Identifier(*($1));}
+	| CIRCLE		{$$ = new Identifier(*($1));}
+	| ELLIPSE		{$$ = new Identifier(*($1));}
+	| POLYGON		{$$ = new Identifier(*($1));}
+	| CURVE			{$$ = new Identifier(*($1));}
+	| FUNC			{$$ = new Identifier(*($1));}
+	| PI			{$$ = new Identifier(*($1));}
+	| COLOUR		{$$ = new Identifier(*($1));}
 	;
 
 literal
@@ -220,29 +231,29 @@ class_members
 	;
 
 class_member
-	: access_specifier variable_declaration	{$$ = new FamilyMembers($1, $2);}
-	| access_specifier function_declaration	{$$ = new FamilyMembers($1, $2);}
+	: access_specifier variable_declaration	{$$ = new FamilyMembers(*($1), $2);}
+	| access_specifier function_declaration	{$$ = new FamilyMembers(*($1), $2);}
 	| constructor_declaration				{$$ = new FamilyMembers(ACCESS_SPEC::PUBLIC, $1);}
 	;
 
 constructor_declaration
-	: IDENTIFIER '(' args_list ')' compound_statement {$$ = new ConstructorDeclaration($1, $5, $3);}
+	: IDENTIFIER '(' args_list ')' compound_statement {$$ = new ConstructorDeclaration(Identifier(*($1)), $5, *($3));}
 	;
 
 /*------------------------------------------------------------------------
  * Expressions
  *------------------------------------------------------------------------*/
 primary_expression
-	: literal			// $$ = $1
-	| variable			// $$ = $1
+	: literal							{$$ = (Expression*)$1;}
+	| variable							{$$ = (Expression*)$1;}
 	| variable '(' ')'					{$$ = new FunctionCall($1);}
-	| variable '(' expression_list ')'	{$$ = new FunctionCall($1, $3);}
+	| variable '(' expression_list ')'	{$$ = new FunctionCall($1, *($3));}
 	| '(' expression ')'				{$$ = $2;}
 	;
 
 variable
-	: IDENTIFIER						{$$ = new Identifier($1);}
-	| variable SCOPE_ACCESS IDENTIFIER	{$$ = new MemberAccess($1, $3);}
+	: IDENTIFIER						{$$ = new Identifier(*($1));}
+	| variable SCOPE_ACCESS IDENTIFIER	{$$ = new MemberAccess((Variable*)$1, *($3));}
 	| variable '[' expression ']'		{$$ = new ArrayAccess($1, $3);}
 	;
 

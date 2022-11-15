@@ -22,14 +22,24 @@ L               [a-zA-Z]
 %%
 "#"                    {comment();}
 
-"const"                {return CONST;}
-"var"                  {return VAR;}
+"const"                 {return CONST;}
+"var"                   {return VAR;}
 
-"bool"                 {return BOOL;}
-"float"                {return FLOAT;}
-"int"                  {return INT;}
-"string"               {return STRING;}
-"void"                 {return VOID;}
+"bool"                  {return BOOL;}
+"float"                 {return FLOAT;}
+"int"                   {return INT;}
+"string"                {return STRING;}
+"void"                  {return VOID;}
+"Point"                 {return POINT;}
+"Path"                  {return PATH;}                  
+"Image"                 {return IMAGE;}
+"Rectangle"             {return RECTANGLE;}
+"Circle"                {return CIRCLE;}
+"Ellipse"               {return ELLIPSE;}
+"Polygon"               {return POLYGON;}
+"Curve"                 {return CURVE;}
+"Pi"                    {return PI;}
+"Colour"                {return COLOUR;}
 
 {D}+                   {yylval.valuei = atoi(yytext);return INTEGER_LITERAL;}
 {D}+"."{D}+            {yylval.valuef = atof(yytext);return FLOAT_LITERAL;}

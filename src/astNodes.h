@@ -8,11 +8,11 @@
 #include <map>
 #include <variant>
 #include <optional>
-
+#include <vector>
+#include "symbolTable.h"
 using namespace std;
 
-//enum class TYPE {INT, FLOAT, STRING, BOOL, VOID};
-typedef variant<int, float, string, bool> datatype;
+
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
  *------------------------------------------------------------------------*/
@@ -181,7 +181,8 @@ protected:
     Expression *index;      ///index to access
 
 public:
-    ArrayAccess(Identifier *name, Expression *ind):array_name((Variable*)name),index(ind){}
+    ArrayAccess(Expression *name, Expression *ind)
+        :array_name((Variable*)name),index(ind){}
     void print();
     datatype evaluate();
 };
@@ -206,7 +207,8 @@ protected:
     list<Expression *> args_list;
 
 public:
-    FunctionCall(Variable *name, list<Expression *> l = list<Expression *>());
+    FunctionCall(Expression *name, list<Expression *> l = list<Expression *>())
+        :func_name((Variable*)name), args_list(l){}
     void print();
     datatype evaluate();
 };
@@ -605,10 +607,11 @@ class ConstructorDeclaration : public Statement
 protected:
     Identifier class_name;
     CompoundStatement *body;
-    list<Identifier *> arg_list;
+    list<Argument *> arg_list;
 
 public:
-    ConstructorDeclaration(Identifier class_name_, CompoundStatement *body_, list<Identifier *> arg_list_) : class_name(class_name_), body(body_), arg_list(arg_list_){};
+    ConstructorDeclaration(Identifier class_name_, Statement *body_, list<Argument *> arg_list_) 
+        : class_name(class_name_), body((CompoundStatement*)body_), arg_list(arg_list_){};
     void print();
 };
 
