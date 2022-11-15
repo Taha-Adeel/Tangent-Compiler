@@ -55,7 +55,7 @@ L               [a-zA-Z]
 
 "driver"               {return DRIVER;}
 
-{L}({L}|{D}|_)*        {yylval.id = yytext; return IDENTIFIER;}
+{L}({L}|{D}|_)*        {auto temp = new string(yytext);yylval.id = temp; return IDENTIFIER;}
 
 ","                    {return ',';}
 ":="                   {return ASSIGN;}

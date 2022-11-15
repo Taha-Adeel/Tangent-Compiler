@@ -190,9 +190,9 @@ class Argument : public Expression
 {
 protected:
     Identifier t;
-    Identifier *id;
+    Identifier id;
 public:
-    Argument(Identifier t_, Identifier *id_);
+    Argument(Identifier t_, Identifier id_);
     void print();
     datatype evaluate();
 };
@@ -581,6 +581,7 @@ protected:
     list<FamilyMembers *> members = list<FamilyMembers *>();        /// saves the pouinter to the member vars/ function as a List
     std::optional<pair<Identifier, ACCESS_SPEC>> parent_class = {}; /// saves the Identifier and Access specification of the parent class. if there is no parent class, std::optional is not initialised
 public:
+    FamilyDecl(Identifier fam_name_):fam_name(fam_name_){}
     /**
      * @brief Construct a new Family Decl object
      *
@@ -588,14 +589,15 @@ public:
      * @param members_ List of pointers to the memeber funcs/vars
      * @param parent_class_ pairent class's Identifier and access specs(public/ private) as a optional.
      */
-    FamilyDecl(Identifier fam_name_, list<FamilyMembers *> members_ = list<FamilyMembers *>(), optional<pair<Identifier, ACCESS_SPEC>> parent_class_ = {}) : fam_name(fam_name_), members(members_), parent_class(parent_class_) {}
+    FamilyDecl(Identifier fam_name_, list<FamilyMembers *> members_, optional<pair<Identifier, ACCESS_SPEC>> parent_class_ = {})
+        : fam_name(fam_name_), members(members_), parent_class(parent_class_) {}
     /**
      * @brief Construct a new Family Decl object
      *
      * @param fam_name_ Identifier of family
      * @param parent_class_ pairent class's Identifier and access specs(public/ private) as a optional.
      */
-    FamilyDecl(Identifier fam_name_, optional<pair<Identifier, ACCESS_SPEC>> parent_class_ = {}) : fam_name(fam_name_), parent_class(parent_class_) {}
+    FamilyDecl(Identifier fam_name_, optional<pair<Identifier, ACCESS_SPEC>> parent_class_) : fam_name(fam_name_), parent_class(parent_class_) {}
     void print();
 };
 class ConstructorDeclaration : public Statement
@@ -628,7 +630,8 @@ public:
     /// @param _t return type
     /// @param _arg_list list of arguments
     /// @param _stmt list of arguments
-    FunctionDeclaration(Identifier *_name, Identifier _t, CompoundStatement *_stmt, list<Argument *> _arg_list = list<Argument *>());
+    FunctionDeclaration(Identifier *_name, Identifier _t, Statement *_stmt, list<Argument *> _arg_list = list<Argument *>())
+        :func_name(_name), return_type(_t), func_body((CompoundStatement*)_stmt), arg_list(_arg_list) {}
     /// @brief print the content of function definition
     void print();
 };

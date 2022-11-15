@@ -54,25 +54,29 @@
 	string *values;
 	ACCESS_SPEC *access_spec;
 	FamilyMembers *class_member;
+	list<FamilyMembers*> *class_members;
+	Argument* argument;
+	list<Argument*>* arg_list;
 }
 
 /* Declaring types to the different non-terminals */
 %type <pgm> program
 %type <stmt_list> translation_unit statement_list
-%type <exp_list> new_variable_list args_list expression_list
-
+%type <exp_list> new_variable_list expression_list
+%type <arg_list> args_list
 %type <stmt> external_declaration statement
 %type <stmt> driver_definition function_declaration variable_declaration family_declaration
 %type <stmt> jump_statement iteration_statement labeled_statement expression_statement
 %type <stmt> selection_statement compound_statement
-%type <stmt> constructor_declaration error
+%type <stmt> constructor_declaration /*error*/
 
 %type <exp> expression primary_expression
-%type <exp> new_variable literal arg variable
-
+%type <exp> new_variable literal variable
+%type <argument> arg
 %type <t> type
 %type <access_spec> access_specifier
-%type <class_member> class_member class_members
+%type <class_member> class_member 
+%type <class_members>class_members
 
 /*** TOKEN DECLARATION ***/
 %header
@@ -132,10 +136,10 @@ translation_unit
 	;
 
 external_declaration
-	: driver_definition
-	| variable_declaration
-	| function_declaration
-	| family_declaration
+	: driver_definition		{$$ = $1;}
+	| variable_declaration	{$$ = $1;}
+	| function_declaration	{$$ = $1;}
+	| family_declaration	{$$ = $1;}
 	;
 
 driver_definition
@@ -173,15 +177,15 @@ new_variable_list
 	;
 
 new_variable
-	: IDENTIFIER 							{$$ = new Identifier($1);} 
-	| IDENTIFIER ASSIGN expression			{Variable* temp = new Identifier($1); $$ = new AssignmentExp(temp, $3);}
-	| IDENTIFIER '(' ')'					{Variable* temp = new Identifier($1); $$ = new FunctionCall(temp);}
-	| IDENTIFIER '(' expression_list ')'	{Variable* temp = new Identifier($1); $$ = new FunctionCall(temp, $3);}
+	: IDENTIFIER 							{$$ = new Identifier(*($1));} 
+	| IDENTIFIER ASSIGN expression			{Variable* temp = new Identifier(*($1)); $$ = new AssignmentExp(temp, $3);}
+	| IDENTIFIER '(' ')'					{Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp);}
+	| IDENTIFIER '(' expression_list ')'	{Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp, *($3));}
 	;
 
 function_declaration
-	: type IDENTIFIER '(' ')' compound_statement			{$2 = new Identifier($2); $$ = FunctionDeclaration($2, $1, $5);}
-	| type IDENTIFIER '(' args_list ')' compound_statement	{$2 = new Identifier($2); $$ = FunctionDeclaration($2, $1, $6, $4);}
+	: type IDENTIFIER '(' ')' compound_statement			{auto temp = new Identifier(*($2)); $$ = new FunctionDeclaration(temp, *($1), $5);}
+	| type IDENTIFIER '(' args_list ')' compound_statement	{auto temp = new Identifier(*($2)); $$ = new FunctionDeclaration(temp, *($1), $6, *($4));}
 	;
 
 args_list
@@ -190,28 +194,28 @@ args_list
 	;
 
 arg
-	: type IDENTIFIER		{$$ = new Argument($1, $2);}
-	| VAR type IDENTIFIER	{$$ = new Argument($2, $3);}
-	| CONST type IDENTIFIER	{$$ = new Argument($2, $3);}
+	: type IDENTIFIER		{$$ = new Argument(*($1), Identifier(*($2)));}
+	| VAR type IDENTIFIER	{$$ = new Argument(*($2), Identifier(*($3)));}
+	| CONST type IDENTIFIER	{$$ = new Argument(*($2), Identifier(*($3)));}
 	;
 
 /*------------------------------------------------------------------------
  * Classes
  *------------------------------------------------------------------------*/
 family_declaration
-	: FAMILY IDENTIFIER '{' '}' ';'														{$$ = FamilyDecl($2);}
-	| FAMILY IDENTIFIER '{' class_members '}' ';' 										{$$ = FamilyDecl($2, $4);}
-	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';' 				{$$ = FamilyDecl($2,optional<pair<Identifier, ACCESS_SPEC>>(make_pair($5, $4)));}
-	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' class_members '}' ';'	{$$ = FamilyDecl($2,$7, optional<pair<Identifier, ACCESS_SPEC>>(make_pair($5, $4)));}
+	: FAMILY IDENTIFIER '{' '}' ';'														{$$ = new FamilyDecl(Identifier(*$2));}
+	| FAMILY IDENTIFIER '{' class_members '}' ';' 										{$$ = new FamilyDecl(Identifier(*$2), *($4));}
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';' 				{$$ = new FamilyDecl(Identifier(*($2)),optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5), *($4))));}
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' class_members '}' ';'	{$$ = new FamilyDecl(Identifier(*($2)),*($7), optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5), *($4))));}
 	;
 
 access_specifier
-	: PUBLIC 	{$$ = ACCESS_SPEC(ACCESS_SPEC::PUBLIC);}
-	| PRIVATE	{$$ = ACCESS_SPEC(ACCESS_SPEC::PRIVATE);}
+	: PUBLIC 	{$$ = new ACCESS_SPEC(ACCESS_SPEC::PUBLIC);}
+	| PRIVATE	{$$ = new ACCESS_SPEC(ACCESS_SPEC::PRIVATE);}
 	;
 
 class_members
-	: class_member 					{$$ = new list<FamilyMembers*>($1);}
+	: class_member 					{$$ = new list<FamilyMembers*>(); $$->push_back($1);}
 	| class_members class_member	{$$ =$1; $$->push_back($2);}
 	;
 
@@ -289,7 +293,7 @@ expression_list
 	| selection_statement
 	| iteration_statement
 	| jump_statement
-	| error ';'
+	/* | error ';' */
 	;
 
 compound_statement
