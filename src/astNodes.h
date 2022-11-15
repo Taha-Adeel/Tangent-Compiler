@@ -9,7 +9,10 @@
 #include <variant>
 #include <optional>
 
+#include <llvm/IR/Value.h>
+
 using namespace std;
+using namespace llvm;
 
 enum class TYPE {INT, FLOAT, STRING, BOOL, VOID};
 typedef variant<int, float, string, bool> datatype;
@@ -45,6 +48,8 @@ public:
      * @return datatype 
      */
     virtual datatype evaluate() = 0;
+
+    virtual Value *codegen() = 0;
     TYPE get_type();
 };
 
@@ -71,6 +76,7 @@ public:
     IntegerLiteral(int val);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 /**
  * @brief Float Literals
@@ -87,6 +93,7 @@ public:
     FloatingPointLiteral(float val);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 /**
@@ -104,6 +111,7 @@ public:
     StringLiteral(string val);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 /**
  * @brief Boolean Literal
@@ -120,6 +128,7 @@ public:
     BooleanLiteral(bool val);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 /* Identifiers */

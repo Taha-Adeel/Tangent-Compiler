@@ -9,6 +9,8 @@
 #include <list>
 
 #include "llvm/ADT/APFloat.h"
+#include "llvm/ADT/APSInt.h"
+#include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
@@ -20,7 +22,11 @@
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Verifier.h"
 using namespace std;
+using namespace llvm;
 
+static std::unique_ptr<LLVMContext> TheContext;
+static std::unique_ptr<Module> TheModule;
+static std::unique_ptr<IRBuilder<>> Builder;
 ////////////////////////////////////////////////////
 //            AST FUNCTION DEFINITION           ////
 ////////////////////////////////////////////////////
@@ -54,17 +60,39 @@ void IntegerLiteral::print()
 {
     cout << get<int>(value);
 }
+
+Value *IntegerLiteral::codegen()
+{
+    return ConstantInt::get(*TheContext, APSInt(get<int>(value)));
+}
 void FloatingPointLiteral::print()
 {
     cout << get<float>(value);
 }
+
+Value *FloatingPointLiteral::codegen()
+{
+    return ConstantFP::get(*TheContext, APFloat(get<float>(value)));
+}
+
 void StringLiteral::print()
 {
     cout << get<string>(value);
 }
+
+Value *StringLiteral::codegen()
+{
+    return ConstantDataArray::getString(*TheContext, get<string>(value), true);
+}
+
 void BooleanLiteral::print()
 {
     cout << get<bool>(value);
+}
+
+Value *BooleanLiteral::codegen()
+{
+    return ConstantInt::get(*TheContext, APSInt(get<bool>(value)));
 }
 
 void Identifier::print()
