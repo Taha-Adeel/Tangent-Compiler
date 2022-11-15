@@ -394,6 +394,7 @@ public:
     and proceed accordingly
     Concatenation can be implemented here
     */
+   Value *codegen() override;
 };
 
 class Subtraction : public BinaryOperation
@@ -402,6 +403,7 @@ public:
     Subtraction(Expression *L, Expression *R);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class Multiplication : public BinaryOperation
@@ -410,6 +412,7 @@ public:
     Multiplication(Expression *L, Expression *R);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class Division : public BinaryOperation
@@ -418,6 +421,7 @@ public:
     Division(Expression *L, Expression *R);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class ModularDiv : public BinaryOperation
@@ -426,6 +430,7 @@ public:
     ModularDiv(Expression *L, Expression *R);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 // class UnaryPlus : public UnaryOperation

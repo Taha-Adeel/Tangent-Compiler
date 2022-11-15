@@ -21,6 +21,8 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Verifier.h"
+#include "llvm/Transforms/Utils/IntegerDivision.h"
+
 using namespace std;
 using namespace llvm;
 
@@ -332,6 +334,34 @@ datatype Addition::evaluate()
     return result;
 }
 
+Value *Addition::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateAdd(L, R, "addtmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFAdd(L, R, "addtmp");
+        }
+        else if (left_eval.first == BOOL_TYPE)
+        {
+            return Builder->CreateAdd(L, R, "addtmp");
+        }
+    }
+
+}
+
 void Subtraction::print()
 {
     cout << "(";
@@ -364,6 +394,34 @@ datatype Subtraction::evaluate()
         }
     }
     return result;
+}
+
+Value *Subtraction::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateSub(L, R, "subtmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFAdd(L, R, "subtmp");
+        }
+        else if (left_eval.first == BOOL_TYPE)
+        {
+            return Builder->CreateAdd(L, R, "subtmp");
+        }
+    }
+
 }
 
 void Multiplication::print()
@@ -400,6 +458,34 @@ datatype Multiplication::evaluate()
     return result;
 }
 
+Value *Multiplication::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateMul(L, R, "multmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFMul(L, R, "multmp");
+        }
+        else if (left_eval.first == BOOL_TYPE)
+        {
+            return Builder->CreateMul(L, R, "multmp");
+        }
+    }
+
+}
+
 void Division::print()
 {
     cout << "(";
@@ -434,6 +520,34 @@ datatype Division::evaluate()
     return result;
 }
 
+Value *Division::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE && right_eval.second.ivalue != 0)
+        {
+            return Builder->CreateExactSDiv(L, R, "divtmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE && right_eval.second.fvalue != 0)
+        {
+            return Builder->CreateExactSDiv(L, R, "divtmp");
+        }
+        else if (left_eval.first == BOOL_TYPE && right_eval.second.bvalue != 0)
+        {
+            return Builder->CreateUDiv(L, R, "divtmp");
+        }
+    }
+
+}
+
 void ModularDiv::print()
 {
     cout << "(";
@@ -461,6 +575,34 @@ datatype ModularDiv::evaluate()
         }
     }
     return result;
+}
+
+Value *ModularDiv::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE && right_eval.second.ivalue != 0)
+        {
+            Value *Quotient = Builder->CreateUDiv(L, R, "divtmp");
+            Value *Product = Builder->CreateMul(R, Quotient, "multmp");
+            return Builder->CreateSub(L, Product, "subtmp");
+        }
+        else if (left_eval.first == BOOL_TYPE && right_eval.second.bvalue != 0)
+        {
+            Value *Quotient = Builder->CreateUDiv(L, R, "divtmp");
+            Value *Product = Builder->CreateMul(R, Quotient, "multmp");
+            return Builder->CreateSub(L, Product, "subtmp");
+        }
+    }
+
 }
 
 void UnaryPlus::print()
