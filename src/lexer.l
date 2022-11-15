@@ -52,7 +52,7 @@ L               [a-zA-Z]
 
 "driver"               {return token::DRIVER;}
 
-{L}({L}|{D}|_)*        {/* yylval.id = yytext; */ return token::IDENTIFIER;}
+{L}({L}|{D}|_)*        {yylval->emplace<std::string>(yytext); return token::IDENTIFIER;}
 
 ","                    {return ',';}
 ":="                   {return token::ASSIGN;}
