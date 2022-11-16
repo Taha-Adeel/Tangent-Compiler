@@ -798,6 +798,7 @@ protected:
 public:
     IfStatement(Expression *e, CompoundStatement *block):condition(e),if_block(block) {}
     void print();
+    Value *codegen() override;
 };
 class IfElseStatement : public Statement
 {

@@ -111,6 +111,11 @@ datatype Identifier::evaluate()
     return value;
 }
 
+// Value *Identifier::codegen()
+// {
+//     return Builder->CreateLoad();
+// }
+
 void ArrayAccess::print()
 {
     cout<<"int literal\n{";
@@ -982,6 +987,53 @@ void ForLoop::print()
     cout << "\n}\n";
 }
 
+void IfStatement::print()
+{
+    cout << "If statement: \n{\n";
+    cout << "condition :\n";
+    condition->print();
+    if(if_block)
+    {
+        cout << "If block:\n";
+        if_block->print();
+    }
+    cout << "\n}\n";
+}
+
+Value *IfStatement::codegen()
+{
+    Value *cond = condition->codegen();
+    if(!cond)
+    {
+        return nullptr;
+    }
+    cond = Builder->CreateICmpNE(cond, ConstantInt::get(*TheContext, APSInt(0)), "ifcond");
+
+    Function *TheFunction = Builder->GetInsertBlock()->getParent();
+    BasicBlock *ThenBB = BasicBlock::Create(*TheContext, "then", TheFunction);
+    BasicBlock *MergeBB = BasicBlock::Create(*TheContext, "ifcont");
+
+    Builder->CreateBr(ThenBB);
+    Builder->SetInsertPoint(ThenBB);
+
+    Value *ThenV = if_block->codegen();
+    if (!ThenV)
+    {
+        return nullptr;
+    }
+    
+    Builder->CreateBr(MergeBB);
+    // Codegen of 'Then' can change the current block, update ThenBB for the PHI.
+    ThenBB = Builder->GetInsertBlock();
+    TheFunction->getBasicBlockList().push_back(MergeBB);
+    Builder->SetInsertPoint(MergeBB);
+
+    PHINode *PN = Builder->CreatePHI(Type::getDoubleTy(*TheContext), 2, "iftmp");
+
+    PN->addIncoming(ThenV, ThenBB);
+    return PN;
+}
+
 void IfElseStatement::print()
 {
     cout << "If else block:\n{\n";
@@ -1038,7 +1090,7 @@ Value *IfElseStatement::codegen()
     {
         return nullptr;
     }
-    
+
     Builder->CreateBr(MergeBB);
     // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
     ElseBB = Builder->GetInsertBlock();
