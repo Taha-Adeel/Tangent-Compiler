@@ -487,6 +487,7 @@ public:
     CompGT(Expression *L, Expression *R);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class CompLT : public BinaryOperation
@@ -496,6 +497,7 @@ public:
     CompLT(Expression *L, Expression *R);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class CompGE : public BinaryOperation
@@ -505,6 +507,7 @@ public:
     CompGE(Expression *L, Expression *R);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class CompLE : public BinaryOperation
@@ -514,6 +517,7 @@ public:
     CompLE(Expression *L, Expression *R);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class CompEQ : public BinaryOperation
@@ -523,6 +527,7 @@ public:
     CompEQ(Expression *L, Expression *R);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class CompNEQ : public BinaryOperation
@@ -532,6 +537,7 @@ public:
     CompNEQ(Expression *L, Expression *R);
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 /*------------------------------------------------------------------------

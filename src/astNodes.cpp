@@ -534,11 +534,11 @@ Value *Division::codegen()
     {
         if (left_eval.first == INT_TYPE && right_eval.second.ivalue != 0)
         {
-            return Builder->CreateExactSDiv(L, R, "divtmp");
+            return Builder->CreateSDiv(L, R, "divtmp");
         }
         else if (left_eval.first == FLOAT_TYPE && right_eval.second.fvalue != 0)
         {
-            return Builder->CreateExactSDiv(L, R, "divtmp");
+            return Builder->CreateFDiv(L, R, "divtmp");
         }
         else if (left_eval.first == BOOL_TYPE && right_eval.second.bvalue != 0)
         {
@@ -720,6 +720,33 @@ datatype CompGT::evaluate()
     return result;
 }
 
+Value* CompGT::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateICmpSGT(L, R, "cmptmp");
+        }
+        else if (left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
+        {
+            return Builder->CreateICmpUGT(L, R, "cmptmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFCmpUGT(L, R, "cmptmp");
+        }
+    }
+}
+
 void CompLT::print()
 {
     cout << "(";
@@ -738,6 +765,33 @@ datatype CompLT::evaluate()
         result.second = bool(left_eval.second < right_eval.second);
     else{} //return error
     return result;
+}
+
+Value* CompLT::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateICmpSLT(L, R, "cmptmp");
+        }
+        else if (left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
+        {
+            return Builder->CreateICmpULT(L, R, "cmptmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFCmpULT(L, R, "cmptmp");
+        }
+    }
 }
 
 void CompGE::print()
@@ -760,6 +814,33 @@ datatype CompGE::evaluate()
     return result;
 }
 
+Value* CompGE::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateICmpSGE(L, R, "cmptmp");
+        }
+        else if (left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
+        {
+            return Builder->CreateICmpUGE(L, R, "cmptmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFCmpUGE(L, R, "cmptmp");
+        }
+    }
+}
+
 void CompLE::print()
 {
     cout << "(";
@@ -778,6 +859,33 @@ datatype CompLE::evaluate()
         result.second = bool(left_eval.second <= right_eval.second);
     else{} //return error
     return result;
+}
+
+Value* CompLE::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateICmpSLE(L, R, "cmptmp");
+        }
+        else if (left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
+        {
+            return Builder->CreateICmpULE(L, R, "cmptmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFCmpULE(L, R, "cmptmp");
+        }
+    }
 }
 
 void CompEQ::print()
@@ -800,6 +908,29 @@ datatype CompEQ::evaluate()
     return result;
 }
 
+Value* CompEQ::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE || left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
+        {
+            return Builder->CreateICmpEQ(L, R, "cmptmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFCmpUEQ(L, R, "cmptmp");
+        }
+    }
+}
+
 void CompNEQ::print()
 {
     cout << "(";
@@ -818,6 +949,29 @@ datatype CompNEQ::evaluate()
         result.second = bool(left_eval.second != right_eval.second);
     else{} //return error
     return result;
+}
+
+Value* CompNEQ::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE || left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
+        {
+            return Builder->CreateICmpNE(L, R, "cmptmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFCmpUNE(L, R, "cmptmp");
+        }
+    }
 }
 
 /**************************************
