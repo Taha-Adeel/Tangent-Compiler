@@ -841,6 +841,6 @@ public:
 
 // objects at the base of the tree
 //extern map<string, datatype> symTable;
-Program *root;
+// Program *root;
 
 #endif

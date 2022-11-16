@@ -82,8 +82,8 @@ private:
 	void createObjectSymbolTable(std::string object_name, std::string type_name);
 
 public:
-	static bool insideVariableDeclaration;
-	static std::string currentVariableType;
+	// static bool insideVariableDeclaration;
+	// static std::string currentVariableType;
 
 public:
 	SymbolTable(SymbolTable* parent = NULL, std::string namespace_name = "");
