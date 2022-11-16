@@ -5,6 +5,10 @@
 #include <string>
 #include <map>
 
+/**
+ * @brief Enum representing the different types of symbols
+ * 
+ */
 enum class SYMBOL_TYPE{
 	PRIMITIVE,
 	OBJECT,
@@ -16,6 +20,12 @@ enum class SYMBOL_TYPE{
 
 struct YYLTYPE;
 
+/**
+ * @brief Represents an entry in a Symbol Table
+ * 
+ * A symbol table entry holds the identifier name, type of symbol, the typename of the symbol,
+ * and its location where it was declared
+ */
 class Symbol{
 private:
 	std::string name;
@@ -37,6 +47,12 @@ public:
 	friend std::ostream& operator << (std::ostream& out, const Symbol& symbol);
 };
 
+/**
+ * @brief Represents a Symbol Table
+ *
+ * Internally uses a map to store the symbols. Each symbol table can have multiple child symbol tables, 
+ * to represent nested scopes and such.
+ */
 class SymbolTable{
 private:
 	std::string namespace_name;
@@ -60,6 +76,12 @@ public:
 	void printSymbolTable(int indentation = 0);
 };
 
+/**
+ * @brief Construct a new Symbol Table::Symbol Table object
+ * 
+ * @param parent The parent symbol table
+ * @param namespace_name 
+ */
 SymbolTable::SymbolTable(SymbolTable* parent, std::string _namespace_name)
 	:parent(parent), namespace_name(_namespace_name) 
 {
@@ -70,6 +92,14 @@ SymbolTable::SymbolTable(SymbolTable* parent, std::string _namespace_name)
 		namespace_name = parent->namespace_name + "::" + to_string(child_symbol_tables.size());
 }
 
+/**
+ * @brief Adds a new symbol to the symbol table when it is declared
+ * 
+ * @param identifier_name 
+ * @param type_name 
+ * @param location 
+ * @param type 
+ */
 void SymbolTable::addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, SYMBOL_TYPE type){
 	if(type == SYMBOL_TYPE::UNKNOWN){
 		Symbol* type_name_symbol = lookUp(type_name);
@@ -94,6 +124,12 @@ void SymbolTable::addSymbol(std::string identifier_name, std::string type_name, 
 	symbol_table[identifier_name] = Symbol(identifier_name, type, type_name, location);
 }
 
+/**
+ * @brief Searches for the identifier in the symbol table (and in its parent symbol tables)
+ * 
+ * @param name Identifier name
+ * @return Symbol* Returns NULL if "name" not found in the symbol table
+ */
 Symbol* SymbolTable::lookUp(std::string name){
 	if(symbol_table.find(name) != symbol_table.end())
 		return &symbol_table[name];
@@ -103,6 +139,12 @@ Symbol* SymbolTable::lookUp(std::string name){
 		return NULL;
 }
 
+/**
+ * @brief Creates a new Symbol Table for an object and adds it to the child symbol tables
+ * 
+ * @param object_name object_name
+ * @param type_name class/family name
+ */
 void SymbolTable::createObjectSymbolTable(std::string object_name, std::string type_name){
 	Symbol* type_name_symbol = lookUp(type_name);
 	if(type_name_symbol == NULL)
@@ -114,6 +156,10 @@ void SymbolTable::createObjectSymbolTable(std::string object_name, std::string t
 	child_symbol_tables[object_name] = object_symbol_table;
 }
 
+/**
+ * @brief Utility function to display the symbol table
+ * Prints each symbol table with its namespace name, followed by its child symbol tables
+ */
 void SymbolTable::printSymbolTable(int indentation){
 	for(int i = 0; i < indentation; i++)
 		std::cout << "\t";

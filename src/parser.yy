@@ -4,6 +4,7 @@
 	#include <stdio.h>
 	#include <string>
 	#include "../src/astNodes.h"
+	#include "../src/symbolTable.h"
 
 	extern int yylex();
 	extern void yyrestart(FILE*);
