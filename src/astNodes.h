@@ -16,7 +16,6 @@
 using namespace std;
 using namespace llvm;
 
-
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
 
@@ -187,7 +186,7 @@ class MemberAccess : public Variable
 {
 protected:
     Variable *accessor_name;
-    string id;
+    Identifier id;
 
 public:
    /**
@@ -196,7 +195,7 @@ public:
     * @param v 
     * @param s 
     */
-    MemberAccess(Variable *v, string s): accessor_name(v), id(s){};
+    MemberAccess(Variable *v, string s): accessor_name(v), id(Identifier(s)){}
     void print();
     datatype evaluate();
 };
@@ -866,7 +865,7 @@ public:
 };
 
 // objects at the base of the tree
-extern map<string, datatype> symTable;
-extern Program *root;
+//extern map<string, datatype> symTable;
+Program *root;
 
 #endif

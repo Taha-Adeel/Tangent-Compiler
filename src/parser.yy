@@ -20,12 +20,13 @@
 	#define YY_DECL int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc)
 	YY_DECL;
 }
-/* %code{
-	#include "symbolTable.h"
+
+%code{
+	#include "../src/symbolTable.h"
 
 	SymbolTable global_symbol_table;
 	SymbolTable* cur_symbol_table;
-} */
+}
  
 /* Listing the different types of the terminals and non-terminals */
 /* %union
@@ -114,8 +115,8 @@
  * Translation unit
  *------------------------------------------------------------------------*/
 program
-	: %empty			 {$$ = new Program(); root = $$;}
-	| translation_unit	 {$$ = new Program($1); root = $$;}
+	: %empty				{$$ = new Program(); root = $$;}
+ 	| translation_unit		{$$ = new Program($1); root = $$;}
 	;
 
 translation_unit
@@ -166,8 +167,26 @@ literal
 	;
 
 variable_declaration
-	: VAR type new_variable_list ';' 	{$$ = new VariableDeclaration(*($2), *($3));}	
-	| CONST type new_variable_list ';' 	{$$ = new VariableDeclaration(*($2), *($3));} // store variables as const}	
+	: VAR type 
+		{
+			SymbolTable::insideVariableDeclaration = true;
+			SymbolTable::currentVariableType = $2->ret_id();
+		}
+	  new_variable_list ';' 	
+	  	{
+			$$ = new VariableDeclaration(*($2), *($4));
+			SymbolTable::insideVariableDeclaration = false;
+		}
+	| CONST type
+		{
+			SymbolTable::insideVariableDeclaration = true;
+			SymbolTable::currentVariableType = $2->ret_id();
+		} 
+	  new_variable_list ';' 	
+	 	{
+			$$ = new VariableDeclaration(*($2), *($4));
+			SymbolTable::insideVariableDeclaration = false;
+		}
 	;
 
 new_variable_list
@@ -176,10 +195,10 @@ new_variable_list
 	;
 
 new_variable
-	: IDENTIFIER 							{$$ = new Identifier(*($1));} 
-	| IDENTIFIER ASSIGN expression			{Variable* temp = new Identifier(*($1)); $$ = new AssignmentExp(temp, $3);}
-	| IDENTIFIER '(' ')'					{Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp);}
-	| IDENTIFIER '(' expression_list ')'	{Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp, *($3));}
+	: IDENTIFIER 							{cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); $$ = new Identifier(*($1));} 
+	| IDENTIFIER ASSIGN expression			{cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); Variable* temp = new Identifier(*($1)); $$ = new AssignmentExp(temp, $3);}
+	| IDENTIFIER '(' ')'					{cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp);}
+	| IDENTIFIER '(' expression_list ')'	{cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp, *($3));}
 	;
 
 function_declaration

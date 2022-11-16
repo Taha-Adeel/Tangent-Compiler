@@ -2,43 +2,47 @@
 #define SYMBOL_TABLE_H
 
 #include <iostream>
-#include <string>
-#include <map>
 #include <stdlib.h>
-#include <iostream>
-#include <list>
 #include <string>
 #include <map>
 #include <variant>
 #include <optional>
-#include <vector>
 
-using namespace std;
-
-enum class TYPE {INT, FLOAT, STRING, BOOL, FAMILY, VOID, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR}; 
+enum class TYPE {INT, FLOAT, STRING, BOOL, FAMILY, ERROR, VOID, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR}; 
 class Family
 {
-    string name;
-    map<string, int> int_members;
-    map<string, float> float_members;
-    map<string, string> string_members;
-    map<string, bool> bool_members;
-    map<string, Family> family_members;
+    std::string name;
+    std::map<std::string, int> int_members;
+    std::map<std::string, float> float_members;
+    std::map<std::string, std::string> string_members;
+    std::map<std::string, bool> bool_members;
+    std::map<std::string, Family> family_members;
 };
-typedef variant<int, float, string, bool, Family> datatype;
+/// @brief a token class to represent error in eval function
+class error{};
+typedef std::variant<int, float, std::string, bool, Family, error> datatype;
 
+/**
+ * @brief Enum representing the different types of symbols
+ * 
+ */
 enum class SYMBOL_TYPE{
 	PRIMITIVE,
 	OBJECT,
+	INBUILT_TYPENAME,
 	TYPENAME,
 	FUNCTION,
 	UNKNOWN
 };
 
+// Forward declaration of data type used to store location of symbol
 struct YYLTYPE;
 
 /**
  * @brief Represents an entry in a Symbol Table
+ * 
+ * A symbol table entry holds the identifier name, type of symbol, the typename of the symbol,
+ * and its location where it was declared
  */
 class Symbol{
 private:
@@ -49,8 +53,9 @@ private:
 	// Properties
 
 public:
-	Symbol();
-	Symbol(std::string name, SYMBOL_TYPE type = SYMBOL_TYPE::UNKNOWN): name(name), type(type) {}
+	Symbol(){};
+	Symbol(std::string name, SYMBOL_TYPE type, std::string type_name, YYLTYPE* location)
+		:name(name), type(type), type_name(type_name), location(location) {}
 	
 	std::string getName() { return name; }
 	SYMBOL_TYPE getType() { return type; }
@@ -60,42 +65,33 @@ public:
 	friend std::ostream& operator << (std::ostream& out, const Symbol& symbol);
 };
 
-
+/**
+ * @brief Represents a Symbol Table
+ *
+ * Internally uses a map to store the symbols. Each symbol table can have multiple child symbol tables, 
+ * to represent nested scopes and such.
+ */
 class SymbolTable{
 private:
+	std::string namespace_name;
 	std::map<std::string, Symbol> symbol_table;
-	std::map<std::string, SymbolTable*> children_symbol_tables;
+	std::map<std::string, SymbolTable*> child_symbol_tables;
 	SymbolTable* parent = NULL;
 
+private:
+	void createObjectSymbolTable(std::string object_name, std::string type_name);
+
 public:
-	SymbolTable();
-	~SymbolTable();
+	static bool insideVariableDeclaration;
+	static std::string currentVariableType;
 
-	void addSymbol(Symbol symbol);
-	Symbol* lookUpSymbol(std::string name);
-	void printSymbolTable();
+public:
+	SymbolTable(SymbolTable* parent = NULL, std::string namespace_name = "");
+	~SymbolTable(){/*TODO: delete all child symbol tables*/};
+
+	void addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, SYMBOL_TYPE type = SYMBOL_TYPE::UNKNOWN);
+	Symbol* lookUp(std::string name);
+	void printSymbolTable(int indentation = 0);
 };
-
-void SymbolTable::addSymbol(Symbol symbol){
-	if(lookUpSymbol(symbol.getName()) != NULL){
-		throw "Symbol already exists";
-	}
-	symbol_table[symbol.getName()] = symbol;
-}
-
-Symbol* SymbolTable::lookUpSymbol(std::string name){
-	if(symbol_table.find(name) != symbol_table.end())
-		return &symbol_table[name];
-	else if(parent != NULL)
-		return parent->lookUpSymbol(name);
-	else
-		return NULL;
-}
-
-void SymbolTable::printSymbolTable(){
-	for(auto it = symbol_table.begin(); it != symbol_table.end(); it++){
-		std::cout << it->second << std::endl;
-	}
-}
 
 #endif

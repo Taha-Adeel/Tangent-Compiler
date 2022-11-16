@@ -39,6 +39,19 @@ TYPE Expression::get_type()
     return TYPE{(int)value.index()};
 }
 
+datatype throwError()
+{
+    datatype e = new error();
+    return e;
+}
+
+bool checkError(datatype value)
+{
+    if(value.index() == 5)
+        return true;
+    else
+        return false;
+}
 
 /* Evaluate and print functions for Literals*/
 datatype Literal::evaluate()
@@ -64,8 +77,7 @@ void FloatLiteral::print()
     std::cout << get<float>(value);
     std::cout <<"\n}\n";
 }
-
-Value *FloatLiteral::codegen()
+void StringLiterul::print()
 {
     return ConstantFP::get(*TheContext, APFloat(get<float>(value)));
 }
@@ -570,6 +582,31 @@ void LogicalNOT::print()
 }
 datatype LogicalNOT::evaluate()
 {
+    // datatype temp;
+    // if(exp->get_type() == TYPE::ERROR)
+    //     return throwError();
+    // if(exp->get_type() == TYPE::STRING)
+    // {
+    //     temp = "";
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
+    // else if(exp->get_type() == TYPE::FAMILY)
+    //     value = false;
+    // else if(exp->get_type() == TYPE::INT)
+    // {
+    //     temp = 0;
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
+    // else if(exp->get_type() == TYPE::FLOAT)
+    // {
+    //     temp = 0.0f;
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
+    // else if(exp->get_type() == TYPE::BOOL)
+    // {
+    //     temp = false;
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
     return value;
 }
 
@@ -587,6 +624,11 @@ void CompGT::print()
 }
 datatype CompGT::evaluate()
 {
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::FAMILY)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS->evaluate() != RHS->evaluate());
     return value;
 }
 
@@ -631,6 +673,11 @@ void CompLT::print()
 }
 datatype CompLT::evaluate()
 {
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::STRING)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS < RHS);
     return value;
 }
 
@@ -675,6 +722,11 @@ void CompGE::print()
 }
 datatype CompGE::evaluate()
 {
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::STRING)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS >= RHS);
     return value;
 }
 
@@ -719,6 +771,11 @@ void CompLE::print()
 }
 datatype CompLE::evaluate()
 {
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::STRING)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS <= RHS);
     return value;
 }
 
@@ -763,6 +820,11 @@ void CompEQ::print()
 }
 datatype CompEQ::evaluate()
 {
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::STRING)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS == RHS);
     return value;
 }
 
@@ -803,30 +865,113 @@ void CompNEQ::print()
 }
 datatype CompNEQ::evaluate()
 {
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::STRING)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS != RHS);
     return value;
 }
 
-Value* CompNEQ::codegen()
+void MemberAccess::print()
 {
-    Value *L = LHS->codegen();
-    Value *R = RHS->codegen();
-    datatype left_eval = LHS->evaluate();
-    datatype right_eval = RHS->evaluate();
-    if(!L || !R)
-    {
-        return nullptr;
-    }
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE || left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
-        {
-            return Builder->CreateICmpNE(L, R, "cmptmp");
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            return Builder->CreateFCmpUNE(L, R, "cmptmp");
-        }
-    }
+    cout<<"Member Access:\n{\n";
+    cout<<"accessor name:\n";
+    accessor_name->print();
+    cout<<"\n accessee name :\n";
+    id.print();
+    cout<<"\n}\n";
+}
+datatype MemberAccess::evaluate()
+{
+    return value;
+}
+
+
+void Argument::print()
+{
+
+}
+datatype Argument::evaluate()
+{
+    return value;
+}
+
+void UnaryIncrement::print()
+{
+
+}
+datatype UnaryIncrement::evaluate()
+{
+    return value;
+}
+
+void PostfixInc::print()
+{
+
+}
+datatype PostfixInc::evaluate()
+{
+    return value;
+}
+
+void PrefixInc::print()
+{
+
+}
+datatype PrefixInc::evaluate()
+{
+    return value;
+}
+
+void UnaryDecrement::print()
+{
+
+}
+datatype UnaryDecrement::evaluate()
+{
+    return value;
+}
+
+void PostfixDec::print()
+{
+
+}
+datatype PostfixDec::evaluate()
+{
+    return value;
+}
+
+void BinaryOperation::print()
+{
+
+}
+datatype BinaryOperation::evaluate()
+{
+    return value;
+}
+
+
+datatype BooleanLiteral::evaluate()
+{
+    return value;
+}
+
+datatype StringLiterul::evaluate()
+{
+    return value;
+}
+datatype FloatLiteral::evaluate()
+{
+    return value;
+}
+datatype IntegerLiteral::evaluate()
+{
+    return value;
+}
+datatype TernaryOperator::evaluate()
+{
+    return value;
 }
 
 /**************************************
@@ -1134,6 +1279,35 @@ void ReturnStatement::print()
     cout << "\n}\n";
 }
 
+void FamilyMembers::print()
+{
+
+}
+void FamilyDecl::print()
+{
+
+}
+void ContinueStatement::print()
+{
+
+}
+void BreakStatement::print()
+{
+
+}
+void ConstructorDeclaration::print()
+{
+
+}
+void IfStatement::print()
+{
+    
+}
+
 /*------------------------------------------------------------------------
  * Program Root Node
  *------------------------------------------------------------------------*/
+void Program::print()
+{
+    
+}
