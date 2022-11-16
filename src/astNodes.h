@@ -840,7 +840,7 @@ public:
 };
 
 // objects at the base of the tree
-//extern map<string, datatype> symTable;
-// Program *root;
+extern map <string, value_pair> symTable;
+extern Program *root;
 
 #endif
