@@ -18,6 +18,13 @@ TYPE Expression::get_type()
     return TYPE{(int)value.index()};
 }
 
+bool checkError(datatype value)
+{
+    if(value.index() == 5)
+        return true;
+    else
+        return false;
+}
 
 /* Evaluate and print functions for Literals*/
 datatype Literal::evaluate()
@@ -483,6 +490,7 @@ void CompNEQ::print()
 }
 datatype CompNEQ::evaluate()
 {
+    if(LHS.value.index() )
     return value;
 }
 

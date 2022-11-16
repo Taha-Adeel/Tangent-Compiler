@@ -25,7 +25,9 @@ class Family
     map<string, bool> bool_members;
     map<string, Family> family_members;
 };
-typedef variant<int, float, string, bool, Family> datatype;
+
+enum class ERROR {TYPE_MISMATCH};
+typedef variant<int, float, string, bool, Family, ERROR> datatype;
 
 enum class SYMBOL_TYPE{
 	PRIMITIVE,
