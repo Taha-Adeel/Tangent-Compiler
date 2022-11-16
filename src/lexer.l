@@ -1,4 +1,5 @@
 %option noyywrap yylineno nodefault
+/* %option c++ */
 
 D               [0-9]
 L               [a-zA-Z]
@@ -8,7 +9,8 @@ L               [a-zA-Z]
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
-    #include "parser.tab.h"
+    #include "../src/astNodes.h"
+    #include "parser.tab.hh"
 
     #define YY_USER_ACTION update_locations(); // Called before each token
     void comment();
@@ -44,14 +46,24 @@ L               [a-zA-Z]
 %%
 "#"                    {comment();}
 
-"const"                {return CONST;}
-"var"                  {return VAR;}
+"const"                 {return CONST;}
+"var"                   {return VAR;}
 
-"bool"                 {return BOOL;}
-"float"                {return FLOAT;}
-"int"                  {return INT;}
-"string"               {return STRING;}
-"void"                 {return VOID;}
+"bool"                  {return BOOL;}
+"float"                 {return FLOAT;}
+"int"                   {return INT;}
+"string"                {return STRING;}
+"void"                  {return VOID;}
+"Point"                 {return POINT;}
+"Path"                  {return PATH;}                  
+"Image"                 {return IMAGE;}
+"Rectangle"             {return RECTANGLE;}
+"Circle"                {return CIRCLE;}
+"Ellipse"               {return ELLIPSE;}
+"Polygon"               {return POLYGON;}
+"Curve"                 {return CURVE;}
+"Pi"                    {return PI;}
+"Colour"                {return COLOUR;}
 
 {D}+                   {yylval.valuei = atoi(yytext);return INTEGER_LITERAL;}
 {D}+"."{D}+            {yylval.valuef = atof(yytext);return FLOAT_LITERAL;}
@@ -77,7 +89,7 @@ L               [a-zA-Z]
 
 "driver"               {return DRIVER;}
 
-{L}({L}|{D}|_)*        {yylval.id = yytext; return IDENTIFIER;}
+{L}({L}|{D}|_)*        {auto temp = new string(yytext);yylval.id = temp; return IDENTIFIER;}
 
 ","                    {return ',';}
 ":="                   {return ASSIGN;}
@@ -117,8 +129,8 @@ L               [a-zA-Z]
 
  /* Matches to any invalid tokens not matched to any other rules */
 .                      {
-                        printf("ERROR: %s: Line %d:%d\t%-12s - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
-                        fprintf(stderr, "\033[0;31m   ERROR:\033[0m %s: Line %d:%d - '%s' - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
+                        printf("Error: %s: Line %d:%d\t%-12s - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
+                        fprintf(stderr, "   Error: %s: Line %d:%d - '%s' - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
                         return YYUNDEF;
                        }
 %%
@@ -141,7 +153,7 @@ void update_locations(){
 
 void comment(){
         char c;
-        while( (c = input()) != '\n' )
+        while( (c = yyinput()) != '\n' )
             ; /* eats up any line starting with '#' */
 }
 
@@ -176,7 +188,7 @@ void print_tokens_matched(){
     printf("\n");
 }
 
-void init_yylloc(char* filename){
+void init_yylloc(const char* filename){
 	yylloc.first_line = yylloc.last_line = yylineno = 1;
 	yylloc.first_column = yylloc.last_column = 0;
 	yylloc.filename = filename;

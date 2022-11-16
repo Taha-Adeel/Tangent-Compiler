@@ -1,4 +1,4 @@
-CC = gcc
+CC = g++
 
 # Input and output directories
 SRC_DIR := ./src
@@ -14,27 +14,27 @@ compiler: parser
 # $@ = build target of the rule (lhs)  ($(@D) = Directory of the $@, and $(@F) = only filename of $@. Similarly for others)
 # $^ = dependencies of the rule (rhs)
 # $< = first dependency of the rule (first value in the rhs)
-$(BUILD_DIR)/lex.yy.c: $(SRC_DIR)/lexer.l
+$(BUILD_DIR)/lex.yy.cc: $(SRC_DIR)/lexer.l
 	mkdir -p $(@D)
 	flex -o $@ $^
 
-$(BUILD_DIR)/parser.tab.c \
-$(BUILD_DIR)/parser.tab.h: $(SRC_DIR)/parser.y
+$(BUILD_DIR)/parser.tab.cc \
+$(BUILD_DIR)/parser.tab.hh: $(SRC_DIR)/parser.yy
 	mkdir -p $(@D)
-	bison -o $(BUILD_DIR)/parser.tab.c $^
+	bison -o $(BUILD_DIR)/parser.tab.cc $^
 
 # Build an executable to scan the input tangent code and output the matched tokens
-lexer: $(BUILD_DIR)/lex.yy.c $(BUILD_DIR)/parser.tab.h
-	$(CC) -o $(BUILD_DIR)/$@ $< -D STANDALONE_LEXER
+lexer: $(BUILD_DIR)/lex.yy.cc $(BUILD_DIR)/parser.tab.hh
+	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $< -D STANDALONE_LEXER
 
 # Build an executable to parse the input tangent code files according to the grammar rules
-parser: $(BUILD_DIR)/parser.tab.c $(BUILD_DIR)/lex.yy.c
-	$(CC) -o $(BUILD_DIR)/$@ $^ --debug
+parser: $(BUILD_DIR)/parser.tab.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp $(SRC_DIR)/symbolTable.cpp
+	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $^ --debug
 
 # Generate HTML documentation describing our grammar and the DFA representing the parser.
-parser_documentation: $(SRC_DIR)/parser.y
+parser_documentation: $(SRC_DIR)/parser.yy
 	mkdir -p $(BUILD_DIR)
-	bison -o $(BUILD_DIR)/parser.tab.c $< --verbose --xml=$(BUILD_DIR)/$(<F:%.y=%.xml)
+	bison -o $(BUILD_DIR)/parser.tab.cc $< --verbose --xml=$(BUILD_DIR)/$(<F:%.y=%.xml)
 	xsltproc $$(bison --print-datadir)/xslt/xml2xhtml.xsl $(BUILD_DIR)/$(<F:%.y=%.xml) > ./documentation/$(<F:%.y=%.html)
 	xdg-open ./documentation/$(<F:%.y=%.html)
 
@@ -92,7 +92,7 @@ lexer_correct_codes: $(LEXER_CORRECT_CODES) lexer
 	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
 		echo "$(GREEN)$(B)Success: All valid Lexical Analyzer testcases passed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
 	else \
-		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
+		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; exit 1; fi; \
 
 lexer_incorrect_codes: $(LEXER_INCORRECT_CODES) lexer
 	@echo "$(WHITE)\n###################################################################################$(NC)\n"; \
@@ -112,7 +112,7 @@ lexer_incorrect_codes: $(LEXER_INCORRECT_CODES) lexer
 	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
 		echo "$(GREEN)$(B)Success: All invalid tokens were rejected by the Lexical Analyzer.$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
 	else \
-		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
+		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; exit 1; fi; \
 
 # Parser Tests
 parser_tests: parser parser_correct_codes parser_incorrect_codes
@@ -135,7 +135,7 @@ parser_correct_codes: $(PARSER_CORRECT_CODES) parser
 	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
 		echo "$(GREEN)$(B)Success: All syntactically valid testcases passed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
 	else \
-		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
+		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; exit 1; fi; \
 
 parser_incorrect_codes: $(PARSER_INCORRECT_CODES) parser
 	@echo "$(WHITE)\n########################################################################$(NC)\n"; \
@@ -155,4 +155,4 @@ parser_incorrect_codes: $(PARSER_INCORRECT_CODES) parser
 	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
 		echo "$(GREEN)$(B)Success: All syntax errors were caught by the parser!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
 	else \
-		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
+		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; exit 1; fi; \

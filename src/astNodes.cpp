@@ -1,666 +1,380 @@
+// contains implementations of the member methods and constructors in astNodes.h
+
 #include "astNodes.h"
 #include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <map>
 #include <list>
-#include <cstring>
-// contains implementations of the member methods and constructors in astNodes.h
+using namespace std;
 
-bool is_valid_comparasion(value_pair a, value_pair b)
+////////////////////////////////////////////////////
+//            AST FUNCTION DEFINITION           ////
+////////////////////////////////////////////////////
+
+
+TYPE Expression::get_type()
 {
-    if (a.first==b.first) return true;//change this when we add families
-    
-    //int-float
-    if (a.first == INT_TYPE && b.first ==FLOAT_TYPE)return true;
-    if (b.first == INT_TYPE && a.first ==FLOAT_TYPE)return true;
-
-    //bool-int
-    if (a.first == BOOL_TYPE && b.first == INT_TYPE)return true;
-    if (b.first == BOOL_TYPE && a.first == INT_TYPE)return true;
-
-    return false;
+    return TYPE{(int)value.index()};
 }
-bool is_unary_operation_valid(value_pair& a)
+
+datatype throwError()
 {
-    if( a.first==INT_TYPE||
-        a.first==FLOAT_TYPE||
-        a.first==BOOL_TYPE)
+    datatype e = new error();
+    return e;
+}
+
+bool checkError(datatype value)
+{
+    if(value.index() == 5)
         return true;
-    return false;
-}
-bool is_valid_for_boolean_operation(value_pair& a, value_pair& b)
-{
-    return is_unary_operation_valid(a)&&is_unary_operation_valid(b);
+    else
+        return false;
 }
 
-IntegerLiteral::IntegerLiteral(int num)
+/* Evaluate and print functions for Literals*/
+datatype Literal::evaluate()
 {
-    value.first = INT_TYPE;
-    value.second.ivalue = num;
+    return value;
 }
+
 void IntegerLiteral::print()
 {
-    cout << value.second.ivalue;
+    cout<<"int literal\n{";
+    cout << get<int>(value);
+    cout<<"\n}\n";
 }
-value_pair IntegerLiteral::evaluate()
+void FloatLiteral::print()
 {
-    cout << "Integer node: operand = " << value.second.ivalue << endl;
-    return value;
+    cout<<"float literal\n{";
+    cout << get<float>(value);
+    cout<<"\n}\n";
 }
-
-FloatingPointLiteral::FloatingPointLiteral(float num)
+void StringLiterul::print()
 {
-    value.first = FLOAT_TYPE;
-    value.second.fvalue = num;
+    cout<<"string literal\n{";
+    cout << get<string>(value);
+    cout<<"\n}\n";
 }
-void FloatingPointLiteral::print()
-{
-    cout << value.second.fvalue;
-}
-value_pair FloatingPointLiteral::evaluate()
-{
-    cout << "Float node: operand = " << value.second.fvalue << endl;
-    return value;
-}
-
-StringLiteral::StringLiteral(string s)
-{
-    value.first = STRING_TYPE;
-    value.second.svalue = &s[0];
-}
-void StringLiteral::print()
-{
-    cout << value.second.svalue;
-}
-value_pair StringLiteral::evaluate()
-{
-    cout << "String node: operand = " << value.second.svalue << endl;
-    return value;
-}
-
-BooleanLiteral::BooleanLiteral(bool b)
-{
-    value.first = BOOL_TYPE;
-    value.second.bvalue = b;
-}
-
 void BooleanLiteral::print()
 {
-    cout << value.second.bvalue;
-}
-
-value_pair BooleanLiteral::evaluate()
-{
-    cout << "Bool node: operand = " << value.second.bvalue << endl;
-    return value;
-}
-
-Identifier::Identifier(string name)
-{
-    id = name;
+    cout<<"bool literal\n{";
+    cout << get<bool>(value);
+    cout<<"\n}\n";
 }
 
 void Identifier::print()
 {
+    cout<<"Identifier\n{";
     cout << id;
+    cout<<"\n}\n";
 }
 
 string Identifier::ret_id()
 {
     return id;
 }
-
-value_pair Identifier::evaluate()
+datatype Identifier::evaluate()
 {
-    cout << "Identifier node: " << id << " = ";
-    if (symTable[id].first == INT_TYPE)
-    {
-        cout << symTable[id].second.ivalue << endl;
-    }
-    else if (symTable[id].first == FLOAT_TYPE)
-    {
-        cout << symTable[id].second.fvalue << endl;
-    }
-    else if (symTable[id].first == STRING_TYPE)
-    {
-        cout << symTable[id].second.svalue << endl;
-    }
-    else if (symTable[id].first == BOOL_TYPE)
-    {
-        cout << symTable[id].second.bvalue << endl;
-    }
-    return symTable[id];
-}
-ArrayAccess::ArrayAccess(Identifier *name, int i)
-{
-    array_name = name;
-    index = i;
+    // use symbol table
+    return value;
 }
 
 void ArrayAccess::print()
 {
-    array_name->print();
-    cout << "[" << index << "]";
+    cout<<"int literal\n{";
+        cout<<"array name:\n{";
+            array_name->print();
+        cout<<"\n}\n";
+        
+        cout<<"index:\n{";
+            index->print();
+        cout<<"\n}\n";
+    cout<<"\n}\n";
 }
-
-value_pair ArrayAccess::evaluate()
+datatype ArrayAccess::evaluate()
 {
-}
-
-FunctionCall::FunctionCall(Identifier *name, list<Identifier *> l)
-{
-    func_name = name;
-    args_list.assign(l.begin(), l.end());
+    return value;
 }
 
 void FunctionCall::print()
 {
-    func_name->print();
-    cout << "(";
-    for (auto const &v : args_list)
-    {
-        v->print();
-        cout << ",";
-    }
-    cout << ")";
+    cout<<"function call:\n{";
+        func_name->print();
+        cout << "\narguments{\n";
+        for (auto const &v : args_list)
+        {
+            cout<<"(\n";
+                v->print();
+            cout << "\n)\n";
+        }
+        cout << "}";
+    cout<<"\n}\n";
+    
 }
-
-value_pair FunctionCall::evaluate()
+datatype FunctionCall::evaluate()
 {
-}
-
-AssignmentExp::AssignmentExp(Identifier *name, Expression *R)
-{
-    id = name;
-    RHS = R;
+    return datatype(0);//temp
 }
 
 void AssignmentExp::print()
 {
-    id->print();
-    cout << " = ";
-    RHS->print();
-}
+    cout<<"assignment expr\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair AssignmentExp::evaluate()
-{
-    value_pair result = RHS->evaluate();
-    symTable[id->ret_id()] = result;
-    return result;
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 }
-
-AddAssign::AddAssign(Identifier *name, Expression *R)
+datatype AssignmentExp::evaluate()
 {
-    AssignmentExp(name, R);
+    datatype result = RHS->evaluate();
+    // store result in the symbol table
+    // symTable[id->ret_id()] = result; 
+    value = result;
+    return value;
 }
 
 void AddAssign::print()
 {
-    id->print();
-    cout << " += ";
-    RHS->print();
+    cout<<"add assign\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
+
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 }
-
-value_pair AddAssign::evaluate()
+datatype AddAssign::evaluate()
 {
-    value_pair result = RHS->evaluate();
-    if (result.first == symTable[id->ret_id()].first)
-    {
-        if (result.first == INT_TYPE)
-        {
-            symTable[id->ret_id()].second.ivalue += result.second.ivalue;
-        }
-        else if (result.first == FLOAT_TYPE)
-        {
-            symTable[id->ret_id()].second.fvalue += result.second.fvalue;
-        }
-        else if (result.first == BOOL_TYPE)
-        {
-            symTable[id->ret_id()].second.bvalue += result.second.bvalue;
-        }
-        else if (result.first == STRING_TYPE)
-        {
-            string s1 = symTable[id->ret_id()].second.svalue;
-            string s2 = result.second.svalue;
-            s1 += s2;
-
-            symTable[id->ret_id()].second.svalue = strcpy(new char[s1.length() + 1], s1.c_str());
-        }
-    }
-    return symTable[id->ret_id()];
-}
-
-SubAssign::SubAssign(Identifier *name, Expression *R)
-{
-    AssignmentExp(name, R);
+    return value;
 }
 
 void SubAssign::print()
 {
-    id->print();
-    cout << " -= ";
-    RHS->print();
-}
+    cout<<"subtract assign\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair SubAssign::evaluate()
-{
-    value_pair result = RHS->evaluate();
-    if (result.first == symTable[id->ret_id()].first)
-    {
-        if (result.first == INT_TYPE)
-        {
-            symTable[id->ret_id()].second.ivalue -= result.second.ivalue;
-        }
-        else if (result.first == FLOAT_TYPE)
-        {
-            symTable[id->ret_id()].second.fvalue -= result.second.fvalue;
-        }
-        else if (result.first == BOOL_TYPE)
-        {
-            symTable[id->ret_id()].second.bvalue -= result.second.bvalue;
-        }
-    }
-    return symTable[id->ret_id()];
-}
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 
-MulAssign::MulAssign(Identifier *name, Expression *R)
+}
+datatype SubAssign::evaluate()
 {
-    AssignmentExp(name, R);
+    return value;
 }
 
 void MulAssign::print()
 {
-    id->print();
-    cout << " *= ";
-    RHS->print();
-}
+    cout<<"multiply assign\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair MulAssign::evaluate()
-{
-    value_pair result = RHS->evaluate();
-    if (result.first == symTable[id->ret_id()].first)
-    {
-        if (result.first == INT_TYPE)
-        {
-            symTable[id->ret_id()].second.ivalue *= result.second.ivalue;
-        }
-        else if (result.first == FLOAT_TYPE)
-        {
-            symTable[id->ret_id()].second.fvalue *= result.second.fvalue;
-        }
-        else if (result.first == BOOL_TYPE)
-        {
-            symTable[id->ret_id()].second.bvalue *= result.second.bvalue;
-        }
-    }
-    return symTable[id->ret_id()];
-}
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 
-DivAssign::DivAssign(Identifier *name, Expression *R)
+}
+datatype MulAssign::evaluate()
 {
-    AssignmentExp(name, R);
+    return value;
 }
 
 void DivAssign::print()
 {
-    id->print();
-    cout << " /= ";
-    RHS->print();
-}
+    cout<<"div assign\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair DivAssign::evaluate()
-{
-    value_pair result = RHS->evaluate();
-    if (result.first == symTable[id->ret_id()].first)
-    {
-        if (result.first == INT_TYPE && result.second.ivalue != 0)
-        {
-            symTable[id->ret_id()].second.ivalue /= result.second.ivalue;
-        }
-        else if (result.first == FLOAT_TYPE && result.second.fvalue != 0)
-        {
-            symTable[id->ret_id()].second.fvalue /= result.second.fvalue;
-        }
-        else if (result.first == BOOL_TYPE && result.second.bvalue != 0)
-        {
-            symTable[id->ret_id()].second.bvalue /= result.second.bvalue;
-        }
-    }
-    return symTable[id->ret_id()];
-}
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 
-ModAssign::ModAssign(Identifier *name, Expression *R)
+}
+datatype DivAssign::evaluate()
 {
-    AssignmentExp(name, R);
+    return value;
 }
 
 void ModAssign::print()
 {
-    id->print();
-    cout << " %= ";
-    RHS->print();
-}
+    cout<<"modulus assign\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair ModAssign::evaluate()
-{
-    value_pair result = RHS->evaluate();
-    if (result.first == symTable[id->ret_id()].first)
-    {
-        if (result.first == INT_TYPE && result.second.ivalue != 0)
-        {
-            symTable[id->ret_id()].second.ivalue %= result.second.ivalue;
-        }
-        else if (result.first == BOOL_TYPE && result.second.bvalue != 0)
-        {
-            symTable[id->ret_id()].second.bvalue %= result.second.bvalue;
-        }
-    }
-    return symTable[id->ret_id()];
-}
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 
-UnaryOperation::UnaryOperation(Expression *R)
-{
-    RHS = R;
 }
-
-BinaryOperation::BinaryOperation(Expression *L, Expression *R)
+datatype ModAssign::evaluate()
 {
-    LHS = L;
-    RHS = R;
-}
-
-Addition::Addition(Expression *L, Expression *R)
-{
-    BinaryOperation(L, R);
+    return value;
 }
 
 void Addition::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " + ";
-    RHS->print();
-    cout << ")";
-}
+    cout<<"addition\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair Addition::evaluate()
-{
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE)
-        {
-            result.first = INT_TYPE;
-            result.second.ivalue = left_eval.second.ivalue + right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            result.first = FLOAT_TYPE;
-            result.second.fvalue = left_eval.second.fvalue + right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue + right_eval.second.bvalue;
-        }
-        else if (left_eval.first == STRING_TYPE)
-        {
-            result.first = STRING_TYPE;
-            string s1 = left_eval.second.svalue;
-            string s2 = right_eval.second.svalue;
-            string s = s1 + s2;
-            result.second.svalue = strcpy(new char[s.length() + 1], s.c_str());
-        }
-    }
-    return result;
-}
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 
-Subtraction::Subtraction(Expression *L, Expression *R)
+}
+datatype Addition::evaluate()
 {
-    BinaryOperation(L, R);
+    return value;
 }
 
 void Subtraction::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " - ";
-    RHS->print();
-    cout << ")";
-}
+    cout<<"subtraction\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair Subtraction::evaluate()
-{
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE)
-        {
-            result.first = INT_TYPE;
-            result.second.ivalue = left_eval.second.ivalue - right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            result.first = FLOAT_TYPE;
-            result.second.fvalue = left_eval.second.fvalue - right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue - right_eval.second.bvalue;
-        }
-    }
-    return result;
-}
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 
-Multiplication::Multiplication(Expression *L, Expression *R)
+}
+datatype Subtraction::evaluate()
 {
-    BinaryOperation(L, R);
+    return value;
 }
 
 void Multiplication::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " * ";
-    RHS->print();
-    cout << ")";
-}
+    cout<<"multiplication\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair Multiplication::evaluate()
-{
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE)
-        {
-            result.first = INT_TYPE;
-            result.second.ivalue = left_eval.second.ivalue * right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE)
-        {
-            result.first = FLOAT_TYPE;
-            result.second.fvalue = left_eval.second.fvalue * right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue * right_eval.second.bvalue;
-        }
-    }
-    return result;
-}
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 
-Division::Division(Expression *L, Expression *R)
+}
+datatype Multiplication::evaluate()
 {
-    BinaryOperation(L, R);
+    return value;
 }
 
 void Division::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " / ";
-    RHS->print();
-    cout << ")";
-}
+    cout<<"division\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair Division::evaluate()
-{
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE && right_eval.second.ivalue != 0)
-        {
-            result.first = INT_TYPE;
-            result.second.ivalue = left_eval.second.ivalue / right_eval.second.ivalue;
-        }
-        else if (left_eval.first == FLOAT_TYPE && right_eval.second.fvalue != 0)
-        {
-            result.first = FLOAT_TYPE;
-            result.second.fvalue = left_eval.second.fvalue / right_eval.second.fvalue;
-        }
-        else if (left_eval.first == BOOL_TYPE && right_eval.second.bvalue != 0)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue / right_eval.second.bvalue;
-        }
-    }
-    return result;
-}
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 
-ModularDiv::ModularDiv(Expression *L, Expression *R)
+}
+datatype Division::evaluate()
 {
-    BinaryOperation(L, R);
+    return value;
 }
 
 void ModularDiv::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " % ";
-    RHS->print();
-    cout << ")";
-}
+    cout<<"modular division\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair ModularDiv::evaluate()
-{
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    if (left_eval.first == right_eval.first)
-    {
-        if (left_eval.first == INT_TYPE && right_eval.second.ivalue != 0)
-        {
-            result.first = INT_TYPE;
-            result.second.ivalue = left_eval.second.ivalue % right_eval.second.ivalue;
-        }
-        else if (left_eval.first == BOOL_TYPE && right_eval.second.bvalue != 0)
-        {
-            result.first = BOOL_TYPE;
-            result.second.bvalue = left_eval.second.bvalue % right_eval.second.bvalue;
-        }
-    }
-    return result;
-}
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 
-UnaryPlus::UnaryPlus(Expression *R)
+}
+datatype ModularDiv::evaluate()
 {
-    UnaryOperation(R);
+    return value;
 }
 
 void UnaryPlus::print()
 {
-    cout << "+";
-    RHS->print();
+    cout<<"Unary +\n{\n";
+    exp->print();
+    cout<<"\n}\n";
 }
-
-value_pair UnaryPlus::evaluate()
+datatype UnaryPlus::evaluate()
 {
-    value_pair result = RHS->evaluate();
-    return result;
-}
-
-UnaryMinus::UnaryMinus(Expression *R)
-{
-    UnaryOperation(R);
+    return value;
 }
 
 void UnaryMinus::print()
 {
-    cout << "-";
-    RHS->print();
+    cout<<"Unary -\n{\n";
+    exp->print();
+    cout<<"\n}\n";
 }
-
-value_pair UnaryMinus::evaluate()
+datatype UnaryMinus::evaluate()
 {
-    value_pair result = RHS->evaluate();
-    if (result.first == INT_TYPE)
-    {
-        result.second.ivalue = -result.second.ivalue;
-    }
-    else if (result.first == FLOAT_TYPE)
-    {
-        result.second.fvalue = -result.second.fvalue;
-    }
-    else if (result.first == BOOL_TYPE)
-    {
-        result.second.bvalue = -result.second.bvalue;
-    }
-    return result;
-}
-
-LogicalAND::LogicalAND(Expression *L, Expression *R)
-{
-    BinaryOperation(L, R);
+    return value;
 }
 
 void LogicalAND::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " & ";
-    RHS->print();
-    cout << ")";
-}
+    cout<<"logical and\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair LogicalAND::evaluate()
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
+}
+datatype LogicalAND::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    result.first = BOOL_TYPE;
-    if (is_valid_comparasion(left_eval,right_eval))
-        result.second = bool(left_eval.second && right_eval.second);
-    else{} //return error
-    return result;
+    return value;
 }
 
-LogicalOR::LogicalOR(Expression *L, Expression *R):BinaryOperation(L, R){}
 void LogicalOR::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " | ";
-    RHS->print();
-    cout << ")";
+    cout<<"logical or\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
+
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 }
-value_pair LogicalOR::evaluate()
+datatype LogicalOR::evaluate()
 {
     //ill come to this later
 
-    // value_pair left_eval = LHS->evaluate();
-    // value_pair right_eval = RHS->evaluate();
-    // value_pair result;
+    // datatype left_eval = LHS->evaluate();
+    // datatype right_eval = RHS->evaluate();
+    // datatype result;
     // result.first = BOOL_TYPE;
     // bool left_bool = visit([](auto& a){return a!=0;},left_eval.second);
     // if (is_boolean_operation_valid(left_eval,right_eval))
@@ -669,172 +383,300 @@ value_pair LogicalOR::evaluate()
     // }
     // else{} //return error
     // return result;
+    return value;
 }
-
-LogicalNOT::LogicalNOT(Expression *R):UnaryOperation(R){}
 
 void LogicalNOT::print()
 {
-    cout << "!";
-    RHS->print();
+    cout<<"logical not -\n{\n";
+    exp->print();
+    cout<<"\n}\n";
 }
-value_pair LogicalNOT::evaluate()
+datatype LogicalNOT::evaluate()
 {
-    value_pair result = RHS->evaluate();
-    value_pair res;
-    res.first = BOOL_TYPE;
-    if      (result.first == INT_TYPE)      res.second = ! get<INT_TYPE>(result.second);
-    else if (result.first == FLOAT_TYPE)    res.second = ! get<FLOAT_TYPE>(result.second);
-    else if (result.first == BOOL_TYPE)     res.second = ! get<BOOL_TYPE>(result.second);
-    return res;
+    // datatype temp;
+    // if(exp->get_type() == TYPE::ERROR)
+    //     return throwError();
+    // if(exp->get_type() == TYPE::STRING)
+    // {
+    //     temp = "";
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
+    // else if(exp->get_type() == TYPE::FAMILY)
+    //     value = false;
+    // else if(exp->get_type() == TYPE::INT)
+    // {
+    //     temp = 0;
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
+    // else if(exp->get_type() == TYPE::FLOAT)
+    // {
+    //     temp = 0.0f;
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
+    // else if(exp->get_type() == TYPE::BOOL)
+    // {
+    //     temp = false;
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
+    return value;
 }
 
-CompGT::CompGT(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompGT::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " > ";
-    RHS->print();
-    cout << ")";
+    cout<<"CompGT\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
+
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 }
-value_pair CompGT::evaluate()
+datatype CompGT::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    result.first = BOOL_TYPE;
-    if (is_valid_comparasion(left_eval,right_eval))
-        result.second = bool(left_eval.second > right_eval.second);
-    else{} //return error
-    return result;
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::FAMILY)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS->evaluate() != RHS->evaluate());
+    return value;
 }
 
-CompLT::CompLT(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompLT::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " < ";
-    RHS->print();
-    cout << ")";
+    cout<<"CompLT\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
+
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 }
-value_pair CompLT::evaluate()
+datatype CompLT::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    result.first = BOOL_TYPE;
-    if (is_valid_comparasion(left_eval,right_eval))
-        result.second = bool(left_eval.second < right_eval.second);
-    else{} //return error
-    return result;
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::STRING)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS < RHS);
+    return value;
 }
 
-CompGE::CompGE(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompGE::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " >= ";
-    RHS->print();
-    cout << ")";
-}
+    cout<<"CompGE\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair CompGE::evaluate()
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
+}
+datatype CompGE::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    result.first = BOOL_TYPE;
-    if (is_valid_comparasion(left_eval,right_eval))
-        result.second = bool(left_eval.second >= right_eval.second);
-    else{} //return error in comparasion
-    return result;
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::STRING)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS >= RHS);
+    return value;
 }
 
-CompLE::CompLE(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompLE::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " <= ";
-    RHS->print();
-    cout << ")";
-}
+    cout<<"CompLE\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
 
-value_pair CompLE::evaluate()
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
+}
+datatype CompLE::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    result.first = BOOL_TYPE;
-    if (is_valid_comparasion(left_eval,right_eval))
-        result.second = bool(left_eval.second <= right_eval.second);
-    else{} //return error
-    return result;
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::STRING)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS <= RHS);
+    return value;
 }
 
-CompEQ::CompEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
 void CompEQ::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " = ";
-    RHS->print();
-    cout << ")";
+    cout<<"CompEQ\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
+
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 }
-value_pair CompEQ::evaluate()
+datatype CompEQ::evaluate()
 {
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    result.first = BOOL_TYPE;
-    if (is_valid_comparasion(left_eval,right_eval))
-        result.second = bool(left_eval.second == right_eval.second);
-    else{} //return error
-    return result;
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::STRING)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS == RHS);
+    return value;
 }
-CompNEQ::CompNEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
+
 void CompNEQ::print()
 {
-    cout << "(";
-    LHS->print();
-    cout << " != ";
-    RHS->print();
-    cout << ")";
+    cout<<"CompNEQ\n{";
+        cout<<"LHS\n{\n";
+            LHS->print();
+        cout<<"\n}\n";
+
+        cout<<"LHS\n{\n";
+            RHS->print();
+        cout<<"\n}\n";        
+    cout<<"\n}\n";
 }
-value_pair CompNEQ::evaluate()
+datatype CompNEQ::evaluate()
+{
+    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+        return throwError();
+    if(LHS->get_type() == TYPE::STRING)
+        return throwError(); // can't perform comparison for these types
+    // value = (LHS != RHS);
+    return value;
+}
+
+void MemberAccess::print()
+{
+    cout<<"Member Access:\n{\n";
+    cout<<"accessor name:\n";
+    accessor_name->print();
+    cout<<"\n accessee name :\n";
+    id.print();
+    cout<<"\n}\n";
+}
+datatype MemberAccess::evaluate()
+{
+    return value;
+}
+
+
+void Argument::print()
 {
 
-    value_pair left_eval = LHS->evaluate();
-    value_pair right_eval = RHS->evaluate();
-    value_pair result;
-    result.first = BOOL_TYPE;
-    if (is_valid_comparasion(left_eval,right_eval))
-        result.second = bool(left_eval.second != right_eval.second);
-    else{} //return error
-    return result;
+}
+datatype Argument::evaluate()
+{
+    return value;
+}
+
+void UnaryIncrement::print()
+{
+
+}
+datatype UnaryIncrement::evaluate()
+{
+    return value;
+}
+
+void PostfixInc::print()
+{
+
+}
+datatype PostfixInc::evaluate()
+{
+    return value;
+}
+
+void PrefixInc::print()
+{
+
+}
+datatype PrefixInc::evaluate()
+{
+    return value;
+}
+
+void UnaryDecrement::print()
+{
+
+}
+datatype UnaryDecrement::evaluate()
+{
+    return value;
+}
+
+void PostfixDec::print()
+{
+
+}
+datatype PostfixDec::evaluate()
+{
+    return value;
+}
+
+void BinaryOperation::print()
+{
+
+}
+datatype BinaryOperation::evaluate()
+{
+    return value;
+}
+
+
+datatype BooleanLiteral::evaluate()
+{
+    return value;
+}
+
+datatype StringLiterul::evaluate()
+{
+    return value;
+}
+datatype FloatLiteral::evaluate()
+{
+    return value;
+}
+datatype IntegerLiteral::evaluate()
+{
+    return value;
+}
+datatype TernaryOperator::evaluate()
+{
+    return value;
 }
 
 /**************************************
  * STATEMENTS
  **************************************/
 
-ExpressionStatement::ExpressionStatement(Expression *e) : exp(e) {}
 void ExpressionStatement::print()
 {
     cout << "Expression Statement:\n{ \n->";
-    exp->print();
+    cout<<"expressions:\n";
+    for(auto &i:*exp)
+    {
+        cout<<"{\n";
+        i->print();
+        cout<<"\n}\n";
+    }
     cout << "\n}\n";
 }
 
-Expression *ExpressionStatement::getValue()
+list<Expression *> ExpressionStatement::getValue()
 {
-    return exp;
+    return *exp;
 }
 
-CompoundStatement::CompoundStatement(list<Statement *> l) : stmt_list(l) {}
 void CompoundStatement::print()
 {
     cout << "Compound Statement:\n{";
@@ -846,37 +688,42 @@ void CompoundStatement::print()
     cout << "\n}\n";
 }
 
-FunctionDefinition::FunctionDefinition(Identifier *_name, type _t, list<Identifier *> _arg_list, CompoundStatement *_stmt) : func_name(_name), return_type(_t), arg_list(_arg_list), func_body(_stmt) {}
-void FunctionDefinition::print()
+void FunctionDeclaration::print()
 {
     cout << "Function Definition:\n{";
     func_name->print();
-    cout << "\nReturn type : " << enumtypeToString(return_type) << "\n";
-    cout << "list of arguments";
+    
+    cout << "\nReturn type : \n";
+    return_type.print();
+    
+    cout << "\nlist of arguments\n";
     for (auto &ele : arg_list)
     {
         cout << "\n";
         ele->print();
     }
+    
     cout << "\nfunction body:\n";
     func_body->print();
-    cout << "}";
+    
+    cout << "\n}\n";
 }
 
-VariableDeclaration::VariableDeclaration(type t, list<Identifier *> l) : variable_type(t), variable_list(l) {}
 void VariableDeclaration::print()
 {
     cout << "Variable Declaration: {\n";
-    cout << "type : " << enumtypeToString(variable_type) << '\n';
-    cout << "list of identifiers";
+    cout << "type : \n";
+    variable_type.print();
+
+    cout << "\nlist of identifiers:\n";
     for (auto &ele : variable_list)
     {
         ele->print();
         cout << "\n";
     }
+    cout<<"\n}\n";
 }
 
-DriverDefinition::DriverDefinition(CompoundStatement *body) : func_body(body) {}
 void DriverDefinition::print()
 {
     cout << "Driver Definition:\n{\n";
@@ -884,16 +731,16 @@ void DriverDefinition::print()
     cout << "\n}\n";
 }
 
-VariableInitialization::VariableInitialization(type t, AssignmentExp *e) : variable_type(t), exp(e) {}
 void VariableInitialization::print()
 {
     cout << "Variable Initialisation: \n{\n";
-    cout << "type: " << enumtypeToString(variable_type) << '\n';
+    cout << "type: \n";
+    variable_type.print();
+    cout<<"initialisation:\n";
     exp->print();
     cout << "}\n";
 }
 
-LabeledStatement::LabeledStatement(Expression *lb, Statement *st) : label(lb), stmt(st) {}
 void LabeledStatement::print()
 {
     cout << "Labelled Statement:\n{\n";
@@ -902,7 +749,6 @@ void LabeledStatement::print()
     cout << "\n}\n";
 }
 
-CaseLabel::CaseLabel(Expression *lb, Statement *st) : LabeledStatement(lb, st){};
 void CaseLabel::print()
 {
     cout << "Case Label {\n";
@@ -912,7 +758,6 @@ void CaseLabel::print()
     cout << "\n}\n";
 }
 
-DefaultLabel::DefaultLabel(Statement *st) : LabeledStatement(nullptr, st){};
 void DefaultLabel::print()
 {
     cout << "Default Label \n{\n";
@@ -922,7 +767,6 @@ void DefaultLabel::print()
     cout << "\n}\n";
 }
 
-IterationStatement::IterationStatement(CompoundStatement *b, Expression *cond) : body(b), condition(cond) {}
 void IterationStatement::print()
 {
     cout << "Default Label \n{\n";
@@ -933,8 +777,6 @@ void IterationStatement::print()
     cout << "\n}\n";
 }
 
-WhileLoop::WhileLoop(CompoundStatement *b) : IterationStatement(b, nullptr) {}
-WhileLoop::WhileLoop(CompoundStatement *b, Expression *cond) : IterationStatement(b, cond) {}
 void WhileLoop::print()
 {
     cout << "While loop:\n{\n";
@@ -945,7 +787,6 @@ void WhileLoop::print()
     cout << "\n}\n";
 }
 
-ForLoop::ForLoop(CompoundStatement *b, Expression *cond, Expression *init, Expression *update) : IterationStatement(b, cond), initialization(init), counter_updation(update) {}
 void ForLoop::print()
 {
     cout << "For loop:\n{\n";
@@ -972,51 +813,38 @@ void ForLoop::print()
     cout << "\n}\n";
 }
 
-// IfElse::IfElse(list <Expression*> l, list <CompoundStatement*> ifs):condition_list(l), if_blocks(ifs){}
-IfElse::IfElse(list<Expression *> l, list<CompoundStatement *> ifs, CompoundStatement *elseb = nullptr) : condition_list(l), if_blocks(ifs), else_block(elseb){};
-void IfElse::print()
+void IfElseStatement::print()
 {
     cout << "If else block:\n{\n";
-    cout << "condition list:\n";
-    for (auto &ele : condition_list)
+    
+    cout << "condition :\n";
+    if_condition->print();
+
+    if(if_block)
     {
-        cout << "\n";
-        ele->print();
+        cout<<"If block:\n";
+        if_block->print();
     }
-    cout << "if blocks list:\n";
-    for (auto &ele : if_blocks)
+
+    if(else_block)
     {
-        cout << "\n";
-        ele->print();
-    }
-    if (else_block)
+        cout<<"else block:\n";
         else_block->print();
-    else
-        cout << "no else block\n";
+    }
+    
     cout << "\n}\n";
 }
 
-Switch::Switch(Expression *e, list<CaseLabel *> c) : exp(e), cases(c) {}
-Switch::Switch(Expression *e, list<CaseLabel *> c, DefaultLabel *_def) : exp(e), cases(c), def(_def) {}
-void Switch::print()
+void SwitchStatement::print()
 {
     cout << "switch block:\n{\n";
     cout << "expression:\n";
     exp->print();
     cout << "cases:\n";
-    for (auto &ele : cases)
-    {
-        cout << "\n";
-        ele->print();
-    }
-    if (def)
-        def->print();
-    else
-        cout << "no else block\n";
+    if(block)block->print();
     cout << "\n}\n";
 }
 
-TernaryOperator::TernaryOperator(Expression *cond, Expression *t_eval, Expression *f_eval) : condition(cond), true_eval(t_eval), false_eval(f_eval) {}
 void TernaryOperator::print()
 {
     cout << "ternary:\n{\n";
@@ -1029,7 +857,6 @@ void TernaryOperator::print()
     cout << "\n}\n";
 }
 
-ReturnStatement::ReturnStatement(Expression *val) : return_val(val) {}
 void ReturnStatement::print()
 {
     cout << "ternary:\n{\nreturns:\n";
@@ -1037,8 +864,35 @@ void ReturnStatement::print()
     cout << "\n}\n";
 }
 
+void FamilyMembers::print()
+{
+
+}
+void FamilyDecl::print()
+{
+
+}
+void ContinueStatement::print()
+{
+
+}
+void BreakStatement::print()
+{
+
+}
+void ConstructorDeclaration::print()
+{
+
+}
+void IfStatement::print()
+{
+    
+}
+
 /*------------------------------------------------------------------------
  * Program Root Node
  *------------------------------------------------------------------------*/
-
-Program ::Program(list<Statement *> *stmts) : stmt_list(stmts) {}
+void Program::print()
+{
+    
+}

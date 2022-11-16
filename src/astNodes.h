@@ -1,707 +1,842 @@
 #ifndef ASTNODES_H
 #define ASTNODES_H
+
 #include <stdlib.h>
 #include <iostream>
 #include <list>
 #include <string>
 #include <map>
 #include <variant>
-
+#include <optional>
+#include <vector>
+#include "symbolTable.h"
 using namespace std;
-
-enum type {INT_TYPE=0, FLOAT_TYPE, STRING_TYPE, BOOL_TYPE, VOID_TYPE};
-typedef variant<int,float,string, bool> var_data;
-typedef pair<type, var_data> value_pair;
-
-/// @brief returns type of variable as string
-/// @param t input type
-/// @return type of variable 
-string enumtypeToString(type t)
-{
-    switch (t)
-    {
-        case INT_TYPE: return "INT";
-        case FLOAT_TYPE: return "FLOAT";
-        case STRING_TYPE: return "STRING";
-        case BOOL_TYPE: return "BOOL";
-        case VOID_TYPE: return "VOID";
-    }
-    return "UNRECOGNISED TYPE";
-}
-/// @brief checks if comparasion of two values in value_pair is valid or not
-/// @param a first vp
-/// @param b second vp
-/// @return true if comparasion is possible. else returns false
-bool is_valid_comparasion(value_pair a, value_pair b);
-bool is_unary_operation_valid(value_pair& a);
-bool is_boolean_operation_valid(value_pair& a, value_pair& b);
-//****************redundant code from old value_pair derfinition**************/////////
-
-/// @brief returns the value stored in valuepair as a string
-/// @param d input valuepair
-/// @return content of the value pair
-// string get_valuepair_content(value_pair d)
-// {
-//     switch(d.first)
-//     {
-//         case INT_TYPE: return(to_string(d.second.ivalue));
-//         case FLOAT_TYPE: return(to_string(d.second.fvalue));
-//         case STRING_TYPE: return(d.second.svalue);
-//         case BOOL_TYPE: return(to_string(d.second.bvalue));
-//         case VOID_TYPE: return("VOID");
-//     }
-//     return "";
-// }
-// /// @brief copies value of d to inp
-// /// @param inp value to set
-// /// @param d value to copy
-// void copy_valuepair(value_pair& inp, value_pair d)
-// {
-//     switch(d.first)
-//     {
-//         case INT_TYPE: inp.second.ivalue = d.second.ivalue;break;
-//         case FLOAT_TYPE: inp.second.fvalue = d.second.fvalue;break;
-//         case STRING_TYPE: inp.second.svalue = d.second.svalue;break;
-//         case BOOL_TYPE: inp.second.bvalue = d.second.bvalue;break;
-//     }
-// }
-
-
 
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
+
  *------------------------------------------------------------------------*/
+
+/**
+ * @brief Base Class for all NOdes in AST
+ * 
+ */
 class ASTNode
 {
-    public:
-        virtual void print() = 0;
+public:
+    /// @brief prints the description/properties/value of the current node
+    virtual void print() = 0;
 };
 
 /*------------------------------------------------------------------------
  * Expressions
  *------------------------------------------------------------------------*/
+
+/**
+ * @brief Base Class for all Expression Nodes
+ * 
+ */
 class Expression : public ASTNode
 {
-    protected:
-        value_pair value;
-    public:
-        Expression();
-        ~Expression();
-        virtual value_pair evaluate() = 0;
+protected:
+    datatype value;   ///holds the value of the current node as pair of Identifier of value and the actual value
 
+public:
+    Expression(){}
+    ~Expression(){}
+    /**
+     * @brief Evaluates the value of the current Expression based on current value and the children of the nodes if they exist
+     * 
+     * @return datatype 
+     */
+    virtual datatype evaluate() = 0;
+    /**
+     * @brief Get the type of the value stored as a enum class TYPE
+     * @note this works correctly iff the index of the components of the std::variant are the same index as the enum class TYPE(both defined in symbolTable.h) 
+     * @return TYPE 
+     */
+    TYPE get_type();
 };
 
-/* Literals */
-class IntegerLiteral : public Expression
+////////////////////////////////
+/********* Literals ***********/
+////////////////////////////////
+
+/**
+ * @brief Base Class for all Literals, derives from Expression
+*/
+class Literal : public Expression
 {
-    public:
-        IntegerLiteral(int num);
-        void print();
-        value_pair evaluate();
+    /**
+     * @brief return the evaluated value of the expression 
+     * 
+     * @return datatype 
+     */
+    datatype evaluate();
 };
 
-class FloatingPointLiteral : public Expression
+/**
+ * @brief Integer Literal
+ * 
+ */
+class IntegerLiteral : public Literal
 {
-    public:
-        FloatingPointLiteral(float num);
-        void print();
-        value_pair evaluate();
+public:
+    /**
+     * @brief Construct a new Integer Literal object
+     * 
+     * @param val the value of the int literal
+     */
+    IntegerLiteral(int val){value = val;}
+    void print();
+    datatype evaluate();
+};
+/**
+ * @brief Float Literals
+ * 
+ */
+class FloatLiteral : public Literal
+{
+public:
+    /**
+     * @brief Construct a new Floating Point Literal object
+     * 
+     * @param val value of float literal
+     */
+    FloatLiteral(float val){value = val;}
+    void print();
+    datatype evaluate();
 };
 
-class StringLiteral : public Expression
+/**
+ * @brief String literals
+ * 
+ */
+class StringLiterul : public Literal
 {
-    public:
-        StringLiteral(string s);
-        void print();
-        value_pair evaluate();
+public:
+    /**
+     * @brief Construct a new String Literal object
+     * 
+     * @param val value of the string literal
+     */
+    StringLiterul(string val){value = val;}
+    void print();
+    datatype evaluate();
 };
-
-class BooleanLiteral : public Expression
+/**
+ * @brief Boolean Literal
+ * 
+ */
+class BooleanLiteral : public Literal
 {
-    public:
-        BooleanLiteral(bool b);
-        void print();
-        value_pair evaluate();
+public:
+    /**
+     * @brief Construct a new Boolean Literal object
+     * 
+     * @param val value of boolean literal
+     */
+    BooleanLiteral(bool val){value = val;}
+    void print();
+    datatype evaluate();
 };
 
 /* Identifiers */
-
-class Identifier : public Expression
+/**
+ * @brief Represent a variable in the AST
+ * 
+ */
+class Variable : public Expression
 {
-    protected:
-        string id;
-    public:
-        Identifier(string name);
-        void print();
-        string ret_id();
-        value_pair evaluate();
 };
 
-/* Array Element Access */
-
-class ArrayAccess : public Expression
+/**
+ * @brief represents an Identifier for a type/variable
+ * 
+ */
+class Identifier : public Variable
 {
-    protected:
-        Identifier* array_name;
-        int index;
-    public:
-        ArrayAccess(Identifier* name, int i);
-        void print();
-        value_pair evaluate();
+protected:
+    string id;  ///name the identifier
+
+public:
+    Identifier(char* name):id(string(name)){};
+    Identifier(string name):id(name){};
+    void print();
+    string ret_id();
+    datatype evaluate();
+};
+
+/**
+ * @brief Represents member access operator '::'
+ * 
+ */
+class MemberAccess : public Variable
+{
+protected:
+    Variable *accessor_name;
+    Identifier id;
+
+public:
+   /**
+    * @brief Construct a new Member Access object
+    * 
+    * @param v 
+    * @param s 
+    */
+    MemberAccess(Variable *v, string s): accessor_name(v), id(Identifier(s)){}
+    void print();
+    datatype evaluate();
+};
+
+/**
+ * @brief Array Access i.e. '[]'
+ * 
+ */
+class ArrayAccess : public Variable
+{
+protected:
+    Variable *array_name;   ///name of array
+    Expression *index;      ///index to access
+
+public:
+    ArrayAccess(Expression *name, Expression *ind)
+        :array_name((Variable*)name),index(ind){}
+    void print();
+    datatype evaluate();
+};
+
+class Argument : public Expression
+{
+protected:
+    Identifier t;
+    Identifier id;
+public:
+    Argument(Identifier t_, Identifier id_): t(t_), id(id_){}
+    ~Argument(){}
+    void print();
+    datatype evaluate();
 };
 
 /* Function Call */
 
 class FunctionCall : public Expression
 {
-    protected:
-        Identifier* func_name;
-        list <Identifier*> args_list;
-    public:
-        FunctionCall(Identifier* name, list <Identifier*> l);
-        void print();
-        value_pair evaluate();
+protected:
+    Variable *func_name;
+    list<Expression *> args_list;
+
+public:
+    FunctionCall(Expression *name, list<Expression *> l = list<Expression *>())
+        :func_name((Variable*)name), args_list(l){}
+    void print();
+    datatype evaluate();
 };
 
 /* Assignment */
 
 class AssignmentExp : public Expression
 {
-    protected:
-        Identifier* id;
-        Expression* RHS;
-    public:
-        AssignmentExp();
-        AssignmentExp(Identifier* name, Expression* R);
-        void print();
-        value_pair evaluate();
+protected:
+    Variable *LHS;
+    Expression *RHS;
+
+public:
+    AssignmentExp();
+    AssignmentExp(Variable *L, Expression *R): LHS(L), RHS(R){}
+    void print();
+    datatype evaluate();
 };
 
 class AddAssign : public AssignmentExp
 {
-    public:
-        AddAssign(Identifier* name, Expression* R); // uses the constructor if AssignmentExp
-        void print();
-        value_pair evaluate(); // evaluation is different from AssignmentExp
-
+public:
+    AddAssign(Variable *L, Expression *R): AssignmentExp(L,R){}
+    void print();
+    datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
 class SubAssign : public AssignmentExp
 {
-    public:
-        SubAssign(Identifier* name, Expression* R); // uses the constructor if AssignmentExp
-        void print();
-        value_pair evaluate(); // evaluation is different from AssignmentExp
-
+public:
+    SubAssign(Variable *L, Expression *R): AssignmentExp(L,R){}
+    void print();
+    datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
 class MulAssign : public AssignmentExp
 {
-    public:
-        MulAssign(Identifier* name, Expression* R); // uses the constructor if AssignmentExp
-        void print();
-        value_pair evaluate(); // evaluation is different from AssignmentExp
-
+public:
+    MulAssign(Variable *L, Expression *R):  AssignmentExp(L,R){}
+    void print();
+    datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
 class DivAssign : public AssignmentExp
 {
-    public:
-        DivAssign(Identifier* name, Expression* R); // uses the constructor if AssignmentExp
-        void print();
-        value_pair evaluate(); // evaluation is different from AssignmentExp
-
+public:
+    DivAssign(Variable *L, Expression *R):  AssignmentExp(L,R){}
+    void print();
+    datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
 class ModAssign : public AssignmentExp
 {
-    public:
-        ModAssign(Identifier* name, Expression* R); // uses the constructor if AssignmentExp
-        void print();
-        value_pair evaluate(); // evaluation is different from AssignmentExp
-
+public:
+    ModAssign(Variable *L, Expression *R):  AssignmentExp(L,R){}
+    void print();
+    datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
 /* Base Classes for Unary and Binary Operations */
 
 class UnaryOperation : public Expression
 {
-    protected:
-        Expression* RHS;
-    public:
-        UnaryOperation();
-        UnaryOperation(Expression* R);
-        void print();
-        value_pair evaluate();
 };
 
-class BinaryOperation : public Expression
+class UnaryIncrement : public UnaryOperation
 {
-    protected:
-        Expression* LHS;
-        Expression* RHS;
-    public:
-        BinaryOperation();
-        BinaryOperation(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate();
+protected:
+    Variable *var;
+    UnaryIncrement(Variable* v): var(v){}
+public:
+    void print();
+    datatype evaluate();
 };
 
-/* Arithmetic Operations */
-
-class Addition : public BinaryOperation
+class PostfixInc : public UnaryIncrement
 {
-    public:
-        Addition(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-    /*
-    Note : in the implmentation of evaluate function, check the type of both expressions 
-    and proceed accordingly 
-    Concatenation can be implemented here
-    */
+public:
+    PostfixInc(Variable *v): UnaryIncrement(v){}
+    void print();
+    datatype evaluate();
 };
 
-class Subtraction: public BinaryOperation
+class PrefixInc : public UnaryIncrement
 {
-    public:
-        Subtraction(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-
+public:
+    PrefixInc(Variable *v): UnaryIncrement(v){}
+    void print();
+    datatype evaluate();
 };
 
-class Multiplication : public BinaryOperation
+class UnaryDecrement : public UnaryOperation
 {
-    public:
-        Multiplication(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-
+protected:
+    Variable *var;
+    UnaryDecrement(Variable *v):var(v){}
+public:
+    void print();
+    datatype evaluate();
 };
 
-class Division : public BinaryOperation
+class PostfixDec : public UnaryDecrement
 {
-    public:
-        Division(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-
+public:
+    PostfixDec(Variable *v):UnaryDecrement(v){}
+    void print();
+    datatype evaluate();
 };
 
-class ModularDiv : public BinaryOperation
+class PrefixDec : public UnaryDecrement
 {
-    public:
-        ModularDiv(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-
+public:
+    PrefixDec(Variable *v):UnaryDecrement(v){}
+    void print();
+    datatype evaluate();
 };
 
 class UnaryPlus : public UnaryOperation
 {
-    public:
-        UnaryPlus(Expression* R);
-        void print();
-        value_pair evaluate();
+protected:
+    Expression *exp;
+
+public:
+    UnaryPlus(Expression *e):exp(e){}
+    void print();
+    datatype evaluate();
 };
 
 class UnaryMinus : public UnaryOperation
 {
-    public:
-        UnaryMinus(Expression* R);
-        void print();
-        value_pair evaluate();
+protected:
+    Expression *exp;
+
+public:
+    UnaryMinus(Expression *e):exp(e){}
+    void print();
+    datatype evaluate();
+};
+
+/// @brief Class to represent the ternary operator in the AST. Derives from Statement
+class TernaryOperator : public Expression
+{
+protected:
+    Expression *condition;
+    Expression *true_eval;
+    Expression *false_eval;
+
+public:
+    /// @brief Constructor for TernaryOperator
+    /// @param cond conditon
+    /// @param t_eval expression to eval on cond == true
+    /// @param f_eval expression to eval on cond == false
+    TernaryOperator(Expression *cond, Expression *t_eval, Expression *f_eval):
+        condition(cond), true_eval(t_eval),false_eval(f_eval){}
+    void print();
+    datatype evaluate();
+};
+
+/* Arithmetic Operations */
+class BinaryOperation : public Expression
+{
+protected:
+    Expression *LHS;
+    Expression *RHS;
+    BinaryOperation();
+public:
+    BinaryOperation(Expression *L, Expression *R):LHS(L),RHS(R){}
+    void print();
+    datatype evaluate();
+};
+
+class Addition : public BinaryOperation
+{
+public:
+    Addition(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
+    /*
+    Note : in the implmentation of evaluate function, check the type of both expressions
+    and proceed accordingly
+    Concatenation can be implemented here
+    */
+};
+
+class Subtraction : public BinaryOperation
+{
+public:
+    Subtraction(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
+};
+
+class Multiplication : public BinaryOperation
+{
+public:
+    Multiplication(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
+};
+
+class Division : public BinaryOperation
+{
+public:
+    Division(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
+};
+
+class ModularDiv : public BinaryOperation
+{
+public:
+    ModularDiv(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
 };
 
 /* Logical Operations */
 
 class LogicalAND : public BinaryOperation
 {
-    public:
-        LogicalAND(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-
+public:
+    LogicalAND(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
 };
 
 class LogicalOR : public BinaryOperation
 {
-    public:
-        LogicalOR(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-
+public:
+    LogicalOR(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
 };
 
 class LogicalNOT : public UnaryOperation
 {
-    public:
-        LogicalNOT(Expression* R);
-        void print();
-        value_pair evaluate();
+protected:
+    Expression *exp;
+
+public:
+    LogicalNOT(Expression *e):exp(e){}
+    void print();
+    datatype evaluate();
 };
 
 /* Comparison Operations */
 
-class CompGT: public BinaryOperation
+class CompGT : public BinaryOperation
 {
-    // >
-    public:
-        CompGT(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate();
+public:
+    CompGT(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
 };
 
-class CompLT: public BinaryOperation
+class CompLT : public BinaryOperation
 {
-    // <
-    public:
-        CompLT(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-
+public:
+    CompLT(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
 };
 
-class CompGE: public BinaryOperation
+class CompGE : public BinaryOperation
 {
-    // >=
-    public:
-        CompGE(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-
+public:
+    CompGE(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
 };
 
-class CompLE: public BinaryOperation
+class CompLE : public BinaryOperation
 {
-    // <=
-    public:
-        CompLE(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-
+public:
+    CompLE(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
 };
 
-class CompEQ: public BinaryOperation
+class CompEQ : public BinaryOperation
 {
-    // =
-    public:
-        CompEQ(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-
+public:
+    CompEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
 };
 
-class CompNEQ: public BinaryOperation
+class CompNEQ : public BinaryOperation
 {
-    // !=
-    public:
-        CompNEQ(Expression* L, Expression* R);
-        void print();
-        value_pair evaluate(); 
-
+public:
+    CompNEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
+    void print();
+    datatype evaluate();
 };
-
 
 /*------------------------------------------------------------------------
  * Statements
  *------------------------------------------------------------------------*/
 class Statement : public ASTNode
 {
-    
 };
-
-/// @class Class to represent Expression Statements in the AST. Derives from \ref Statement
+/// @brief Class to represent Expression Statements in the AST. Derives from \ref Statement
 class ExpressionStatement : public Statement
 {
-    protected:
-        Expression* exp; ///
-    public:
-        ExpressionStatement() = delete;
-        /// @brief Constructor for class
-        /// @param e input expression
-        ExpressionStatement(Expression* e):exp(e){};
-        /// @brief print the content of expression statement
-        Expression* getValue();
-        void print();
+protected:
+    list<Expression *> *exp; ///
+public:
+    ExpressionStatement():exp(nullptr){}
+    /// @brief Constructor for class
+    /// @param e input expression
+    ExpressionStatement(list<Expression *>*e) : exp(e){};
+    /// @brief print the content of expression statement
+    list<Expression *> getValue();
+    void print();
 };
 
-/// @class Class to represent Compound Statements in the AST. Derives from Statement. Represents a collection of statements
+/// @brief Class to represent Compound Statements in the AST. Derives from Statement. Represents a collection of statements
 class CompoundStatement : public Statement
 {
-    protected:
-        list <Statement*> stmt_list;
-        CompoundStatement() = default;
-    public:
-        /// @brief Constructor for Comppund Statement Class
-        /// @param l list of statements
-        CompoundStatement(list <Statement*> l);
-        /// @brief print the content of compound statement
-        void print();
+protected:
+    list<Statement *> stmt_list;
+    CompoundStatement() = delete;
+
+public:
+    /// @brief Constructor for Comppund Statement Class
+    /// @param l list of statements
+    CompoundStatement(list<Statement *> l = list<Statement *>()) : stmt_list(l) {}
+    /// @brief print the content of compound statement
+    void print();
+};
+
+/* Family */
+enum class ACCESS_SPEC
+{
+    PUBLIC,
+    PRIVATE
+};
+/// @brief Class to represent family declarations
+class FamilyMembers : public Statement
+{
+protected:
+    ACCESS_SPEC access_specifier;
+    Statement *member;
+
+public:
+    FamilyMembers(ACCESS_SPEC acc_spec, Statement *member_) : access_specifier(acc_spec), member(member_) {}
+    void print();
+};
+class FamilyDecl : public Statement
+{
+protected:
+    Identifier fam_name;                                            /// Identifier of the familie
+    list<FamilyMembers *> members = list<FamilyMembers *>();        /// saves the pouinter to the member vars/ function as a List
+    std::optional<pair<Identifier, ACCESS_SPEC>> parent_class = {}; /// saves the Identifier and Access specification of the parent class. if there is no parent class, std::optional is not initialised
+public:
+    FamilyDecl(Identifier fam_name_):fam_name(fam_name_){}
+    /**
+     * @brief Construct a new Family Decl object
+     *
+     * @param fam_name_ Identifier of family
+     * @param members_ List of pointers to the memeber funcs/vars
+     * @param parent_class_ pairent class's Identifier and access specs(public/ private) as a optional.
+     */
+    FamilyDecl(Identifier fam_name_, list<FamilyMembers *> members_, optional<pair<Identifier, ACCESS_SPEC>> parent_class_ = {})
+        : fam_name(fam_name_), members(members_), parent_class(parent_class_) {}
+    /**
+     * @brief Construct a new Family Decl object
+     *
+     * @param fam_name_ Identifier of family
+     * @param parent_class_ pairent class's Identifier and access specs(public/ private) as a optional.
+     */
+    FamilyDecl(Identifier fam_name_, optional<pair<Identifier, ACCESS_SPEC>> parent_class_)
+        : fam_name(fam_name_), parent_class(parent_class_) {}
+    void print();
+};
+class ConstructorDeclaration : public Statement
+{
+protected:
+    Identifier class_name;
+    CompoundStatement *body;
+    list<Argument *> arg_list;
+
+public:
+    ConstructorDeclaration(Identifier class_name_, Statement *body_, list<Argument *> arg_list_) 
+        : class_name(class_name_), body((CompoundStatement*)body_), arg_list(arg_list_){};
+    void print();
 };
 
 /* Declaration Statements */
 
-/// @class Class to represent Function Definition in the AST. Derives from Statement
-class FunctionDefinition : public Statement
+/// @brief Class to represent Function Definition in the AST. Derives from Statement
+class FunctionDeclaration : public Statement
 {
-    protected:
-        Identifier* func_name;
-        type return_type;
-        CompoundStatement* func_body;
-        list<Identifier*> arg_list;
-    public:
-        FunctionDefinition() = delete;
-        /// @brief Constructor for Function Definition Class
-        /// @param _name function name
-        /// @param _t return type
-        /// @param _arg_list list of arguments
-        /// @param _stmt list of arguments 
-        FunctionDefinition(Identifier* _name, type _t, list<Identifier*> _arg_list, CompoundStatement* _stmt);
-        /// @brief print the content of function definition
-        void print();
+protected:
+    Identifier *func_name;
+    Identifier return_type;
+    CompoundStatement *func_body;
+    list<Argument *> arg_list;
+
+public:
+    FunctionDeclaration() = delete;
+    /// @brief Constructor for Function Definition Class
+    /// @param _name function name
+    /// @param _t return type
+    /// @param _arg_list list of arguments
+    /// @param _stmt list of arguments
+    FunctionDeclaration(Identifier *_name, Identifier _t, Statement *_stmt, list<Argument *> _arg_list = list<Argument *>())
+        :func_name(_name), return_type(_t), func_body((CompoundStatement*)_stmt), arg_list(_arg_list) {}
+    /// @brief print the content of function definition
+    void print();
 };
-/// @class Class to represent Variable Declaration in the AST. Derives from Statement
+/// @brief Class to represent Variable Declaration in the AST. Derives from Statement
 class VariableDeclaration : public Statement
 {
-    protected:
-        type variable_type;
-        list <Expression*> *variable_list;
-    public:
-        /// @brief Constructor for function declaration 
-        /// @param t type of variable
-        /// @param l list of identifires
-        VariableDeclaration(type t, list <Expression*> *l);
-        void print();
+protected:
+    Identifier variable_type;
+    list<Expression *> variable_list;
+
+public:
+    /// @brief Constructor for function declaration
+    /// @param t type of variable
+    /// @param l list of identifires
+    VariableDeclaration(Identifier t, list<Expression *> l = list<Expression*>())
+        :variable_type(t), variable_list(l){}
+    void print();
 };
-/// @class Class to represent definition of driver function in the AST. Derives from CompoundStatement
+/// @brief Class to represent definition of driver function in the AST. Derives from CompoundStatement
 class DriverDefinition : public Statement
 {
-    protected:
-        CompoundStatement* func_body;
-    public:
-        DriverDefinition() = delete;
-        /// @brief Constructor for DriverFunction
-        /// @param body the Compound Statements that take make up the driver function
-        DriverDefinition(CompoundStatement* body) : func_body(body) {};
-        void print();
+protected:
+    CompoundStatement *func_body;
+
+public:
+    DriverDefinition() = delete;
+    /// @brief Constructor for DriverFunction
+    /// @param body the Compound Statements that take make up the driver function
+    // DriverDefinition(CompoundStatement* body) : func_body(body) {};
+    DriverDefinition(Statement *body) : func_body((CompoundStatement *)body) {}
+    void print();
 };
-/// @class Class to represent variable initialization in the AST. Derives from Statement
+/// @brief Class to represent variable initialization in the AST. Derives from Statement
 class VariableInitialization : public Statement
 {
-    protected:
-        type variable_type;
-        AssignmentExp* exp;
-    public:
-        /// @brief Constructor for VariableInitiailization
-        /// @param t type of variable
-        /// @param e paired assignment expression
-        VariableInitialization(type t, AssignmentExp* e);
-        void print();
+protected:
+    Identifier variable_type;
+    AssignmentExp *exp;
+
+public:
+    /// @brief Constructor for VariableInitiailization
+    /// @param t type of variable
+    /// @param e paired assignment expression
+    VariableInitialization(Identifier t, AssignmentExp *e):variable_type(t), exp(e){}
+    void print();
 };
 
 /* Labeled Statements */
 
-/// @class Class to represent All Labelled Statements in the AST
+/// @brief Class to represent All Labelled Statements in the AST
 class LabeledStatement : public Statement
 {
-    protected:
-        Expression* label;
-        Statement* stmt;
-        
-    public:
-        /// @brief Constructor for LabelledStatement
-        LabeledStatement() = default;
-        LabeledStatement(Expression* lb, Statement* st);
-        void print();
+protected:
+    Expression *label;
+    Statement *stmt;
+
+public:
+    /// @brief Constructor for LabelledStatement
+    LabeledStatement() = default;
+    LabeledStatement(Expression *lb, Statement *st): label(lb), stmt(st){}
+    void print();
 };
-/// @class Class to represent 'case' in the AST. Derives from Statement
+/// @brief Class to represent 'case' in the AST. Derives from Statement
 class CaseLabel : public LabeledStatement
 {
-    public:
-        /// @brief Constructor for CaseLabel
-        /// @param lb expression to check for in case
-        /// @param st_list statement to execute in said case
-        CaseLabel(Expression* lb, Statement* st);
-        void print();
+public:
+    /// @brief Constructor for CaseLabel
+    /// @param lb expression to check for in case
+    /// @param st_list statement to execute in said case
+    CaseLabel(Expression *lb, Statement *st): LabeledStatement(lb,st){}
+    void print();
 };
-/// @class Class to represent 'default' in the AST. Derives from Statement
+/// @brief Class to represent 'default' in the AST. Derives from Statement
 class DefaultLabel : public LabeledStatement
 {
-    public:
-        /// @brief Constructor for DefaultLabel
-        /// @param st_list statement in default case
-        DefaultLabel(Statement* st);
-        void print();
+public:
+    /// @brief Constructor for DefaultLabel
+    /// @param st_list statement in default case
+    DefaultLabel(Statement *st): LabeledStatement(nullptr,st){}
+    void print();
 };
 
 /* Iteration Statements */
 
-/// @class Class to represent  iterations in the AST. Derives from Statement. Provides base class to classes like WhileLoop
+/// @brief Class to represent  iterations in the AST. Derives from Statement. Provides base class to classes like WhileLoop
 class IterationStatement : public Statement
 {
-    protected:
-        CompoundStatement* body;
-        Expression* condition;
-    public:
-        /// @brief Constructor for IterationStatement
-        IterationStatement(CompoundStatement* b, Expression* cond);
-        void print();
+protected:
+    CompoundStatement *body;
+    Expression *condition;
+
+public:
+    /// @brief Constructor for IterationStatement
+    IterationStatement(CompoundStatement *b, Expression *cond): body(b), condition(cond){}
+    void print();
 };
-/// @class Class to represent while loop in the AST. Derives from Statement
+/// @brief Class to represent while loop in the AST. Derives from Statement
 class WhileLoop : public IterationStatement
 {
-    public:
-        /// @brief Constructor for WhileLoop
-        /// @param b list of statements to execute
-        WhileLoop(CompoundStatement* b);                                   //this constructor implies use of while loop without statement??
-        /// @brief Constructor for WhileLoop
-        /// @param b body of while loop 
-        /// @param cond entry condition for while loop
-        WhileLoop(CompoundStatement* b, Expression* cond);
-        void print();
+public:
+    /// @brief Constructor for WhileLoop
+    /// @param b list of statements to execute
+    WhileLoop(CompoundStatement *b): IterationStatement(b,nullptr){}
+    /// @brief Constructor for WhileLoop
+    /// @param b body of while loop
+    /// @param cond entry condition for while loop
+    WhileLoop(CompoundStatement *b, Expression *cond): IterationStatement(b,cond){}
+    void print();
 };
 
-/// @class Class to represent for loop in the AST. Derives from Statement
+/// @brief Class to represent for loop in the AST. Derives from Statement
 class ForLoop : public IterationStatement
 {
-    protected:
-        Expression* initialization;
-        Expression* counter_updation;
-    public:
+protected:
+    ExpressionStatement *initialization;
+    ExpressionStatement *condition;
+    Expression *counter_updation;
 
-        //removed most constructor beacuse there is no way to distinguish between them on basis of arguments passed
-
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // ForLoop(CompoundStatement* b);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param cond entry condition for for loop
-        // ForLoop(CompoundStatement* b, Expression* cond);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param init initialization expression
-        // ForLoop(CompoundStatement* b, Expression* init);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param update update expression in for loop
-        // ForLoop(CompoundStatement* b, Expression* update);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param init initialization expression
-        // /// @param cond entry condition for for loop
-        // ForLoop(CompoundStatement* b, Expression* cond, Expression* init);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param cond entry condition for for loop
-        // /// @param update update expression in for loop
-        // ForLoop(CompoundStatement* b, Expression* cond, Expression* update);
-        // /// @brief Constructor for ForLoop
-        // /// @param b body of for loop
-        // /// @param init initialization expression
-        // /// @param update update expression in for loop
-        // ForLoop(CompoundStatement* b, Expression* init, Expression* update);
-        /// @brief Constructor for ForLoop
-        /// @param b body of for loop
-        /// @param init initialization expression
-        /// @param cond entry condition for for loop
-        /// @param update update expression in for loop
-        ForLoop(CompoundStatement* b, Expression* cond, Expression* init, Expression* update);
-        void print();
+public:
+    ForLoop(CompoundStatement *b, ExpressionStatement *init, ExpressionStatement *cond, Expression *update)
+        :IterationStatement(b,nullptr), initialization(init), condition(cond), counter_updation(update) {} 
+    void print();
 };
 
 /*********************************************
- * Selection Statements 
+ * Selection Statements
  * *******************************************/
-/// @class Class to represent if - else statements in the AST. Derives from Statement
-class IfElse : public Statement
+/// @brief Class to represent if - else statements in the AST. Derives from Statement
+class IfStatement : public Statement
 {
-    protected:
-        list <Expression*> condition_list;
-        list <CompoundStatement*> if_blocks;
-        CompoundStatement* else_block;
-    public:
-        // /// @brief Constructor for IfElse
-        // /// @param l list of if statements
-        // /// @param ifs block of code for corresponding statement
-        // IfElse(list <Expression*> l, list <CompoundStatement*> ifs);
-        /// @brief Constructor for IfElse
-        /// @param l list of if statements
-        /// @param ifs block of code for corresponding statement
-        /// @param elseb block of code for else block
-        IfElse(list <Expression*> l, list <CompoundStatement*> ifs, CompoundStatement* elseb = nullptr);
-        void print();
+protected:
+    Expression *condition;
+    CompoundStatement *if_block;
+
+public:
+    IfStatement(Expression *e, CompoundStatement *block):condition(e),if_block(block) {}
+    void print();
 };
-/// @class Class to represent switch case statement in the AST. Derives from Statement
-class Switch : public Statement
+class IfElseStatement : public Statement
 {
-    protected:
-        Expression* exp;
-        list <CaseLabel*> cases;
-        DefaultLabel* def;
-    public:
-        /// @brief Constructor for Switch statement
-        /// @param e switch expression
-        /// @param c cases for switch
-        Switch(Expression* e, list <CaseLabel*> c);
-        /// @brief Constructor for Switch statement
-        /// @param e switch expression
-        /// @param c cases for switch
-        /// @param _def default case for switch
-        Switch(Expression* e, list <CaseLabel*> c, DefaultLabel* _def);
-        void print();
+protected:
+    Expression *if_condition;
+    CompoundStatement *if_block, *else_block;
+
+public:
+    IfElseStatement(Expression *cond, CompoundStatement *block1, CompoundStatement *block2)
+        :if_condition(cond), if_block(block1), else_block(block2) {}
+    void print();
 };
-/// @class Class to represent the ternary operator in the AST. Derives from Statement
-class TernaryOperator : public Statement
+/// @brief Class to represent switch case statement in the AST. Derives from Statement
+class SwitchStatement : public Statement
 {
-    protected:
-        Expression* condition;
-        Expression* true_eval;
-        Expression* false_eval;
-    public:
-        /// @brief Constructor for TernaryOperator
-        /// @param cond conditon
-        /// @param t_eval expression to eval on cond == true
-        /// @param f_eval expression to eval on cond == false
-        TernaryOperator(Expression* cond, Expression* t_eval, Expression* f_eval);
-        void print();
+protected:
+    Expression *exp;
+    CompoundStatement *block;
+
+public:
+    SwitchStatement(Expression *e, CompoundStatement *b):exp(e), block(b) {}
+    void print();
 };
-/// @class Provides base class for all jump statements
-class JumpStatement : public Statement{};
-/// @class Class to represent 'return' in the AST. Derives from Statement. 
-class ReturnStatement: public JumpStatement
+
+/// @brief Provides base class for all jump statements
+class JumpStatement : public Statement
 {
-    protected:
-        Expression *return_val;
-    public:
-        ReturnStatement(Expression* val);
-        void print();
 };
-/// @class Class to represent 'break' in the AST. Derives from Statement
-class BreakStatement: public JumpStatement
+/// @brief Class to represent 'return' in the AST. Derives from Statement.
+class ReturnStatement : public JumpStatement
 {
-    public:
-        void print();
+protected:
+    Expression *return_val;
+
+public:
+    ReturnStatement(Expression *val):return_val(val) {}
+    void print();
 };
-/// @class Class to represent 'continue' in the AST. Derives from Statement
-class ContinueStatement: public JumpStatement
+/// @brief Class to represent 'break' in the AST. Derives from Statement
+class BreakStatement : public JumpStatement
 {
-    public:
-        void print();
+public:
+    void print();
+};
+/// @brief Class to represent 'continue' in the AST. Derives from Statement
+class ContinueStatement : public JumpStatement
+{
+public:
+    void print();
 };
 
 /*------------------------------------------------------------------------
- * Class to create the AST Root Node 
+ * Class to create the AST Root Node
  *------------------------------------------------------------------------*/
-/// @class Class to represent the actual program as the AST. Derives from Statement
+/// @brief Class to represent the actual program as the AST. Derives from Statement
 class Program : public ASTNode
 {
-    protected:
-        list <Statement*> *stmt_list;
-    public:
-        Program(list <Statement*> *stmts = new list <Statement*> ());
+protected:
+    list<Statement *> *stmt_list;
+
+public:
+    Program(list<Statement *> *stmts = new list<Statement *>()):stmt_list(stmts) {}
+    void print();
 };
 
 // objects at the base of the tree
