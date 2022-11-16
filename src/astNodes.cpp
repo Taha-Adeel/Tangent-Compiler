@@ -303,17 +303,17 @@ Value *Addition::codegen()
     {
         return nullptr;
     }
-    if (left_eval.first == right_eval.first)
+    if (LHS->get_type() == RHS->get_type())
     {
-        if (left_eval.first == INT_TYPE)
+        if (LHS->get_type() == TYPE::INT)
         {
             return Builder->CreateAdd(L, R, "addtmp");
         }
-        else if (left_eval.first == FLOAT_TYPE)
+        else if (LHS->get_type() == TYPE::FLOAT)
         {
             return Builder->CreateFAdd(L, R, "addtmp");
         }
-        else if (left_eval.first == BOOL_TYPE)
+        else if (LHS->get_type() == TYPE::BOOL)
         {
             return Builder->CreateAdd(L, R, "addtmp");
         }
@@ -789,17 +789,17 @@ Value* CompLE::codegen()
     {
         return nullptr;
     }
-    if (left_eval.first == right_eval.first)
+    if (LHS->get_type() == RHS->get_type())
     {
-        if (left_eval.first == INT_TYPE)
+        if (LHS->get_type() == TYPE::INT)
         {
             return Builder->CreateICmpSLE(L, R, "cmptmp");
         }
-        else if (left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
+        else if (LHS->get_type() == TYPE::BOOL || LHS->get_type() == TYPE::STRING)
         {
             return Builder->CreateICmpULE(L, R, "cmptmp");
         }
-        else if (left_eval.first == FLOAT_TYPE)
+        else if (LHS->get_type() == TYPE::FLOAT)
         {
             return Builder->CreateFCmpULE(L, R, "cmptmp");
         }
