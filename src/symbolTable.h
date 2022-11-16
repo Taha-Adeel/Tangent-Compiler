@@ -27,7 +27,7 @@ class Family
 };
 /// @brief a token class to represent error in eval function
 class error{};
-typedef variant<int, float, string, bool, Family, error> datatype;
+typedef variant<int, float, string, bool, Family, error*> datatype;
 
 enum class SYMBOL_TYPE{
 	PRIMITIVE,
