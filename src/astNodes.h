@@ -13,6 +13,18 @@
 using namespace std;
 
 
+enum class TYPE {INT, FLOAT, STRING, BOOL, FAMILY, VOID, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR}; 
+class Family
+{
+    string name;
+    map<string, int> int_members;
+    map<string, float> float_members;
+    map<string, string> string_members;
+    map<string, bool> bool_members;
+    map<string, Family> family_members;
+};
+typedef variant<int, float, string, bool, Family> datatype;
+
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
 
