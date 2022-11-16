@@ -347,7 +347,7 @@ iteration_statement
 jump_statement
 	: CONTINUE ';' 				{$$ = new ContinueStatement();}
 	| BREAK ';'					{$$ = new BreakStatement();}
-	| SEND expression_statement	{$$ = new ReturnStatement(((ExpressionStatement*)$2)->getValue());}
+	| SEND expression_statement	{$$ = new ReturnStatement((((ExpressionStatement*)$2)->getValue()).back());}
 	;
 
 %%

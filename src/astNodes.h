@@ -12,19 +12,6 @@
 #include "symbolTable.h"
 using namespace std;
 
-
-enum class TYPE {INT, FLOAT, STRING, BOOL, FAMILY, VOID, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR}; 
-class Family
-{
-    string name;
-    map<string, int> int_members;
-    map<string, float> float_members;
-    map<string, string> string_members;
-    map<string, bool> bool_members;
-    map<string, Family> family_members;
-};
-typedef variant<int, float, string, bool, Family> datatype;
-
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
 
@@ -55,15 +42,20 @@ protected:
     datatype value;   ///holds the value of the current node as pair of Identifier of value and the actual value
 
 public:
-    Expression();
-    ~Expression();
+    Expression(){}
+    ~Expression(){}
     /**
      * @brief Evaluates the value of the current Expression based on current value and the children of the nodes if they exist
      * 
      * @return datatype 
      */
     virtual datatype evaluate() = 0;
-    datatype get_type();
+    /**
+     * @brief Get the type of the value stored as a enum class TYPE
+     * @note this works correctly iff the index of the components of the std::variant are the same index as the enum class TYPE(both defined in symbolTable.h) 
+     * @return TYPE 
+     */
+    TYPE get_type();
 };
 
 ////////////////////////////////
@@ -120,7 +112,7 @@ public:
  * @brief String literals
  * 
  */
-class StringLiteral : public Literal
+class StringLiterul : public Literal
 {
 public:
     /**
@@ -128,7 +120,7 @@ public:
      * 
      * @param val value of the string literal
      */
-    StringLiteral(string val){value = val;}
+    StringLiterul(string val){value = val;}
     void print();
     datatype evaluate();
 };
@@ -183,7 +175,7 @@ class MemberAccess : public Variable
 {
 protected:
     Variable *accessor_name;
-    string id;
+    Identifier id;
 
 public:
    /**
@@ -192,7 +184,7 @@ public:
     * @param v 
     * @param s 
     */
-    MemberAccess(Variable *v, string s): accessor_name(v), id(s){};
+    MemberAccess(Variable *v, string s): accessor_name(v), id(Identifier(s)){}
     void print();
     datatype evaluate();
 };
@@ -221,6 +213,7 @@ protected:
     Identifier id;
 public:
     Argument(Identifier t_, Identifier id_): t(t_), id(id_){}
+    ~Argument(){}
     void print();
     datatype evaluate();
 };
@@ -548,7 +541,7 @@ public:
     /// @param e input expression
     ExpressionStatement(list<Expression *>*e) : exp(e){};
     /// @brief print the content of expression statement
-    Expression *getValue();
+    list<Expression *> getValue();
     void print();
 };
 

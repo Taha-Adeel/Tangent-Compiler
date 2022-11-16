@@ -2,8 +2,25 @@
 #define SYMBOL_TABLE_H
 
 #include <iostream>
+#include <stdlib.h>
 #include <string>
 #include <map>
+#include <variant>
+#include <optional>
+
+enum class TYPE {INT, FLOAT, STRING, BOOL, FAMILY, ERROR, VOID, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR}; 
+class Family
+{
+    std::string name;
+    std::map<std::string, int> int_members;
+    std::map<std::string, float> float_members;
+    std::map<std::string, string> string_members;
+    std::map<std::string, bool> bool_members;
+    std::map<std::string, Family> family_members;
+};
+/// @brief a token class to represent error in eval function
+class error{};
+typedef variant<int, float, string, bool, Family, error> datatype;
 
 /**
  * @brief Enum representing the different types of symbols
