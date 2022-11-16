@@ -127,7 +127,7 @@
  *------------------------------------------------------------------------*/
 program
 	: %empty				{$$ = new Program(); root = $$;}
-	| translation_unit		{$$ = new Program($1); root = $$;}
+ 	| translation_unit		{$$ = new Program($1); root = $$;}
 	;
 
 translation_unit

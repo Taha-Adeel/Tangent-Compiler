@@ -28,7 +28,7 @@ lexer: $(BUILD_DIR)/lex.yy.cc $(BUILD_DIR)/parser.tab.hh
 	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $< -D STANDALONE_LEXER
 
 # Build an executable to parse the input tangent code files according to the grammar rules
-parser: $(BUILD_DIR)/parser.tab.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp 
+parser: $(BUILD_DIR)/parser.tab.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp $(SRC_DIR)/symbolTable.cpp
 	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $^ --debug
 
 # Generate HTML documentation describing our grammar and the DFA representing the parser.

@@ -490,7 +490,7 @@ void CompNEQ::print()
 }
 datatype CompNEQ::evaluate()
 {
-    if(LHS.value.index() )
+    // if(LHS->value)
     return value;
 }
 
@@ -590,6 +590,11 @@ datatype IntegerLiteral::evaluate()
 {
     return value;
 }
+datatype TernaryOperator::evaluate()
+{
+    return value;
+}
+
 /**************************************
  * STATEMENTS
  **************************************/
@@ -815,7 +820,19 @@ void BreakStatement::print()
 {
 
 }
+void ConstructorDeclaration::print()
+{
+
+}
+void IfStatement::print()
+{
+    
+}
 
 /*------------------------------------------------------------------------
  * Program Root Node
  *------------------------------------------------------------------------*/
+void Program::print()
+{
+    
+}
