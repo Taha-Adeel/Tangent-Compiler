@@ -32,7 +32,7 @@
 }
 
 /* %code{
-	#include "symbolTable.h"
+	#include "../src/symbolTable.h"
 
 	SymbolTable global_symbol_table;
 	SymbolTable* cur_symbol_table;
@@ -127,7 +127,7 @@
  *------------------------------------------------------------------------*/
 program
 	: %empty				{$$ = new Program(); root = $$;}
-	| translation_unit		{$$ = new Program($1); root = $$;}
+ 	| translation_unit		{$$ = new Program($1); root = $$;}
 	;
 
 translation_unit
