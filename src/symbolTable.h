@@ -14,13 +14,13 @@ class Family
     std::string name;
     std::map<std::string, int> int_members;
     std::map<std::string, float> float_members;
-    std::map<std::string, string> string_members;
+    std::map<std::string, std::string> string_members;
     std::map<std::string, bool> bool_members;
     std::map<std::string, Family> family_members;
 };
 /// @brief a token class to represent error in eval function
 class error{};
-typedef variant<int, float, string, bool, Family, error> datatype;
+typedef std::variant<int, float, std::string, bool, Family, error> datatype;
 
 /**
  * @brief Enum representing the different types of symbols
@@ -35,6 +35,7 @@ enum class SYMBOL_TYPE{
 	UNKNOWN
 };
 
+// Forward declaration of data type used to store location of symbol
 struct YYLTYPE;
 
 /**
@@ -85,7 +86,7 @@ public:
 	static std::string currentVariableType;
 
 public:
-	SymbolTable(SymbolTable* parent, std::string namespace_name = "");
+	SymbolTable(SymbolTable* parent = NULL, std::string namespace_name = "");
 	~SymbolTable();
 
 	void addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, SYMBOL_TYPE type = SYMBOL_TYPE::UNKNOWN);
@@ -106,7 +107,7 @@ SymbolTable::SymbolTable(SymbolTable* parent, std::string _namespace_name)
 		namespace_name = "global";
 	}
 	if(namespace_name == "")
-		namespace_name = parent->namespace_name + "::" + to_string(child_symbol_tables.size());
+		namespace_name = parent->namespace_name + "::" + std::to_string(child_symbol_tables.size());
 }
 
 /**

@@ -25,11 +25,11 @@ $(BUILD_DIR)/parser.tab.hh: $(SRC_DIR)/parser.yy
 
 # Build an executable to scan the input tangent code and output the matched tokens
 lexer: $(BUILD_DIR)/lex.yy.cc $(BUILD_DIR)/parser.tab.hh
-	$(CC) -o $(BUILD_DIR)/$@ $< -D STANDALONE_LEXER
+	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $< -D STANDALONE_LEXER
 
 # Build an executable to parse the input tangent code files according to the grammar rules
 parser: $(BUILD_DIR)/parser.tab.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp 
-	$(CC) -o $(BUILD_DIR)/$@ $^ --debug
+	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $^ --debug
 
 # Generate HTML documentation describing our grammar and the DFA representing the parser.
 parser_documentation: $(SRC_DIR)/parser.yy
