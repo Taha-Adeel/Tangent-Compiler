@@ -11,14 +11,21 @@
 
 #include <llvm/IR/Value.h>
 
+#include <vector>
+#include "symbolTable.h"
 using namespace std;
 using namespace llvm;
 
-enum class TYPE {INT, FLOAT, STRING, BOOL, VOID};
-typedef variant<int, float, string, bool> datatype;
+
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
+
  *------------------------------------------------------------------------*/
+
+/**
+ * @brief Base Class for all NOdes in AST
+ * 
+ */
 class ASTNode
 {
 public:
@@ -37,11 +44,11 @@ public:
 class Expression : public ASTNode
 {
 protected:
-    datatype value;   ///holds the value of the current node as pair of TYPE of value and the actual value
+    datatype value;   ///holds the value of the current node as pair of Identifier of value and the actual value
 
 public:
-    Expression();
-    ~Expression();
+    Expression(){}
+    ~Expression(){}
     /**
      * @brief Evaluates the value of the current Expression based on current value and the children of the nodes if they exist
      * 
@@ -50,17 +57,31 @@ public:
     virtual datatype evaluate() = 0;
 
     virtual Value *codegen() = 0;
+    /**
+     * @brief Get the type of the value stored as a enum class TYPE
+     * @note this works correctly iff the index of the components of the std::variant are the same index as the enum class TYPE(both defined in symbolTable.h) 
+     * @return TYPE 
+     */
     TYPE get_type();
 };
 
+////////////////////////////////
 /********* Literals ***********/
+////////////////////////////////
+
 /**
  * @brief Base Class for all Literals, derives from Expression
 */
 class Literal : public Expression
 {
+    /**
+     * @brief return the evaluated value of the expression 
+     * 
+     * @return datatype 
+     */
     datatype evaluate();
 };
+
 /**
  * @brief Integer Literal
  * 
@@ -73,7 +94,7 @@ public:
      * 
      * @param val the value of the int literal
      */
-    IntegerLiteral(int val);
+    IntegerLiteral(int val){value = val;}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -82,7 +103,7 @@ public:
  * @brief Float Literals
  * 
  */
-class FloatingPointLiteral : public Literal
+class FloatLiteral : public Literal
 {
 public:
     /**
@@ -90,7 +111,7 @@ public:
      * 
      * @param val value of float literal
      */
-    FloatingPointLiteral(float val);
+    FloatLiteral(float val){value = val;}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -108,7 +129,7 @@ public:
      * 
      * @param val value of the string literal
      */
-    StringLiteral(string val);
+    StringLiteral(string val){value = val;}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -125,7 +146,7 @@ public:
      * 
      * @param val value of boolean literal
      */
-    BooleanLiteral(bool val);
+    BooleanLiteral(bool val){value = val;}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -151,6 +172,7 @@ protected:
 
 public:
     Identifier(char* name):id(string(name)){};
+    Identifier(string name):id(name){};
     void print();
     string ret_id();
     datatype evaluate();
@@ -173,7 +195,7 @@ public:
     * @param v 
     * @param s 
     */
-    MemberAccess(Variable *v, string s);
+    MemberAccess(Variable *v, string s): accessor_name(v), id(s){};
     void print();
     datatype evaluate();
 };
@@ -189,7 +211,8 @@ protected:
     Expression *index;      ///index to access
 
 public:
-    ArrayAccess(Identifier *name, Expression *ind):array_name((Variable*)name),index(ind){}
+    ArrayAccess(Expression *name, Expression *ind)
+        :array_name((Variable*)name),index(ind){}
     void print();
     datatype evaluate();
 };
@@ -197,10 +220,10 @@ public:
 class Argument : public Expression
 {
 protected:
-    TYPE t;
-    Identifier *id;
+    Identifier t;
+    Identifier id;
 public:
-    Argument(TYPE t_, Identifier *id_);
+    Argument(Identifier t_, Identifier id_): t(t_), id(id_){}
     void print();
     datatype evaluate();
 };
@@ -214,7 +237,8 @@ protected:
     list<Expression *> args_list;
 
 public:
-    FunctionCall(Variable *name, list<Expression *> l = list<Expression *>());
+    FunctionCall(Expression *name, list<Expression *> l = list<Expression *>())
+        :func_name((Variable*)name), args_list(l){}
     void print();
     datatype evaluate();
 };
@@ -229,7 +253,7 @@ protected:
 
 public:
     AssignmentExp();
-    AssignmentExp(Variable *L, Expression *R);
+    AssignmentExp(Variable *L, Expression *R): LHS(L), RHS(R){}
     void print();
     datatype evaluate();
 };
@@ -237,7 +261,7 @@ public:
 class AddAssign : public AssignmentExp
 {
 public:
-    AddAssign(Variable *L, Expression *R); // uses the constructor if AssignmentExp
+    AddAssign(Variable *L, Expression *R): AssignmentExp(L,R){}
     void print();
     datatype evaluate(); // evaluation is different from AssignmentExp
 };
@@ -245,7 +269,7 @@ public:
 class SubAssign : public AssignmentExp
 {
 public:
-    SubAssign(Variable *L, Expression *R); // uses the constructor if AssignmentExp
+    SubAssign(Variable *L, Expression *R): AssignmentExp(L,R){}
     void print();
     datatype evaluate(); // evaluation is different from AssignmentExp
 };
@@ -253,7 +277,7 @@ public:
 class MulAssign : public AssignmentExp
 {
 public:
-    MulAssign(Variable *L, Expression *R); // uses the constructor if AssignmentExp
+    MulAssign(Variable *L, Expression *R):  AssignmentExp(L,R){}
     void print();
     datatype evaluate(); // evaluation is different from AssignmentExp
 };
@@ -261,7 +285,7 @@ public:
 class DivAssign : public AssignmentExp
 {
 public:
-    DivAssign(Variable *L, Expression *R); // uses the constructor if AssignmentExp
+    DivAssign(Variable *L, Expression *R):  AssignmentExp(L,R){}
     void print();
     datatype evaluate(); // evaluation is different from AssignmentExp
 };
@@ -269,7 +293,7 @@ public:
 class ModAssign : public AssignmentExp
 {
 public:
-    ModAssign(Variable *L, Expression *R); // uses the constructor if AssignmentExp
+    ModAssign(Variable *L, Expression *R):  AssignmentExp(L,R){}
     void print();
     datatype evaluate(); // evaluation is different from AssignmentExp
 };
@@ -284,12 +308,16 @@ class UnaryIncrement : public UnaryOperation
 {
 protected:
     Variable *var;
+    UnaryIncrement(Variable* v): var(v){}
+public:
+    void print();
+    datatype evaluate();
 };
 
 class PostfixInc : public UnaryIncrement
 {
 public:
-    PostfixInc(Variable *v);
+    PostfixInc(Variable *v): UnaryIncrement(v){}
     void print();
     datatype evaluate();
 };
@@ -297,7 +325,7 @@ public:
 class PrefixInc : public UnaryIncrement
 {
 public:
-    PrefixInc(Variable *v);
+    PrefixInc(Variable *v): UnaryIncrement(v){}
     void print();
     datatype evaluate();
 };
@@ -306,9 +334,8 @@ class UnaryDecrement : public UnaryOperation
 {
 protected:
     Variable *var;
-
+    UnaryDecrement(Variable *v):var(v){}
 public:
-    UnaryDecrement(Variable *v);
     void print();
     datatype evaluate();
 };
@@ -316,7 +343,7 @@ public:
 class PostfixDec : public UnaryDecrement
 {
 public:
-    PostfixDec(Variable *v);
+    PostfixDec(Variable *v):UnaryDecrement(v){}
     void print();
     datatype evaluate();
 };
@@ -324,7 +351,7 @@ public:
 class PrefixDec : public UnaryDecrement
 {
 public:
-    PrefixDec(Variable *v);
+    PrefixDec(Variable *v):UnaryDecrement(v){}
     void print();
     datatype evaluate();
 };
@@ -335,7 +362,7 @@ protected:
     Expression *exp;
 
 public:
-    UnaryPlus(Expression *e);
+    UnaryPlus(Expression *e):exp(e){}
     void print();
     datatype evaluate();
 };
@@ -346,20 +373,7 @@ protected:
     Expression *exp;
 
 public:
-    UnaryMinus(Expression *e);
-    void print();
-    datatype evaluate();
-};
-
-class BinaryOperation : public Expression
-{
-protected:
-    Expression *LHS;
-    Expression *RHS;
-
-public:
-    BinaryOperation();
-    BinaryOperation(Expression *L, Expression *R);
+    UnaryMinus(Expression *e):exp(e){}
     void print();
     datatype evaluate();
 };
@@ -377,16 +391,29 @@ public:
     /// @param cond conditon
     /// @param t_eval expression to eval on cond == true
     /// @param f_eval expression to eval on cond == false
-    TernaryOperator(Expression *cond, Expression *t_eval, Expression *f_eval);
+    TernaryOperator(Expression *cond, Expression *t_eval, Expression *f_eval):
+        condition(cond), true_eval(t_eval),false_eval(f_eval){}
     void print();
+    datatype evaluate();
 };
 
 /* Arithmetic Operations */
+class BinaryOperation : public Expression
+{
+protected:
+    Expression *LHS;
+    Expression *RHS;
+    BinaryOperation();
+public:
+    BinaryOperation(Expression *L, Expression *R):LHS(L),RHS(R){}
+    void print();
+    datatype evaluate();
+};
 
 class Addition : public BinaryOperation
 {
 public:
-    Addition(Expression *L, Expression *R);
+    Addition(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
     /*
@@ -400,7 +427,7 @@ public:
 class Subtraction : public BinaryOperation
 {
 public:
-    Subtraction(Expression *L, Expression *R);
+    Subtraction(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -409,7 +436,7 @@ public:
 class Multiplication : public BinaryOperation
 {
 public:
-    Multiplication(Expression *L, Expression *R);
+    Multiplication(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -418,7 +445,7 @@ public:
 class Division : public BinaryOperation
 {
 public:
-    Division(Expression *L, Expression *R);
+    Division(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -427,34 +454,18 @@ public:
 class ModularDiv : public BinaryOperation
 {
 public:
-    ModularDiv(Expression *L, Expression *R);
+    ModularDiv(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
     Value *codegen() override;
 };
-
-// class UnaryPlus : public UnaryOperation
-// {
-//     public:
-//         UnaryPlus(Expression* R);
-//         void print();
-//         datatype evaluate();
-// };
-
-// class UnaryMinus : public UnaryOperation
-// {
-//     public:
-//         UnaryMinus(Expression* R);
-//         void print();
-//         datatype evaluate();
-// };
 
 /* Logical Operations */
 
 class LogicalAND : public BinaryOperation
 {
 public:
-    LogicalAND(Expression *L, Expression *R);
+    LogicalAND(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
 };
@@ -462,7 +473,7 @@ public:
 class LogicalOR : public BinaryOperation
 {
 public:
-    LogicalOR(Expression *L, Expression *R);
+    LogicalOR(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
 };
@@ -473,7 +484,7 @@ protected:
     Expression *exp;
 
 public:
-    LogicalNOT(Expression *e);
+    LogicalNOT(Expression *e):exp(e){}
     void print();
     datatype evaluate();
 };
@@ -482,9 +493,8 @@ public:
 
 class CompGT : public BinaryOperation
 {
-    // >
 public:
-    CompGT(Expression *L, Expression *R);
+    CompGT(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -492,9 +502,8 @@ public:
 
 class CompLT : public BinaryOperation
 {
-    // <
 public:
-    CompLT(Expression *L, Expression *R);
+    CompLT(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -502,9 +511,8 @@ public:
 
 class CompGE : public BinaryOperation
 {
-    // >=
 public:
-    CompGE(Expression *L, Expression *R);
+    CompGE(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -512,9 +520,8 @@ public:
 
 class CompLE : public BinaryOperation
 {
-    // <=
 public:
-    CompLE(Expression *L, Expression *R);
+    CompLE(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -522,9 +529,8 @@ public:
 
 class CompEQ : public BinaryOperation
 {
-    // =
 public:
-    CompEQ(Expression *L, Expression *R);
+    CompEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -532,9 +538,8 @@ public:
 
 class CompNEQ : public BinaryOperation
 {
-    // !=
 public:
-    CompNEQ(Expression *L, Expression *R);
+    CompNEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -550,14 +555,14 @@ class Statement : public ASTNode
 class ExpressionStatement : public Statement
 {
 protected:
-    Expression *exp; ///
+    list<Expression *> *exp; ///
 public:
-    ExpressionStatement() = delete;
+    ExpressionStatement():exp(nullptr){}
     /// @brief Constructor for class
     /// @param e input expression
-    ExpressionStatement(Expression *e) : exp(e){};
+    ExpressionStatement(list<Expression *>*e) : exp(e){};
     /// @brief print the content of expression statement
-    Expression *getValue();
+    list<Expression *> getValue();
     void print();
 };
 
@@ -565,13 +570,13 @@ public:
 class CompoundStatement : public Statement
 {
 protected:
-    list<Statement *> *stmt_list;
-    CompoundStatement() = default;
+    list<Statement *> stmt_list;
+    CompoundStatement() = delete;
 
 public:
     /// @brief Constructor for Comppund Statement Class
     /// @param l list of statements
-    CompoundStatement(list<Statement *> *l = new list<Statement *>()) : stmt_list(l) {}
+    CompoundStatement(list<Statement *> l = list<Statement *>()) : stmt_list(l) {}
     /// @brief print the content of compound statement
     void print();
 };
@@ -600,6 +605,7 @@ protected:
     list<FamilyMembers *> members = list<FamilyMembers *>();        /// saves the pouinter to the member vars/ function as a List
     std::optional<pair<Identifier, ACCESS_SPEC>> parent_class = {}; /// saves the Identifier and Access specification of the parent class. if there is no parent class, std::optional is not initialised
 public:
+    FamilyDecl(Identifier fam_name_):fam_name(fam_name_){}
     /**
      * @brief Construct a new Family Decl object
      *
@@ -607,14 +613,16 @@ public:
      * @param members_ List of pointers to the memeber funcs/vars
      * @param parent_class_ pairent class's Identifier and access specs(public/ private) as a optional.
      */
-    FamilyDecl(Identifier fam_name_, list<FamilyMembers *> members_ = list<FamilyMembers *>(), optional<pair<Identifier, ACCESS_SPEC>> parent_class_ = {}) : fam_name(fam_name_), members(members_), parent_class(parent_class_) {}
+    FamilyDecl(Identifier fam_name_, list<FamilyMembers *> members_, optional<pair<Identifier, ACCESS_SPEC>> parent_class_ = {})
+        : fam_name(fam_name_), members(members_), parent_class(parent_class_) {}
     /**
      * @brief Construct a new Family Decl object
      *
      * @param fam_name_ Identifier of family
      * @param parent_class_ pairent class's Identifier and access specs(public/ private) as a optional.
      */
-    FamilyDecl(Identifier fam_name_, optional<pair<Identifier, ACCESS_SPEC>> parent_class_ = {}) : fam_name(fam_name_), parent_class(parent_class_) {}
+    FamilyDecl(Identifier fam_name_, optional<pair<Identifier, ACCESS_SPEC>> parent_class_)
+        : fam_name(fam_name_), parent_class(parent_class_) {}
     void print();
 };
 class ConstructorDeclaration : public Statement
@@ -622,10 +630,11 @@ class ConstructorDeclaration : public Statement
 protected:
     Identifier class_name;
     CompoundStatement *body;
-    list<Identifier *> arg_list;
+    list<Argument *> arg_list;
 
 public:
-    ConstructorDeclaration(Identifier class_name_, CompoundStatement *body_, list<Identifier *> arg_list_) : class_name(class_name_), body(body_), arg_list(arg_list_){};
+    ConstructorDeclaration(Identifier class_name_, Statement *body_, list<Argument *> arg_list_) 
+        : class_name(class_name_), body((CompoundStatement*)body_), arg_list(arg_list_){};
     void print();
 };
 
@@ -636,7 +645,7 @@ class FunctionDeclaration : public Statement
 {
 protected:
     Identifier *func_name;
-    TYPE return_type;
+    Identifier return_type;
     CompoundStatement *func_body;
     list<Argument *> arg_list;
 
@@ -647,7 +656,8 @@ public:
     /// @param _t return type
     /// @param _arg_list list of arguments
     /// @param _stmt list of arguments
-    FunctionDeclaration(Identifier *_name, TYPE _t, CompoundStatement *_stmt, list<Argument *> _arg_list = list<Argument *>());
+    FunctionDeclaration(Identifier *_name, Identifier _t, Statement *_stmt, list<Argument *> _arg_list = list<Argument *>())
+        :func_name(_name), return_type(_t), func_body((CompoundStatement*)_stmt), arg_list(_arg_list) {}
     /// @brief print the content of function definition
     void print();
 };
@@ -655,14 +665,15 @@ public:
 class VariableDeclaration : public Statement
 {
 protected:
-    TYPE variable_type;
+    Identifier variable_type;
     list<Expression *> variable_list;
 
 public:
     /// @brief Constructor for function declaration
     /// @param t type of variable
     /// @param l list of identifires
-    VariableDeclaration(TYPE t, list<Expression *> l);
+    VariableDeclaration(Identifier t, list<Expression *> l = list<Expression*>())
+        :variable_type(t), variable_list(l){}
     void print();
 };
 /// @brief Class to represent definition of driver function in the AST. Derives from CompoundStatement
@@ -683,14 +694,14 @@ public:
 class VariableInitialization : public Statement
 {
 protected:
-    TYPE variable_type;
+    Identifier variable_type;
     AssignmentExp *exp;
 
 public:
     /// @brief Constructor for VariableInitiailization
     /// @param t type of variable
     /// @param e paired assignment expression
-    VariableInitialization(TYPE t, AssignmentExp *e);
+    VariableInitialization(Identifier t, AssignmentExp *e):variable_type(t), exp(e){}
     void print();
 };
 
@@ -706,7 +717,7 @@ protected:
 public:
     /// @brief Constructor for LabelledStatement
     LabeledStatement() = default;
-    LabeledStatement(Expression *lb, Statement *st);
+    LabeledStatement(Expression *lb, Statement *st): label(lb), stmt(st){}
     void print();
 };
 /// @brief Class to represent 'case' in the AST. Derives from Statement
@@ -716,7 +727,7 @@ public:
     /// @brief Constructor for CaseLabel
     /// @param lb expression to check for in case
     /// @param st_list statement to execute in said case
-    CaseLabel(Expression *lb, Statement *st);
+    CaseLabel(Expression *lb, Statement *st): LabeledStatement(lb,st){}
     void print();
 };
 /// @brief Class to represent 'default' in the AST. Derives from Statement
@@ -725,7 +736,7 @@ class DefaultLabel : public LabeledStatement
 public:
     /// @brief Constructor for DefaultLabel
     /// @param st_list statement in default case
-    DefaultLabel(Statement *st);
+    DefaultLabel(Statement *st): LabeledStatement(nullptr,st){}
     void print();
 };
 
@@ -740,7 +751,7 @@ protected:
 
 public:
     /// @brief Constructor for IterationStatement
-    IterationStatement(CompoundStatement *b, Expression *cond);
+    IterationStatement(CompoundStatement *b, Expression *cond): body(b), condition(cond){}
     void print();
 };
 /// @brief Class to represent while loop in the AST. Derives from Statement
@@ -749,11 +760,11 @@ class WhileLoop : public IterationStatement
 public:
     /// @brief Constructor for WhileLoop
     /// @param b list of statements to execute
-    WhileLoop(CompoundStatement *b); // this constructor implies use of while loop without statement??
+    WhileLoop(CompoundStatement *b): IterationStatement(b,nullptr){}
     /// @brief Constructor for WhileLoop
     /// @param b body of while loop
     /// @param cond entry condition for while loop
-    WhileLoop(CompoundStatement *b, Expression *cond);
+    WhileLoop(CompoundStatement *b, Expression *cond): IterationStatement(b,cond){}
     void print();
 };
 
@@ -766,7 +777,8 @@ protected:
     Expression *counter_updation;
 
 public:
-    ForLoop(CompoundStatement *b, ExpressionStatement *init, ExpressionStatement *cond, Expression *update);
+    ForLoop(CompoundStatement *b, ExpressionStatement *init, ExpressionStatement *cond, Expression *update)
+        :IterationStatement(b,nullptr), initialization(init), condition(cond), counter_updation(update) {} 
     void print();
 };
 
@@ -781,17 +793,18 @@ protected:
     CompoundStatement *if_block;
 
 public:
-    IfStatement(Expression *e, CompoundStatement *block);
+    IfStatement(Expression *e, CompoundStatement *block):condition(e),if_block(block) {}
     void print();
 };
 class IfElseStatement : public Statement
 {
 protected:
     Expression *if_condition;
-    CompoundStatement *if_block, else_block;
+    CompoundStatement *if_block, *else_block;
 
 public:
-    IfElseStatement(Expression *cond, CompoundStatement *block1, CompoundStatement *block2);
+    IfElseStatement(Expression *cond, CompoundStatement *block1, CompoundStatement *block2)
+        :if_condition(cond), if_block(block1), else_block(block2) {}
     void print();
 };
 /// @brief Class to represent switch case statement in the AST. Derives from Statement
@@ -802,7 +815,7 @@ protected:
     CompoundStatement *block;
 
 public:
-    SwitchStatement(Expression *e, CompoundStatement *b);
+    SwitchStatement(Expression *e, CompoundStatement *b):exp(e), block(b) {}
     void print();
 };
 
@@ -817,7 +830,7 @@ protected:
     Expression *return_val;
 
 public:
-    ReturnStatement(Expression *val);
+    ReturnStatement(Expression *val):return_val(val) {}
     void print();
 };
 /// @brief Class to represent 'break' in the AST. Derives from Statement
@@ -843,7 +856,7 @@ protected:
     list<Statement *> *stmt_list;
 
 public:
-    Program(list<Statement *> *stmts = new list<Statement *>());
+    Program(list<Statement *> *stmts = new list<Statement *>()):stmt_list(stmts) {}
     void print();
 };
 

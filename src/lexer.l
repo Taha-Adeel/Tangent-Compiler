@@ -17,42 +17,52 @@ L               [a-zA-Z]
 %}
 
 %%
-"#"                    {comment(); yylloc->lines(1);}
+"#"                    {comment();}
 
-"const"                {return token::CONST;}
-"var"                  {return token::VAR;}
+"const"                 {return CONST;}
+"var"                   {return VAR;}
 
-"bool"                 {return token::BOOL;}
-"float"                {return token::FLOAT;}
-"int"                  {return token::INT;}
-"string"               {return token::STRING;}
-"void"                 {return token::VOID;}
+"bool"                  {return BOOL;}
+"float"                 {return FLOAT;}
+"int"                   {return INT;}
+"string"                {return STRING;}
+"void"                  {return VOID;}
+"Point"                 {return POINT;}
+"Path"                  {return PATH;}                  
+"Image"                 {return IMAGE;}
+"Rectangle"             {return RECTANGLE;}
+"Circle"                {return CIRCLE;}
+"Ellipse"               {return ELLIPSE;}
+"Polygon"               {return POLYGON;}
+"Curve"                 {return CURVE;}
+"Pi"                    {return PI;}
+"Colour"                {return COLOUR;}
 
-{D}+                   {yylval->emplace<int>(atoi(yytext)); return token::INTEGER_LITERAL;}
-{D}+"."{D}+            {yylval->emplace<float>(atof(yytext)); return token::FLOAT_LITERAL;}
-\"([^\\\"]|\\.)*\"     {yylval->emplace<std::string>(yytext); return token::STRING_LITERAL;}
-"true"                 {yylval->emplace<bool>(true); return token::BOOL_LITERAL;}
-"false"                {yylval->emplace<bool>(false); return token::BOOL_LITERAL;}
+{D}+                   {yylval.valuei = atoi(yytext);return INTEGER_LITERAL;}
+{D}+"."{D}+            {yylval.valuef = atof(yytext);return FLOAT_LITERAL;}
+\"([^\\\"]|\\.)*\"     {*(yytext + yyleng - 1) = '\0'; yytext++; return STRING_LITERAL;}
+"true"                 {yylval.valueb = true; return BOOL_LITERAL;}
+"false"                {yylval.valueb = false; return BOOL_LITERAL;}
 
-"if"                   {return token::IF;}
-"else"                 {return token::ELSE;}
-"switch"               {return token::SWITCH;}
-"case"                 {return token::CASE;}
-"default"              {return token::DEFAULT;}
-"while"                {return token::WHILE;}
-"for"                  {return token::FOR;}
-"break"                {return token::BREAK;}
-"continue"             {return token::CONTINUE;}
-"send"                 {return token::SEND;} 
+"if"                   {return IF;}
+"else"                 {return ELSE;}
+"switch"               {return SWITCH;}
+"case"                 {return CASE;}
+"default"              {return DEFAULT;}
+"while"                {return WHILE;}
+"for"                  {return FOR;}
+"break"                {return BREAK;}
+"continue"             {return CONTINUE;}
+"send"                 {return SEND;} 
 
-"family"               {return token::FAMILY;}
-"::"                   {return token::INHERITS;}  
-"public"               {return token::PUBLIC;}
-"private"              {return token::PRIVATE;}
+"family"               {return FAMILY;}
+"::"                   {return INHERITS;}  
+"public"               {return PUBLIC;}
+"private"              {return PRIVATE;}
 
-"driver"               {return token::DRIVER;}
+"driver"               {return DRIVER;}
 
-{L}({L}|{D}|_)*        {yylval->emplace<std::string>(yytext); return token::IDENTIFIER;}
+{L}({L}|{D}|_)*        {auto temp = new string(yytext);yylval.id = temp; return IDENTIFIER;}
 
 ","                    {return ',';}
 ":="                   {return token::ASSIGN;}

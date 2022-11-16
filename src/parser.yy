@@ -35,7 +35,7 @@
 	list <Expression*> *exp_list;
 	Expression *exp;
 	Statement* stmt;
-	TYPE *t;
+	Identifier *t;
 	string *id;
 	int valuei;
 	float valuef;
@@ -43,33 +43,37 @@
 	string *values;
 	ACCESS_SPEC *access_spec;
 	FamilyMembers *class_member;
-} */
+	list<FamilyMembers*> *class_members;
+	Argument* argument;
+	list<Argument*>* arg_list;
+}
 
 /* Declaring types to the different non-terminals */
-%type <Program*> program
-%type <std::list<Statement*>*> translation_unit statement_list
-%type <std::list<Expression*>*> new_variable_list args_list expression_list
+%type <pgm> program
+%type <stmt_list> translation_unit statement_list
+%type <exp_list> new_variable_list expression_list
+%type <arg_list> args_list
+%type <stmt> external_declaration statement
+%type <stmt> driver_definition function_declaration variable_declaration family_declaration
+%type <stmt> jump_statement iteration_statement labeled_statement expression_statement
+%type <stmt> selection_statement compound_statement
+%type <stmt> constructor_declaration /*error*/
 
-%type <Statement*> external_declaration statement
-%type <Statement*> driver_definition function_declaration variable_declaration family_declaration
-%type <Statement*> jump_statement iteration_statement labeled_statement expression_statement
-%type <Statement*> selection_statement compound_statement
-%type <Statement*> constructor_declaration error
-
-%type <Expression*> expression primary_expression
-%type <Expression*> new_variable literal arg variable
-
-%type <TYPE*> type
-%type <ACCESS_SPEC*> access_specifier
-%type <FamilyMembers*> class_member class_members
+%type <exp> expression primary_expression
+%type <exp> new_variable literal variable
+%type <argument> arg
+%type <t> type
+%type <access_spec> access_specifier
+%type <class_member> class_member 
+%type <class_members>class_members
 
 /*** TOKEN DECLARATION ***/
 %header
 
 /* Primitive data types */
 %token CONST VAR
-%token BOOL FLOAT INT STRING VOID 
-
+%token <id> BOOL FLOAT INT STRING VOID 
+%token <id> POINT PATH IMAGE RECTANGLE CIRCLE ELLIPSE POLYGON CURVE FUNC PI COLOUR
 /* Literals */
 %token<int> INTEGER_LITERAL
 %token<float> FLOAT_LITERAL
@@ -120,10 +124,10 @@ translation_unit
 	;
 
 external_declaration
-	: driver_definition
-	| variable_declaration
-	| function_declaration
-	| family_declaration
+	: driver_definition		{$$ = $1;}
+	| variable_declaration	{$$ = $1;}
+	| function_declaration	{$$ = $1;}
+	| family_declaration	{$$ = $1;}
 	;
 
 driver_definition
@@ -134,25 +138,36 @@ driver_definition
 /*----------------------------------------------------------------------
  * Declarations
  *----------------------------------------------------------------------*/
-type
-	: INT		 {$$ = new TYPE(TYPE::INT);}
-	| FLOAT		 {$$ = new TYPE(TYPE::FLOAT);}
-	| STRING	 {$$ = new TYPE(TYPE::STRING);}
-	| BOOL		 {$$ = new TYPE(TYPE::BOOL);}
-	| VOID		 {$$ = new TYPE(TYPE::VOID);}
-	| IDENTIFIER   {$$ = new Identifier(*($1));}
+ type
+	: INT   		{$$ = new Identifier(*($1));}
+	| FLOAT   		{$$ = new Identifier(*($1));}
+	| STRING   		{$$ = new Identifier(*($1));}
+	| BOOL   		{$$ = new Identifier(*($1));}
+	| VOID		   	{$$ = new Identifier(*($1));}
+	| IDENTIFIER   	{$$ = new Identifier(*($1));}
+	| POINT 		{$$ = new Identifier(*($1));}
+	| PATH			{$$ = new Identifier(*($1));}
+	| IMAGE			{$$ = new Identifier(*($1));}
+	| RECTANGLE 	{$$ = new Identifier(*($1));}
+	| CIRCLE		{$$ = new Identifier(*($1));}
+	| ELLIPSE		{$$ = new Identifier(*($1));}
+	| POLYGON		{$$ = new Identifier(*($1));}
+	| CURVE			{$$ = new Identifier(*($1));}
+	| FUNC			{$$ = new Identifier(*($1));}
+	| PI			{$$ = new Identifier(*($1));}
+	| COLOUR		{$$ = new Identifier(*($1));}
 	;
 
 literal
-	: INTEGER_LITERAL {$$ = new IntegerLiteral($1);}
-	| FLOAT_LITERAL	 {$$ = new FloatLiteral($1);}
-	| STRING_LITERAL {$$ = new StringLiteral($1);}
-	| BOOL_LITERAL	 {$$ = new BooleanLiteral($1);}
+	: INTEGER_LITERAL	{$$ = new IntegerLiteral($1);}
+	| FLOAT_LITERAL		{$$ = new FloatLiteral($1);}
+	| STRING_LITERAL	{$$ = new StringLiteral(*($1));}
+	| BOOL_LITERAL		{$$ = new BooleanLiteral($1);}
 	;
 
 variable_declaration
-	: VAR type new_variable_list ';'  {$$ = new VariableDeclaration($2, $3);}	
-	| CONST type new_variable_list ';'  {$$ = new VariableDeclaration($2, $3);} //store variables as const}	
+	: VAR type new_variable_list ';' 	{$$ = new VariableDeclaration(*($2), *($3));}	
+	| CONST type new_variable_list ';' 	{$$ = new VariableDeclaration(*($2), *($3));} // store variables as const}	
 	;
 
 new_variable_list
@@ -161,15 +176,15 @@ new_variable_list
 	;
 
 new_variable
-	: IDENTIFIER 						 {$$ = new Identifier($1);} 
-	| IDENTIFIER ASSIGN expression		 {Variable* temp = new Identifier($1); $$ = new AssignmentExp(temp, $3);}
-	| IDENTIFIER '(' ')'				 {Variable* temp = new Identifier($1); $$ = new FunctionCall(temp);}
-	| IDENTIFIER '(' expression_list ')' {Variable* temp = new Identifier($1); $$ = new FunctionCall(temp, $3);}
+	: IDENTIFIER 							{$$ = new Identifier(*($1));} 
+	| IDENTIFIER ASSIGN expression			{Variable* temp = new Identifier(*($1)); $$ = new AssignmentExp(temp, $3);}
+	| IDENTIFIER '(' ')'					{Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp);}
+	| IDENTIFIER '(' expression_list ')'	{Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp, *($3));}
 	;
 
 function_declaration
-	: type IDENTIFIER '(' ')' compound_statement		 {$2 = new Identifier($2); $$ = FunctionDeclaration($2, $1, $5);}
-	| type IDENTIFIER '(' args_list ')' compound_statement {$2 = new Identifier($2); $$ = FunctionDeclaration($2, $1, $6, $4);}
+	: type IDENTIFIER '(' ')' compound_statement			{auto temp = new Identifier(*($2)); $$ = new FunctionDeclaration(temp, *($1), $5);}
+	| type IDENTIFIER '(' args_list ')' compound_statement	{auto temp = new Identifier(*($2)); $$ = new FunctionDeclaration(temp, *($1), $6, *($4));}
 	;
 
 args_list
@@ -178,87 +193,87 @@ args_list
 	;
 
 arg
-	: type IDENTIFIER	 {$$ = new Argument($1, $2);}
-	| VAR type IDENTIFIER {$$ = new Argument($2, $3);}
-	| CONST type IDENTIFIER {$$ = new Argument($2, $3);}
+	: type IDENTIFIER		{$$ = new Argument(*($1), Identifier(*($2)));}
+	| VAR type IDENTIFIER	{$$ = new Argument(*($2), Identifier(*($3)));}
+	| CONST type IDENTIFIER	{$$ = new Argument(*($2), Identifier(*($3)));}
 	;
 
 /*------------------------------------------------------------------------
  * Classes
  *------------------------------------------------------------------------*/
 family_declaration
-	: FAMILY IDENTIFIER '{' '}' ';'													 {$$ = FamilyDecl($2);}
-	| FAMILY IDENTIFIER '{' class_members '}' ';' 									 {$$ = FamilyDecl($2, $4);}
-	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';' 			 {$$ = FamilyDecl($2,optional<pair<Identifier, ACCESS_SPEC>>(make_pair($5, $4)));}
-	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' class_members '}' ';' {$$ = FamilyDecl($2,$7, optional<pair<Identifier, ACCESS_SPEC>>(make_pair($5, $4)));}
+	: FAMILY IDENTIFIER '{' '}' ';'														{$$ = new FamilyDecl(Identifier(*$2));}
+	| FAMILY IDENTIFIER '{' class_members '}' ';' 										{$$ = new FamilyDecl(Identifier(*$2), *($4));}
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';' 				{$$ = new FamilyDecl(Identifier(*($2)),optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5), *($4))));}
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' class_members '}' ';'	{$$ = new FamilyDecl(Identifier(*($2)),*($7), optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5), *($4))));}
 	;
 
 access_specifier
-	: PUBLIC  {$$ = ACCESS_SPEC(ACCESS_SPEC::PUBLIC);}
-	| PRIVATE {$$ = ACCESS_SPEC(ACCESS_SPEC::PRIVATE);}
+	: PUBLIC 	{$$ = new ACCESS_SPEC(ACCESS_SPEC::PUBLIC);}
+	| PRIVATE	{$$ = new ACCESS_SPEC(ACCESS_SPEC::PRIVATE);}
 	;
 
 class_members
-	: class_member 				 {$$ = new list<FamilyMembers*>($1);}
-	| class_members class_member {$$ =$1; $$->push_back($2);}
+	: class_member 					{$$ = new list<FamilyMembers*>(); $$->push_back($1);}
+	| class_members class_member	{$$ =$1; $$->push_back($2);}
 	;
 
 class_member
-	: access_specifier variable_declaration {$$ = new FamilyMembers($1, $2);}
-	| access_specifier function_declaration {$$ = new FamilyMembers($1, $2);}
-	| constructor_declaration			 {$$ = new FamilyMembers(ACCESS_SPEC::PUBLIC, $1);}
+	: access_specifier variable_declaration	{$$ = new FamilyMembers(*($1), $2);}
+	| access_specifier function_declaration	{$$ = new FamilyMembers(*($1), $2);}
+	| constructor_declaration				{$$ = new FamilyMembers(ACCESS_SPEC::PUBLIC, $1);}
 	;
 
 constructor_declaration
-	: IDENTIFIER '(' args_list ')' compound_statement {$$ = new ConstructorDeclaration($1, $5, $3);}
+	: IDENTIFIER '(' args_list ')' compound_statement {$$ = new ConstructorDeclaration(Identifier(*($1)), $5, *($3));}
 	;
 
 /*------------------------------------------------------------------------
  * Expressions
  *------------------------------------------------------------------------*/
 primary_expression
-	: literal		// $$ = $1
-	| variable		// $$ = $1
-	| variable '(' ')'				 {$$ = new FunctionCall($1);}
-	| variable '(' expression_list ')' {$$ = new FunctionCall($1, $3);}
-	| '(' expression ')'			 {$$ = $2;}
+	: literal							{$$ = (Expression*)$1;}
+	| variable							{$$ = (Expression*)$1;}
+	| variable '(' ')'					{$$ = new FunctionCall($1);}
+	| variable '(' expression_list ')'	{$$ = new FunctionCall($1, *($3));}
+	| '(' expression ')'				{$$ = $2;}
 	;
 
 variable
-	: IDENTIFIER					 {$$ = new Identifier($1);}
-	| variable SCOPE_ACCESS IDENTIFIER {$$ = new MemberAccess($1, $3);}
-	| variable '[' expression ']'	 {$$ = new ArrayAccess($1, $3);}
+	: IDENTIFIER						{$$ = new Identifier(*($1));}
+	| variable SCOPE_ACCESS IDENTIFIER	{$$ = new MemberAccess((Variable*)$1, *($3));}
+	| variable '[' expression ']'		{$$ = new ArrayAccess($1, $3);}
 	;
 
 expression
-	: primary_expression					// $$ = $1
-	| '+' expression %prec UPLUS			 {$$ = new UnaryPlus($2);}
-	| '-' expression %prec UMINUS			 {$$ = new UnaryMinus($2);}
-	| expression '*' expression				 {$$ = new Multiplication($1, $3);}
-	| expression '/' expression				 {$$ = new Division($1, $3);}
-	| expression '%' expression				 {$$ = new ModularDiv($1, $3);}
-	| expression '+' expression				 {$$ = new Addition($1, $3);}
-	| expression '-' expression				 {$$ = new Subtraction($1, $3);}
-	| expression EQ expression				 {$$ = new CompEQ($1, $3);}
-	| expression NOT_EQ expression			 {$$ = new CompNEQ($1, $3);}
-	| expression LS_THAN expression			 {$$ = new CompLT($1, $3);}
-	| expression LS_THAN_EQ expression		 {$$ = new CompLE($1, $3);}
-	| expression GR_THAN expression			 {$$ = new CompGT($1, $3);}
-	| expression GR_THAN_EQ expression		 {$$ = new CompGE($1, $3);}
-	| expression LOGICAL_AND expression		 {$$ = new LogicalAND($1, $3);}
-	| expression LOGICAL_OR expression		 {$$ = new LogicalOR($1, $3);}
-	| LOGICAL_NOT expression				 {$$ = new LogicalNOT($2);}
-	| INC variable							 {$$ = new PrefixInc($2);}
-	| DEC variable							 {$$ = new PostfixDec($2);}
-	| variable INC %prec INC_POST			 {$$ = new PostfixInc($1);}
-	| variable DEC %prec DEC_POST			 {$$ = new PostfixDec($1);}
-	| variable ASSIGN expression			 {$$ = new AssisgnmentExp($1, $3);}
-	| variable MUL_ASSIGN expression		 {$$ = new MulAssign($1, $3);}
-	| variable DIV_ASSIGN expression		 {$$ = new DivAssign($1, $3);}
-	| variable MOD_ASSIGN expression		 {$$ = new ModAssign($1, $3);}
-	| variable ADD_ASSIGN expression		 {$$ = new AddAssign($1, $3);}
-	| variable SUB_ASSIGN expression		 {$$ = new SubAssign($1, $3);}
-	| expression '?' expression ':' expression {$$ = new TernaryOperation($1, $3, $5);}
+	: primary_expression						//$$ = $1
+	| '+' expression %prec UPLUS				{$$ = new UnaryPlus($2);}
+	| '-' expression %prec UMINUS				{$$ = new UnaryMinus($2);}
+	| expression '*' expression					{$$ = new Multiplication($1, $3);}
+	| expression '/' expression					{$$ = new Division($1, $3);}
+	| expression '%' expression					{$$ = new ModularDiv($1, $3);}
+	| expression '+' expression					{$$ = new Addition($1, $3);}
+	| expression '-' expression					{$$ = new Subtraction($1, $3);}
+	| expression EQ expression					{$$ = new CompEQ($1, $3);}
+	| expression NOT_EQ expression				{$$ = new CompNEQ($1, $3);}
+	| expression LS_THAN expression				{$$ = new CompLT($1, $3);}
+	| expression LS_THAN_EQ expression			{$$ = new CompLE($1, $3);}
+	| expression GR_THAN expression				{$$ = new CompGT($1, $3);}
+	| expression GR_THAN_EQ expression			{$$ = new CompGE($1, $3);}
+	| expression LOGICAL_AND expression			{$$ = new LogicalAND($1, $3);}
+	| expression LOGICAL_OR expression			{$$ = new LogicalOR($1, $3);}
+	| LOGICAL_NOT expression					{$$ = new LogicalNOT($2);}
+	| INC variable								{$$ = new PrefixInc((Variable*)$2);}
+	| DEC variable								{$$ = new PostfixDec((Variable*)$2);}
+	| variable INC %prec INC_POST				{$$ = new PostfixInc((Variable*)$1);}
+	| variable DEC %prec DEC_POST				{$$ = new PostfixDec((Variable*)$1);}
+	| variable ASSIGN expression				{$$ = new AssignmentExp((Variable*)$1, $3);}
+	| variable MUL_ASSIGN expression			{$$ = new MulAssign((Variable*)$1, $3);}
+	| variable DIV_ASSIGN expression			{$$ = new DivAssign((Variable*)$1, $3);}
+	| variable MOD_ASSIGN expression			{$$ = new ModAssign((Variable*)$1, $3);}
+	| variable ADD_ASSIGN expression			{$$ = new AddAssign((Variable*)$1, $3);}
+	| variable SUB_ASSIGN expression			{$$ = new SubAssign((Variable*)$1, $3);}
+	| expression '?' expression ':' expression	{$$ = new TernaryOperator($1, $3, $5);}
 	;
 
 expression_list
@@ -277,12 +292,12 @@ statement
 	| selection_statement
 	| iteration_statement
 	| jump_statement
-	| error ';'
+	/* | error ';' */
 	;
 
 compound_statement
-	: '{' '}'				 {$$ = new CompoundStatement();}
-	| '{' statement_list '}' {$$ = new CompoundStatement($2);}
+	: '{' '}'					{$$ = new CompoundStatement(list<Statement*>());}
+	| '{' statement_list '}'	{$$ = new CompoundStatement(*($2));}
 	;
 
 statement_list
@@ -291,35 +306,35 @@ statement_list
 	;
 
 expression_statement
-	: ';'			 	  {$$ = new ExpressionStatement(NULL);}
+	: ';'			 	  {$$ = new ExpressionStatement();}
 	| expression_list ';' {$$ = new ExpressionStatement($1);}
 	;
 
 selection_statement
-	: IF '(' expression ')' compound_statement						 {$$ = new IfStatement($3, $5);}
-	| IF '(' expression ')' compound_statement ELSE compound_statement  {$$ = new IfElseStatement($3, $5, $7);}
-	| SWITCH '(' expression ')' statement							 {$$ = new SwitchStatement($3, $5);}
+	: IF '(' expression ')' compound_statement							{$$ = new IfStatement($3, (CompoundStatement*)$5);}
+	| IF '(' expression ')' compound_statement ELSE compound_statement 	{$$ = new IfElseStatement($3, (CompoundStatement*)$5, (CompoundStatement*)$7);}
+	| SWITCH '(' expression ')' statement								{$$ = new SwitchStatement($3, (CompoundStatement*)$5);}
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement	 {$$ = new LabeledStatement($1, $3);}
-	| CASE expression ':' statement {$$ = new CaseLabel($2, $4);}
-	| DEFAULT ':' statement		 {$$ = new DefaultLabel($3);}
+	: IDENTIFIER ':' statement		{Expression* temp = new Identifier(*($1));$$ = new LabeledStatement(temp, $3);}
+	| CASE expression ':' statement	{$$ = new CaseLabel($2, $4);}
+	| DEFAULT ':' statement			{$$ = new DefaultLabel($3);}
 	;
 
 iteration_statement
-	: WHILE '(' ')' compound_statement													 {$$ = new WhileLoop($4);}
-	| WHILE '(' expression ')' compound_statement										 {$$ = new WhileLoop($5, $3);}
-	| FOR '(' expression_statement expression_statement ')' compound_statement			 {$$ = new ForLoop($6, $3, $4, NULL);}
-	| FOR '(' expression_statement expression_statement expression ')' compound_statement  {$$ = new ForLoop($7, $3, $4, $5);}
-	| FOR '(' variable_declaration expression_statement ')' compound_statement 			 {$$ = new ForLoop($6, $3, $4, NULL);} 
-	| FOR '(' variable_declaration expression_statement expression ')' compound_statement  {$$ = new ForLoop($7, $3, $4, $5);}
+	: WHILE '(' ')' compound_statement														{$$ = new WhileLoop((CompoundStatement*)$4);}
+	| WHILE '(' expression ')' compound_statement											{$$ = new WhileLoop((CompoundStatement*)$5, $3);}
+	| FOR '(' expression_statement expression_statement ')' compound_statement				{$$ = new ForLoop((CompoundStatement*)$6, (ExpressionStatement*)$3, (ExpressionStatement*)$4, NULL);}
+	| FOR '(' expression_statement expression_statement expression ')' compound_statement 	{$$ = new ForLoop((CompoundStatement*)$7, (ExpressionStatement*)$3, (ExpressionStatement*)$4, $5);}
+	| FOR '(' variable_declaration expression_statement ')' compound_statement 				{$$ = new ForLoop((CompoundStatement*)$6, (ExpressionStatement*)$3, (ExpressionStatement*)$4, NULL);} 
+	| FOR '(' variable_declaration expression_statement expression ')' compound_statement 	{$$ = new ForLoop((CompoundStatement*)$7, (ExpressionStatement*)$3, (ExpressionStatement*)$4, $5);}
 	;
 
 jump_statement
-	: CONTINUE ';' 			 {$$ = new ContinueStatement();}
-	| BREAK ';'				 {$$ = new BreakStatement();}
-	| SEND expression_statement {$$ = new ReturnStatement(($2).getValue());}
+	: CONTINUE ';' 				{$$ = new ContinueStatement();}
+	| BREAK ';'					{$$ = new BreakStatement();}
+	| SEND expression_statement	{$$ = new ReturnStatement((((ExpressionStatement*)$2)->getValue()).back());}
 	;
 
 %%
