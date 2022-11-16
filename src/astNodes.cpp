@@ -486,6 +486,102 @@ datatype CompNEQ::evaluate()
     return value;
 }
 
+void MemberAccess::print()
+{
+    cout<<"Member Access:\n{\n";
+    cout<<"accessor name:\n";
+    accessor_name->print();
+    cout<<"\n accessee name :\n";
+    id.print();
+    cout<<"\n}\n";
+}
+datatype MemberAccess::evaluate()
+{
+    return value;
+}
+
+
+void Argument::print()
+{
+
+}
+datatype Argument::evaluate()
+{
+    return value;
+}
+
+void UnaryIncrement::print()
+{
+
+}
+datatype UnaryIncrement::evaluate()
+{
+    return value;
+}
+
+void PostfixInc::print()
+{
+
+}
+datatype PostfixInc::evaluate()
+{
+    return value;
+}
+
+void PrefixInc::print()
+{
+
+}
+datatype PrefixInc::evaluate()
+{
+    return value;
+}
+
+void UnaryDecrement::print()
+{
+
+}
+datatype UnaryDecrement::evaluate()
+{
+    return value;
+}
+
+void PostfixDec::print()
+{
+
+}
+datatype PostfixDec::evaluate()
+{
+    return value;
+}
+
+void BinaryOperation::print()
+{
+
+}
+datatype BinaryOperation::evaluate()
+{
+    return value;
+}
+
+
+datatype BooleanLiteral::evaluate()
+{
+    return value;
+}
+
+datatype StringLiterul::evaluate()
+{
+    return value;
+}
+datatype FloatLiteral::evaluate()
+{
+    return value;
+}
+datatype IntegerLiteral::evaluate()
+{
+    return value;
+}
 /**************************************
  * STATEMENTS
  **************************************/
@@ -693,6 +789,23 @@ void ReturnStatement::print()
     cout << "ternary:\n{\nreturns:\n";
     return_val->print();
     cout << "\n}\n";
+}
+
+void FamilyMembers::print()
+{
+
+}
+void FamilyDecl::print()
+{
+
+}
+void ContinueStatement::print()
+{
+
+}
+void BreakStatement::print()
+{
+
 }
 
 /*------------------------------------------------------------------------
