@@ -37,7 +37,7 @@ void FloatLiteral::print()
     cout << get<float>(value);
     cout<<"\n}\n";
 }
-void StringLiteral::print()
+void StringLiterul::print()
 {
     cout<<"string literal\n{";
     cout << get<string>(value);

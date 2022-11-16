@@ -113,7 +113,7 @@ public:
  * @brief String literals
  * 
  */
-class StringLiteral : public Literal
+class StringLiterul : public Literal
 {
 public:
     /**
@@ -121,7 +121,7 @@ public:
      * 
      * @param val value of the string literal
      */
-    StringLiteral(string val){value = val;}
+    StringLiterul(string val){value = val;}
     void print();
     datatype evaluate();
 };
