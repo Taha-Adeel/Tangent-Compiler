@@ -24,7 +24,7 @@
 #include "llvm/Transforms/Utils/IntegerDivision.h"
 
 using namespace std;
-using namespace llvm;
+// using namespace llvm;
 
 static std::unique_ptr<LLVMContext> TheContext;
 static std::unique_ptr<Module> TheModule;
@@ -48,36 +48,36 @@ datatype Literal::evaluate()
 
 void IntegerLiteral::print()
 {
-    cout<<"int literal\n{";
-    cout << get<int>(value);
-    cout<<"\n}\n";
+    std::cout <<"int literal\n{";
+    std::cout << get<int>(value);
+    std::cout <<"\n}\n";
 }
 
 Value *IntegerLiteral::codegen()
 {
     return ConstantInt::get(*TheContext, APSInt(get<int>(value)));
 }
-void FloatingPointLiteral::print()
+
 void FloatLiteral::print()
 {
-    cout<<"float literal\n{";
-    cout << get<float>(value);
-    cout<<"\n}\n";
+    std::cout <<"float literal\n{";
+    std::cout << get<float>(value);
+    std::cout <<"\n}\n";
 }
 
-Value *FloatingPointLiteral::codegen()
+Value *FloatLiteral::codegen()
 {
     return ConstantFP::get(*TheContext, APFloat(get<float>(value)));
 }
 
-void StringLiteral::print()
+void StringLiterul::print()
 {
     cout<<"string literal\n{";
     cout << get<string>(value);
     cout<<"\n}\n";
 }
 
-Value *StringLiteral::codegen()
+Value *StringLiterul::codegen()
 {
     return ConstantDataArray::getString(*TheContext, get<string>(value), true);
 }

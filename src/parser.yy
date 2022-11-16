@@ -161,7 +161,7 @@ driver_definition
 literal
 	: INTEGER_LITERAL	{$$ = new IntegerLiteral($1);}
 	| FLOAT_LITERAL		{$$ = new FloatLiteral($1);}
-	| STRING_LITERAL	{$$ = new StringLiteral(*($1));}
+	| STRING_LITERAL	{$$ = new StringLiterul(*($1));}
 	| BOOL_LITERAL		{$$ = new BooleanLiteral($1);}
 	;
 
@@ -188,14 +188,14 @@ function_declaration
 	;
 
 args_list
-	: arg			 {$$ = new list <Argument*>(); $$->push_back($1);}
+	: arg			 {$$ = new list <Arg*>(); $$->push_back($1);}
 	| args_list ',' arg {$$ = $1; $$->push_back($3);}
 	;
 
 arg
-	: type IDENTIFIER		{$$ = new Argument(*($1), Identifier(*($2)));}
-	| VAR type IDENTIFIER	{$$ = new Argument(*($2), Identifier(*($3)));}
-	| CONST type IDENTIFIER	{$$ = new Argument(*($2), Identifier(*($3)));}
+	: type IDENTIFIER		{$$ = new Arg(*($1), Identifier(*($2)));}
+	| VAR type IDENTIFIER	{$$ = new Arg(*($2), Identifier(*($3)));}
+	| CONST type IDENTIFIER	{$$ = new Arg(*($2), Identifier(*($3)));}
 	;
 
 /*------------------------------------------------------------------------

@@ -121,7 +121,7 @@ public:
  * @brief String literals
  * 
  */
-class StringLiteral : public Literal
+class StringLiterul : public Literal
 {
 public:
     /**
@@ -129,7 +129,7 @@ public:
      * 
      * @param val value of the string literal
      */
-    StringLiteral(string val){value = val;}
+    StringLiterul(string val){value = val;}
     void print();
     datatype evaluate();
     Value *codegen() override;
@@ -176,6 +176,7 @@ public:
     void print();
     string ret_id();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 /**
@@ -217,13 +218,13 @@ public:
     datatype evaluate();
 };
 
-class Argument : public Expression
+class Arg : public Expression
 {
 protected:
     Identifier t;
     Identifier id;
 public:
-    Argument(Identifier t_, Identifier id_): t(t_), id(id_){}
+    Arg(Identifier t_, Identifier id_): t(t_), id(id_){}
     void print();
     datatype evaluate();
 };
@@ -550,6 +551,8 @@ public:
  *------------------------------------------------------------------------*/
 class Statement : public ASTNode
 {
+    public:
+        virtual Value *codegen() = 0;
 };
 /// @brief Class to represent Expression Statements in the AST. Derives from \ref Statement
 class ExpressionStatement : public Statement
@@ -630,10 +633,10 @@ class ConstructorDeclaration : public Statement
 protected:
     Identifier class_name;
     CompoundStatement *body;
-    list<Argument *> arg_list;
+    list<Arg *> arg_list;
 
 public:
-    ConstructorDeclaration(Identifier class_name_, Statement *body_, list<Argument *> arg_list_) 
+    ConstructorDeclaration(Identifier class_name_, Statement *body_, list<Arg *> arg_list_) 
         : class_name(class_name_), body((CompoundStatement*)body_), arg_list(arg_list_){};
     void print();
 };
@@ -647,7 +650,7 @@ protected:
     Identifier *func_name;
     Identifier return_type;
     CompoundStatement *func_body;
-    list<Argument *> arg_list;
+    list<Arg *> arg_list;
 
 public:
     FunctionDeclaration() = delete;
@@ -656,7 +659,7 @@ public:
     /// @param _t return type
     /// @param _arg_list list of arguments
     /// @param _stmt list of arguments
-    FunctionDeclaration(Identifier *_name, Identifier _t, Statement *_stmt, list<Argument *> _arg_list = list<Argument *>())
+    FunctionDeclaration(Identifier *_name, Identifier _t, Statement *_stmt, list<Arg *> _arg_list = list<Arg *>())
         :func_name(_name), return_type(_t), func_body((CompoundStatement*)_stmt), arg_list(_arg_list) {}
     /// @brief print the content of function definition
     void print();
@@ -806,6 +809,7 @@ public:
     IfElseStatement(Expression *cond, CompoundStatement *block1, CompoundStatement *block2)
         :if_condition(cond), if_block(block1), else_block(block2) {}
     void print();
+    Value *codegen() override;
 };
 /// @brief Class to represent switch case statement in the AST. Derives from Statement
 class SwitchStatement : public Statement
