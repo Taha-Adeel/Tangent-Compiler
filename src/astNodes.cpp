@@ -394,31 +394,31 @@ void LogicalNOT::print()
 }
 datatype LogicalNOT::evaluate()
 {
-    datatype temp;
-    if(exp->get_type() == TYPE::ERROR)
-        return throwError();
-    if(exp->get_type() == TYPE::STRING)
-    {
-        temp = "";
-        value = (exp->evaluate() == temp) ? true : false;
-    }
-    else if(exp->get_type() == TYPE::FAMILY)
-        value = false;
-    else if(exp->get_type() == TYPE::INT)
-    {
-        temp = 0;
-        value = (exp->evaluate() == temp) ? true : false;
-    }
-    else if(exp->get_type() == TYPE::FLOAT)
-    {
-        temp = 0.0f;
-        value = (exp->evaluate() == temp) ? true : false;
-    }
-    else if(exp->get_type() == TYPE::BOOL)
-    {
-        temp = false;
-        value = (exp->evaluate() == temp) ? true : false;
-    }
+    // datatype temp;
+    // if(exp->get_type() == TYPE::ERROR)
+    //     return throwError();
+    // if(exp->get_type() == TYPE::STRING)
+    // {
+    //     temp = "";
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
+    // else if(exp->get_type() == TYPE::FAMILY)
+    //     value = false;
+    // else if(exp->get_type() == TYPE::INT)
+    // {
+    //     temp = 0;
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
+    // else if(exp->get_type() == TYPE::FLOAT)
+    // {
+    //     temp = 0.0f;
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
+    // else if(exp->get_type() == TYPE::BOOL)
+    // {
+    //     temp = false;
+    //     value = (exp->evaluate() == temp) ? true : false;
+    // }
     return value;
 }
 
@@ -440,7 +440,7 @@ datatype CompGT::evaluate()
         return throwError();
     if(LHS->get_type() == TYPE::FAMILY)
         return throwError(); // can't perform comparison for these types
-    value = (LHS->evaluate() != RHS->evaluate());
+    // value = (LHS->evaluate() != RHS->evaluate());
     return value;
 }
 
@@ -462,7 +462,7 @@ datatype CompLT::evaluate()
         return throwError();
     if(LHS->get_type() == TYPE::STRING)
         return throwError(); // can't perform comparison for these types
-    value = (LHS < RHS);
+    // value = (LHS < RHS);
     return value;
 }
 
@@ -484,7 +484,7 @@ datatype CompGE::evaluate()
         return throwError();
     if(LHS->get_type() == TYPE::STRING)
         return throwError(); // can't perform comparison for these types
-    value = (LHS >= RHS);
+    // value = (LHS >= RHS);
     return value;
 }
 
@@ -506,7 +506,7 @@ datatype CompLE::evaluate()
         return throwError();
     if(LHS->get_type() == TYPE::STRING)
         return throwError(); // can't perform comparison for these types
-    value = (LHS <= RHS);
+    // value = (LHS <= RHS);
     return value;
 }
 
@@ -528,7 +528,7 @@ datatype CompEQ::evaluate()
         return throwError();
     if(LHS->get_type() == TYPE::STRING)
         return throwError(); // can't perform comparison for these types
-    value = (LHS == RHS);
+    // value = (LHS == RHS);
     return value;
 }
 
@@ -550,7 +550,7 @@ datatype CompNEQ::evaluate()
         return throwError();
     if(LHS->get_type() == TYPE::STRING)
         return throwError(); // can't perform comparison for these types
-    value = (LHS != RHS);
+    // value = (LHS != RHS);
     return value;
 }
 
