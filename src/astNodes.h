@@ -43,15 +43,20 @@ protected:
     datatype value;   ///holds the value of the current node as pair of Identifier of value and the actual value
 
 public:
-    Expression();
-    ~Expression();
+    Expression(){}
+    ~Expression(){}
     /**
      * @brief Evaluates the value of the current Expression based on current value and the children of the nodes if they exist
      * 
      * @return datatype 
      */
     virtual datatype evaluate() = 0;
-    datatype get_type();
+    /**
+     * @brief Get the type of the value stored as a enum class TYPE
+     * @note this works correctly iff the index of the components of the std::variant are the same index as the enum class TYPE(both defined in symbolTable.h) 
+     * @return TYPE 
+     */
+    TYPE get_type();
 };
 
 ////////////////////////////////
@@ -536,7 +541,7 @@ public:
     /// @param e input expression
     ExpressionStatement(list<Expression *>*e) : exp(e){};
     /// @brief print the content of expression statement
-    Expression *getValue();
+    list<Expression *> getValue();
     void print();
 };
 
