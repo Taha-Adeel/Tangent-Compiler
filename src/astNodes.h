@@ -176,7 +176,7 @@ class MemberAccess : public Variable
 {
 protected:
     Variable *accessor_name;
-    string id;
+    Identifier id;
 
 public:
    /**
@@ -185,7 +185,7 @@ public:
     * @param v 
     * @param s 
     */
-    MemberAccess(Variable *v, string s): accessor_name(v), id(s){};
+    MemberAccess(Variable *v, string s): accessor_name(v), id(Identifier(s)){}
     void print();
     datatype evaluate();
 };
@@ -214,6 +214,7 @@ protected:
     Identifier id;
 public:
     Argument(Identifier t_, Identifier id_): t(t_), id(id_){}
+    ~Argument(){}
     void print();
     datatype evaluate();
 };

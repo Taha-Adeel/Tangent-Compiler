@@ -15,7 +15,7 @@
 
 using namespace std;
 
-enum class TYPE {INT, FLOAT, STRING, BOOL, FAMILY, VOID, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR}; 
+enum class TYPE {INT, FLOAT, STRING, BOOL, FAMILY, ERROR, VOID, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR}; 
 class Family
 {
     string name;
@@ -25,9 +25,9 @@ class Family
     map<string, bool> bool_members;
     map<string, Family> family_members;
 };
-
-enum class ERROR {TYPE_MISMATCH};
-typedef variant<int, float, string, bool, Family, ERROR> datatype;
+/// @brief a token class to represent error in eval function
+class error{};
+typedef variant<int, float, string, bool, Family, error> datatype;
 
 enum class SYMBOL_TYPE{
 	PRIMITIVE,
