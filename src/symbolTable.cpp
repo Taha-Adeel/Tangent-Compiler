@@ -37,11 +37,70 @@ SymbolTable::SymbolTable(SymbolTable* parent, std::string _namespace_name)
 {
 	if(parent == NULL) {
 		namespace_name = "global";
+		addInbuiltSymbols();
 	}
 	if(namespace_name == "")
 		namespace_name = parent->namespace_name + "::" + std::to_string(child_symbol_tables.size());
 }
 std::string SymbolTable::currentVariableType = "";
+
+/**
+ * @brief Prepopulate the symbol table with inbuilt symbols provided by our language
+ * 
+ */
+void SymbolTable::addInbuiltSymbols(){
+	addInbuiltPrimitiveTypenames();
+	addInbuiltFamilyTypenames();
+	addInbuiltFunctions();
+	addInbuiltConstants();
+}
+
+/**
+ * @brief Add the inbuilt primitive typenames such as int, float, string, bool and void
+ * 
+ */
+void SymbolTable::addInbuiltPrimitiveTypenames(){
+	addSymbol("int", "int", NULL, SYMBOL_TYPE::INBUILT_PRIMITIVE_TYPENAME);
+	addSymbol("float", "float", NULL, SYMBOL_TYPE::INBUILT_PRIMITIVE_TYPENAME);
+	addSymbol("string", "string", NULL, SYMBOL_TYPE::INBUILT_PRIMITIVE_TYPENAME);
+	addSymbol("bool", "bool", NULL, SYMBOL_TYPE::INBUILT_PRIMITIVE_TYPENAME);
+	addSymbol("void", "void", NULL, SYMBOL_TYPE::INBUILT_PRIMITIVE_TYPENAME);
+}
+
+/**
+ * @brief Add the inbuilt family typenames such as Point, Path, Image, Rectangle, Circle, Ellipse, Polygon, Curve, Color
+ * 
+ */
+void SymbolTable::addInbuiltFamilyTypenames(){
+	addSymbol("Point", "Point", NULL, SYMBOL_TYPE::INBUILT_FAMILY_TYPENAME);
+	addSymbol("Path", "Path", NULL, SYMBOL_TYPE::INBUILT_FAMILY_TYPENAME);
+	addSymbol("Image", "Image", NULL, SYMBOL_TYPE::INBUILT_FAMILY_TYPENAME);
+	addSymbol("Rectangle", "Rectangle", NULL, SYMBOL_TYPE::INBUILT_FAMILY_TYPENAME);
+	addSymbol("Circle", "Circle", NULL, SYMBOL_TYPE::INBUILT_FAMILY_TYPENAME);
+	addSymbol("Ellipse", "Ellipse", NULL, SYMBOL_TYPE::INBUILT_FAMILY_TYPENAME);
+	addSymbol("Polygon", "Polygon", NULL, SYMBOL_TYPE::INBUILT_FAMILY_TYPENAME);
+	addSymbol("Curve", "Curve", NULL, SYMBOL_TYPE::INBUILT_FAMILY_TYPENAME);
+	addSymbol("Color", "Color", NULL, SYMBOL_TYPE::INBUILT_FAMILY_TYPENAME);
+
+	// TODO: Create a new symbol table for each of the family types and add the inbuilt functions and constants
+}
+
+/**
+ * @brief Add the inbuilt functions such as print, draw, etc. 
+ * 
+ */
+void SymbolTable::addInbuiltFunctions(){
+	addSymbol("print", "void", NULL, SYMBOL_TYPE::INBUILT_FUNCTION);
+	addSymbol("draw", "void", NULL, SYMBOL_TYPE::INBUILT_FUNCTION);
+}
+
+/**
+ * @brief Add the inbuilt constants such as Pi, etc. 
+ * 
+ */
+void SymbolTable::addInbuiltConstants(){
+	addSymbol("Pi", "float", NULL, SYMBOL_TYPE::PRIMITIVE_VAR);
+}
 
 /**
  * @brief Adds a new symbol to the symbol table when it is declared
@@ -59,11 +118,12 @@ void SymbolTable::addSymbol(std::string identifier_name, std::string type_name, 
 			type_name = "error-type";
 		}
 		else switch(type_name_symbol->getType()){
-			case SYMBOL_TYPE::INBUILT_TYPENAME: 
-				type = SYMBOL_TYPE::PRIMITIVE; 
+			case SYMBOL_TYPE::INBUILT_PRIMITIVE_TYPENAME: 
+				type = SYMBOL_TYPE::PRIMITIVE_VAR; 
 				break;
-			case SYMBOL_TYPE::TYPENAME: 
-				type = SYMBOL_TYPE::OBJECT;
+			case SYMBOL_TYPE::INBUILT_FAMILY_TYPENAME:
+			case SYMBOL_TYPE::FAMILY_TYPENAME:
+				type = SYMBOL_TYPE::OBJECT_VAR;
 				createObjectSymbolTable(identifier_name, type_name);
 				break;
 			default: 
@@ -102,7 +162,7 @@ void SymbolTable::createObjectSymbolTable(std::string object_name, std::string t
 	Symbol* type_name_symbol = lookUp(type_name);
 	if(type_name_symbol == NULL)
 		throw "Type name not found: " + type_name;
-	if(type_name_symbol->getType() != SYMBOL_TYPE::TYPENAME)
+	if(type_name_symbol->getType() != SYMBOL_TYPE::FAMILY_TYPENAME)
 		throw "Type name is not a typename: " + type_name;
 	SymbolTable* object_symbol_table = new SymbolTable(this, object_name);
 	// TODO: Add all the members of the class/family to the symbol table

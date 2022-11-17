@@ -8,7 +8,7 @@
 #include <variant>
 #include <optional>
 
-enum class TYPE {INT, FLOAT, STRING, BOOL, FAMILY, ERROR, VOID, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR}; 
+enum class TYPE {INT, FLOAT, STRING, BOOL, VOID, ERROR, FAMILY, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR}; 
 class Family
 {
     std::string name;
@@ -27,11 +27,13 @@ typedef std::variant<int, float, std::string, bool, Family, error> datatype;
  * 
  */
 enum class SYMBOL_TYPE{
-	PRIMITIVE,
-	OBJECT,
-	INBUILT_TYPENAME,
-	TYPENAME,
+	PRIMITIVE_VAR,		// int, float, string, bool, void
+	OBJECT_VAR,
+	FAMILY_TYPENAME,
 	FUNCTION,
+	INBUILT_PRIMITIVE_TYPENAME,
+	INBUILT_FAMILY_TYPENAME,
+	INBUILT_FUNCTION,
 	UNKNOWN
 };
 
@@ -79,6 +81,12 @@ private:
 	SymbolTable* parent = NULL;
 	
 	static std::string currentVariableType;
+
+	void addInbuiltSymbols();
+	void addInbuiltPrimitiveTypenames();
+	void addInbuiltFamilyTypenames();
+	void addInbuiltFunctions();
+	void addInbuiltConstants();
 
 	void createObjectSymbolTable(std::string object_name, std::string type_name);
 
