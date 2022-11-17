@@ -77,13 +77,10 @@ private:
 	std::map<std::string, Symbol> symbol_table;
 	std::map<std::string, SymbolTable*> child_symbol_tables;
 	SymbolTable* parent = NULL;
+	
+	static std::string currentVariableType;
 
-private:
 	void createObjectSymbolTable(std::string object_name, std::string type_name);
-
-public:
-	// static bool insideVariableDeclaration;
-	// static std::string currentVariableType;
 
 public:
 	SymbolTable(SymbolTable* parent = NULL, std::string namespace_name = "");
@@ -91,6 +88,9 @@ public:
 
 	void addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, SYMBOL_TYPE type = SYMBOL_TYPE::UNKNOWN);
 	Symbol* lookUp(std::string name);
+
+	static void setCurrentVariableType(std::string type_name) {currentVariableType = type_name;};
+	static std::string getCurrentVariableType() { return currentVariableType; };
 	void printSymbolTable(int indentation = 0);
 };
 
