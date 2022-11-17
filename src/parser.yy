@@ -1,24 +1,34 @@
 %require "3.8"
-%language "c++"
-
+/* %language "c++" */
 %code top{
 	#include <stdio.h>
-	#include "location.hh"
-	extern int yyrestart(FILE *input_file);
+	#include <string>
+	#include "../src/astNodes.h"
+
+	extern int yylex();
+	extern void yyrestart(FILE*);
+	extern int yylineno;
+
+	void yyerror(const char*s);
+	#define YYFPRINTF(f, fmt, ...)  printf(fmt, ##__VA_ARGS__)
 }
+
+%define parse.error detailed
+%define parse.trace
 
 %locations
-%define parse.trace
-%define parse.error detailed
-
-%define api.value.type variant
-
 %code requires{
-	#include "../src/astNodes.h"
-}
-%code provides{
-	#define YY_DECL int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc)
-	YY_DECL;
+	#define YYLTYPE YYLTYPE
+	typedef struct YYLTYPE
+	{
+		int first_line;
+		int first_column;
+		int last_line;
+		int last_column;
+		const char *filename;
+	} YYLTYPE;
+	#define YYLTYPE_IS_DECLARED 1
+	#define YYLTYPE_IS_TRIVIAL 1
 }
 
 %code{
@@ -26,10 +36,13 @@
 
 	SymbolTable global_symbol_table;
 	SymbolTable* cur_symbol_table;
+	bool insideVariableDeclaration;
+	std::string currentVariableType;
+	Program* root;
 }
  
 /* Listing the different types of the terminals and non-terminals */
-/* %union
+%union 
 {
 	Program *pgm;
 	list <Statement*> *stmt_list;
@@ -71,15 +84,16 @@
 /*** TOKEN DECLARATION ***/
 %header
 
-/* Primitive data types */
+
+/* data types */
 %token CONST VAR
 %token <id> BOOL FLOAT INT STRING VOID 
 %token <id> POINT PATH IMAGE RECTANGLE CIRCLE ELLIPSE POLYGON CURVE FUNC PI COLOUR
 /* Literals */
-%token<int> INTEGER_LITERAL
-%token<float> FLOAT_LITERAL
-%token<bool> BOOL_LITERAL
-%token<std::string> STRING_LITERAL
+%token <valuei> INTEGER_LITERAL
+%token <valuef> FLOAT_LITERAL
+%token <valueb> BOOL_LITERAL
+%token <values> STRING_LITERAL
 
 /* Control flow keywords */
 %token IF ELSE SWITCH CASE DEFAULT WHILE FOR BREAK CONTINUE SEND
@@ -92,7 +106,7 @@
 %token DRIVER
 
 /* Variables */
-%token<std::string> IDENTIFIER
+%token <id> IDENTIFIER
 
 /* The operator precedence and associativity rules for the language. The higher precedence operators are listed below the lower precedence rules. */
 %left ','
@@ -120,8 +134,8 @@ program
 	;
 
 translation_unit
-	: external_declaration				 {$$ = new list <Statement*>(); $$->push_back($1);}
-	| translation_unit external_declaration {$$ = $1; $$->push_back($2);}
+	: external_declaration					{$$ = new list <Statement*>(); $$->push_back($1);}
+	| translation_unit external_declaration	{$$ = $1; $$->push_back($2);}
 	;
 
 external_declaration
@@ -169,23 +183,23 @@ literal
 variable_declaration
 	: VAR type 
 		{
-			SymbolTable::insideVariableDeclaration = true;
-			SymbolTable::currentVariableType = $2->ret_id();
+			insideVariableDeclaration = true;
+			currentVariableType = $2->ret_id();
 		}
 	  new_variable_list ';' 	
 	  	{
 			$$ = new VariableDeclaration(*($2), *($4));
-			SymbolTable::insideVariableDeclaration = false;
+			insideVariableDeclaration = false;
 		}
 	| CONST type
 		{
-			SymbolTable::insideVariableDeclaration = true;
-			SymbolTable::currentVariableType = $2->ret_id();
+			insideVariableDeclaration = true;
+			currentVariableType = $2->ret_id();
 		} 
 	  new_variable_list ';' 	
 	 	{
 			$$ = new VariableDeclaration(*($2), *($4));
-			SymbolTable::insideVariableDeclaration = false;
+			insideVariableDeclaration = false;
 		}
 	;
 
@@ -195,10 +209,10 @@ new_variable_list
 	;
 
 new_variable
-	: IDENTIFIER 							{cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); $$ = new Identifier(*($1));} 
-	| IDENTIFIER ASSIGN expression			{cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); Variable* temp = new Identifier(*($1)); $$ = new AssignmentExp(temp, $3);}
-	| IDENTIFIER '(' ')'					{cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp);}
-	| IDENTIFIER '(' expression_list ')'	{cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp, *($3));}
+	: IDENTIFIER 							{cur_symbol_table->addSymbol(*$1, currentVariableType, &@1); $$ = new Identifier(*($1));} 
+	| IDENTIFIER ASSIGN expression			{cur_symbol_table->addSymbol(*$1, currentVariableType, &@1); Variable* temp = new Identifier(*($1)); $$ = new AssignmentExp(temp, $3);}
+	| IDENTIFIER '(' ')'					{cur_symbol_table->addSymbol(*$1, currentVariableType, &@1); Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp);}
+	| IDENTIFIER '(' expression_list ')'	{cur_symbol_table->addSymbol(*$1, currentVariableType, &@1); Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp, *($3));}
 	;
 
 function_declaration
@@ -207,14 +221,14 @@ function_declaration
 	;
 
 args_list
-	: arg			 {$$ = new list <Arg*>(); $$->push_back($1);}
-	| args_list ',' arg {$$ = $1; $$->push_back($3);}
+	: arg				{$$ = new list <Argument*>(); $$->push_back($1);}
+	| args_list ',' arg	{$$ = $1; $$->push_back($3);}
 	;
 
 arg
-	: type IDENTIFIER		{$$ = new Arg(*($1), Identifier(*($2)));}
-	| VAR type IDENTIFIER	{$$ = new Arg(*($2), Identifier(*($3)));}
-	| CONST type IDENTIFIER	{$$ = new Arg(*($2), Identifier(*($3)));}
+	: type IDENTIFIER		{$$ = new Argument(*($1), Identifier(*($2)));}
+	| VAR type IDENTIFIER	{$$ = new Argument(*($2), Identifier(*($3)));}
+	| CONST type IDENTIFIER	{$$ = new Argument(*($2), Identifier(*($3)));}
 	;
 
 /*------------------------------------------------------------------------
@@ -296,14 +310,14 @@ expression
 	;
 
 expression_list
-	: expression					 {$$ = new list <Expression*>(); ($$)->push_back($1);}
-	| expression_list ',' expression {$$ = $1; ($$)->push_back($3);}
+	: expression						{$$ = new list <Expression*>(); ($$)->push_back($1);}
+	| expression_list ',' expression	{$$ = $1; ($$)->push_back($3);}
 	;
 
 /*------------------------------------------------------------------------
  * Statements
  *------------------------------------------------------------------------*/
-statement
+	statement
 	: labeled_statement
 	| compound_statement
 	| variable_declaration
@@ -320,8 +334,8 @@ compound_statement
 	;
 
 statement_list
-	: statement				 {$$ = new list <Statement*>(); ($$)->push_back($1);}
-	| statement_list statement {$$ = $1; ($$)->push_back($2);}
+	: statement					{$$ = new list <Statement*>(); ($$)->push_back($1);}
+	| statement_list statement	{$$ = $1; ($$)->push_back($2);}
 	;
 
 expression_statement
@@ -358,24 +372,36 @@ jump_statement
 
 %%
 
+void init_yylloc(const char* filename){
+	yylloc.first_line = yylloc.last_line = yylineno = 1;
+	yylloc.first_column = yylloc.last_column = 0;
+	yylloc.filename = filename;
+}
+
 int main(int argc, char **argv){
-	yy::parser parser;
-	parser.set_debug_level(1);
-	parser.set_debug_output(std::cout);
-	if(argc < 2)
-		parser.parse();
+	#ifdef YYDEBUG
+		yydebug = 1;
+	#endif
+	
+	if(argc < 2){
+		init_yylloc("(stdin)");
+		yyparse();
+	}
     else{
         for(int i = 1; i < argc; i++){
+            init_yylloc(argv[i]);
             FILE *file = fopen(argv[i], "r");
             if(file == NULL){ perror(argv[i]); return -1; }
             yyrestart(file);
-			parser.parse();
+
+			yyparse();
+
             fclose(file);
         }
     }
 }
 
-void yy::parser::error(yy::location const& loc, const std::string& msg){
-	std::cerr << "Error: " << msg << " at " << loc << std::endl;
-	std::cout << "Error: " << msg << " at " << loc << std::endl;
+void yyerror(const char*s){
+	fprintf(stdout, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename, yylloc.first_line, yylloc.first_column, s);
+	fprintf(stderr, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename, yylloc.first_line, yylloc.first_column, s);
 }
