@@ -8,9 +8,13 @@
 #include <map>
 #include <variant>
 #include <optional>
+
+#include <llvm/IR/Value.h>
+
 #include <vector>
 #include "symbolTable.h"
 using namespace std;
+using namespace llvm;
 
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
@@ -50,6 +54,8 @@ public:
      * @return datatype 
      */
     virtual datatype evaluate() = 0;
+
+    virtual Value *codegen() = 0;
     /**
      * @brief Get the type of the value stored as a enum class TYPE
      * @note this works correctly iff the index of the components of the std::variant are the same index as the enum class TYPE(both defined in symbolTable.h) 
@@ -90,6 +96,7 @@ public:
     IntegerLiteral(int val){value = val;}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 /**
  * @brief Float Literals
@@ -106,6 +113,7 @@ public:
     FloatLiteral(float val){value = val;}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 /**
@@ -123,6 +131,7 @@ public:
     StringLiterul(string val){value = val;}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 /**
  * @brief Boolean Literal
@@ -139,6 +148,7 @@ public:
     BooleanLiteral(bool val){value = val;}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 /* Identifiers */
@@ -165,6 +175,7 @@ public:
     void print();
     string ret_id();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 /**
@@ -206,14 +217,13 @@ public:
     datatype evaluate();
 };
 
-class Argument : public Expression
+class Arg : public Expression
 {
 protected:
     Identifier t;
     Identifier id;
 public:
-    Argument(Identifier t_, Identifier id_): t(t_), id(id_){}
-    ~Argument(){}
+    Arg(Identifier t_, Identifier id_): t(t_), id(id_){}
     void print();
     datatype evaluate();
 };
@@ -411,6 +421,7 @@ public:
     and proceed accordingly
     Concatenation can be implemented here
     */
+   Value *codegen() override;
 };
 
 class Subtraction : public BinaryOperation
@@ -419,6 +430,7 @@ public:
     Subtraction(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class Multiplication : public BinaryOperation
@@ -427,6 +439,7 @@ public:
     Multiplication(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class Division : public BinaryOperation
@@ -435,6 +448,7 @@ public:
     Division(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class ModularDiv : public BinaryOperation
@@ -443,6 +457,7 @@ public:
     ModularDiv(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 /* Logical Operations */
@@ -482,6 +497,7 @@ public:
     CompGT(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class CompLT : public BinaryOperation
@@ -490,6 +506,7 @@ public:
     CompLT(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class CompGE : public BinaryOperation
@@ -498,6 +515,7 @@ public:
     CompGE(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class CompLE : public BinaryOperation
@@ -506,6 +524,7 @@ public:
     CompLE(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class CompEQ : public BinaryOperation
@@ -514,6 +533,7 @@ public:
     CompEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 class CompNEQ : public BinaryOperation
@@ -522,6 +542,7 @@ public:
     CompNEQ(Expression *L, Expression *R):BinaryOperation(L,R){}
     void print();
     datatype evaluate();
+    Value *codegen() override;
 };
 
 /*------------------------------------------------------------------------
@@ -529,6 +550,8 @@ public:
  *------------------------------------------------------------------------*/
 class Statement : public ASTNode
 {
+    public:
+        virtual Value *codegen() = 0;
 };
 /// @brief Class to represent Expression Statements in the AST. Derives from \ref Statement
 class ExpressionStatement : public Statement
@@ -609,10 +632,10 @@ class ConstructorDeclaration : public Statement
 protected:
     Identifier class_name;
     CompoundStatement *body;
-    list<Argument *> arg_list;
+    list<Arg *> arg_list;
 
 public:
-    ConstructorDeclaration(Identifier class_name_, Statement *body_, list<Argument *> arg_list_) 
+    ConstructorDeclaration(Identifier class_name_, Statement *body_, list<Arg *> arg_list_) 
         : class_name(class_name_), body((CompoundStatement*)body_), arg_list(arg_list_){};
     void print();
 };
@@ -626,7 +649,7 @@ protected:
     Identifier *func_name;
     Identifier return_type;
     CompoundStatement *func_body;
-    list<Argument *> arg_list;
+    list<Arg *> arg_list;
 
 public:
     FunctionDeclaration() = delete;
@@ -635,7 +658,7 @@ public:
     /// @param _t return type
     /// @param _arg_list list of arguments
     /// @param _stmt list of arguments
-    FunctionDeclaration(Identifier *_name, Identifier _t, Statement *_stmt, list<Argument *> _arg_list = list<Argument *>())
+    FunctionDeclaration(Identifier *_name, Identifier _t, Statement *_stmt, list<Arg *> _arg_list = list<Arg *>())
         :func_name(_name), return_type(_t), func_body((CompoundStatement*)_stmt), arg_list(_arg_list) {}
     /// @brief print the content of function definition
     void print();
@@ -774,6 +797,7 @@ protected:
 public:
     IfStatement(Expression *e, CompoundStatement *block):condition(e),if_block(block) {}
     void print();
+    Value *codegen() override;
 };
 class IfElseStatement : public Statement
 {
@@ -785,6 +809,7 @@ public:
     IfElseStatement(Expression *cond, CompoundStatement *block1, CompoundStatement *block2)
         :if_condition(cond), if_block(block1), else_block(block2) {}
     void print();
+    Value *codegen() override;
 };
 /// @brief Class to represent switch case statement in the AST. Derives from Statement
 class SwitchStatement : public Statement

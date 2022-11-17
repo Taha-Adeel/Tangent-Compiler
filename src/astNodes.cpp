@@ -1,13 +1,34 @@
 // contains implementations of the member methods and constructors in astNodes.h
 
 #include "astNodes.h"
+#include "symbolTable.h"
 #include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <map>
 #include <list>
-using namespace std;
 
+#include "llvm/ADT/APFloat.h"
+#include "llvm/ADT/APSInt.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/Transforms/Utils/IntegerDivision.h"
+
+using namespace std;
+// using namespace llvm;
+
+static std::unique_ptr<LLVMContext> TheContext;
+static std::unique_ptr<Module> TheModule;
+static std::unique_ptr<IRBuilder<>> Builder;
 ////////////////////////////////////////////////////
 //            AST FUNCTION DEFINITION           ////
 ////////////////////////////////////////////////////
@@ -40,27 +61,49 @@ datatype Literal::evaluate()
 
 void IntegerLiteral::print()
 {
-    cout<<"int literal\n{";
-    cout << get<int>(value);
-    cout<<"\n}\n";
+    std::cout <<"int literal\n{";
+    std::cout << get<int>(value);
+    std::cout <<"\n}\n";
 }
+
+Value *IntegerLiteral::codegen()
+{
+    return ConstantInt::get(*TheContext, APSInt(get<int>(value)));
+}
+
 void FloatLiteral::print()
 {
-    cout<<"float literal\n{";
-    cout << get<float>(value);
-    cout<<"\n}\n";
+    std::cout <<"float literal\n{";
+    std::cout << get<float>(value);
+    std::cout <<"\n}\n";
 }
+void StringLiterul::print()
+{
+    return ConstantFP::get(*TheContext, APFloat(get<float>(value)));
+}
+
 void StringLiterul::print()
 {
     cout<<"string literal\n{";
     cout << get<string>(value);
     cout<<"\n}\n";
 }
+
+Value *StringLiterul::codegen()
+{
+    return ConstantDataArray::getString(*TheContext, get<string>(value), true);
+}
+
 void BooleanLiteral::print()
 {
     cout<<"bool literal\n{";
     cout << get<bool>(value);
     cout<<"\n}\n";
+}
+
+Value *BooleanLiteral::codegen()
+{
+    return ConstantInt::get(*TheContext, APSInt(get<bool>(value)));
 }
 
 void Identifier::print()
@@ -79,6 +122,11 @@ datatype Identifier::evaluate()
     // use symbol table
     return value;
 }
+
+// Value *Identifier::codegen()
+// {
+//     return Builder->CreateLoad();
+// }
 
 void ArrayAccess::print()
 {
@@ -245,6 +293,34 @@ datatype Addition::evaluate()
     return value;
 }
 
+Value *Addition::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (LHS->get_type() == RHS->get_type())
+    {
+        if (LHS->get_type() == TYPE::INT)
+        {
+            return Builder->CreateAdd(L, R, "addtmp");
+        }
+        else if (LHS->get_type() == TYPE::FLOAT)
+        {
+            return Builder->CreateFAdd(L, R, "addtmp");
+        }
+        else if (LHS->get_type() == TYPE::BOOL)
+        {
+            return Builder->CreateAdd(L, R, "addtmp");
+        }
+    }
+
+}
+
 void Subtraction::print()
 {
     cout<<"subtraction\n{";
@@ -261,6 +337,34 @@ void Subtraction::print()
 datatype Subtraction::evaluate()
 {
     return value;
+}
+
+Value *Subtraction::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateSub(L, R, "subtmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFAdd(L, R, "subtmp");
+        }
+        else if (left_eval.first == BOOL_TYPE)
+        {
+            return Builder->CreateAdd(L, R, "subtmp");
+        }
+    }
+
 }
 
 void Multiplication::print()
@@ -281,6 +385,34 @@ datatype Multiplication::evaluate()
     return value;
 }
 
+Value *Multiplication::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateMul(L, R, "multmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFMul(L, R, "multmp");
+        }
+        else if (left_eval.first == BOOL_TYPE)
+        {
+            return Builder->CreateMul(L, R, "multmp");
+        }
+    }
+
+}
+
 void Division::print()
 {
     cout<<"division\n{";
@@ -299,6 +431,34 @@ datatype Division::evaluate()
     return value;
 }
 
+Value *Division::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE && right_eval.second.ivalue != 0)
+        {
+            return Builder->CreateSDiv(L, R, "divtmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE && right_eval.second.fvalue != 0)
+        {
+            return Builder->CreateFDiv(L, R, "divtmp");
+        }
+        else if (left_eval.first == BOOL_TYPE && right_eval.second.bvalue != 0)
+        {
+            return Builder->CreateUDiv(L, R, "divtmp");
+        }
+    }
+
+}
+
 void ModularDiv::print()
 {
     cout<<"modular division\n{";
@@ -315,6 +475,34 @@ void ModularDiv::print()
 datatype ModularDiv::evaluate()
 {
     return value;
+}
+
+Value *ModularDiv::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE && right_eval.second.ivalue != 0)
+        {
+            Value *Quotient = Builder->CreateUDiv(L, R, "divtmp");
+            Value *Product = Builder->CreateMul(R, Quotient, "multmp");
+            return Builder->CreateSub(L, Product, "subtmp");
+        }
+        else if (left_eval.first == BOOL_TYPE && right_eval.second.bvalue != 0)
+        {
+            Value *Quotient = Builder->CreateUDiv(L, R, "divtmp");
+            Value *Product = Builder->CreateMul(R, Quotient, "multmp");
+            return Builder->CreateSub(L, Product, "subtmp");
+        }
+    }
+
 }
 
 void UnaryPlus::print()
@@ -444,6 +632,33 @@ datatype CompGT::evaluate()
     return value;
 }
 
+Value* CompGT::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateICmpSGT(L, R, "cmptmp");
+        }
+        else if (left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
+        {
+            return Builder->CreateICmpUGT(L, R, "cmptmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFCmpUGT(L, R, "cmptmp");
+        }
+    }
+}
+
 void CompLT::print()
 {
     cout<<"CompLT\n{";
@@ -464,6 +679,33 @@ datatype CompLT::evaluate()
         return throwError(); // can't perform comparison for these types
     // value = (LHS < RHS);
     return value;
+}
+
+Value* CompLT::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateICmpSLT(L, R, "cmptmp");
+        }
+        else if (left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
+        {
+            return Builder->CreateICmpULT(L, R, "cmptmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFCmpULT(L, R, "cmptmp");
+        }
+    }
 }
 
 void CompGE::print()
@@ -488,6 +730,33 @@ datatype CompGE::evaluate()
     return value;
 }
 
+Value* CompGE::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE)
+        {
+            return Builder->CreateICmpSGE(L, R, "cmptmp");
+        }
+        else if (left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
+        {
+            return Builder->CreateICmpUGE(L, R, "cmptmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFCmpUGE(L, R, "cmptmp");
+        }
+    }
+}
+
 void CompLE::print()
 {
     cout<<"CompLE\n{";
@@ -510,6 +779,33 @@ datatype CompLE::evaluate()
     return value;
 }
 
+Value* CompLE::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (LHS->get_type() == RHS->get_type())
+    {
+        if (LHS->get_type() == TYPE::INT)
+        {
+            return Builder->CreateICmpSLE(L, R, "cmptmp");
+        }
+        else if (LHS->get_type() == TYPE::BOOL || LHS->get_type() == TYPE::STRING)
+        {
+            return Builder->CreateICmpULE(L, R, "cmptmp");
+        }
+        else if (LHS->get_type() == TYPE::FLOAT)
+        {
+            return Builder->CreateFCmpULE(L, R, "cmptmp");
+        }
+    }
+}
+
 void CompEQ::print()
 {
     cout<<"CompEQ\n{";
@@ -530,6 +826,29 @@ datatype CompEQ::evaluate()
         return throwError(); // can't perform comparison for these types
     // value = (LHS == RHS);
     return value;
+}
+
+Value* CompEQ::codegen()
+{
+    Value *L = LHS->codegen();
+    Value *R = RHS->codegen();
+    datatype left_eval = LHS->evaluate();
+    datatype right_eval = RHS->evaluate();
+    if(!L || !R)
+    {
+        return nullptr;
+    }
+    if (left_eval.first == right_eval.first)
+    {
+        if (left_eval.first == INT_TYPE || left_eval.first == BOOL_TYPE || left_eval.first == CHAR_TYPE)
+        {
+            return Builder->CreateICmpEQ(L, R, "cmptmp");
+        }
+        else if (left_eval.first == FLOAT_TYPE)
+        {
+            return Builder->CreateFCmpUEQ(L, R, "cmptmp");
+        }
+    }
 }
 
 void CompNEQ::print()
@@ -813,6 +1132,53 @@ void ForLoop::print()
     cout << "\n}\n";
 }
 
+void IfStatement::print()
+{
+    cout << "If statement: \n{\n";
+    cout << "condition :\n";
+    condition->print();
+    if(if_block)
+    {
+        cout << "If block:\n";
+        if_block->print();
+    }
+    cout << "\n}\n";
+}
+
+Value *IfStatement::codegen()
+{
+    Value *cond = condition->codegen();
+    if(!cond)
+    {
+        return nullptr;
+    }
+    cond = Builder->CreateICmpNE(cond, ConstantInt::get(*TheContext, APSInt(0)), "ifcond");
+
+    Function *TheFunction = Builder->GetInsertBlock()->getParent();
+    BasicBlock *ThenBB = BasicBlock::Create(*TheContext, "then", TheFunction);
+    BasicBlock *MergeBB = BasicBlock::Create(*TheContext, "ifcont");
+
+    Builder->CreateBr(ThenBB);
+    Builder->SetInsertPoint(ThenBB);
+
+    Value *ThenV = if_block->codegen();
+    if (!ThenV)
+    {
+        return nullptr;
+    }
+    
+    Builder->CreateBr(MergeBB);
+    // Codegen of 'Then' can change the current block, update ThenBB for the PHI.
+    ThenBB = Builder->GetInsertBlock();
+    TheFunction->getBasicBlockList().push_back(MergeBB);
+    Builder->SetInsertPoint(MergeBB);
+
+    PHINode *PN = Builder->CreatePHI(Type::getDoubleTy(*TheContext), 2, "iftmp");
+
+    PN->addIncoming(ThenV, ThenBB);
+    return PN;
+}
+
 void IfElseStatement::print()
 {
     cout << "If else block:\n{\n";
@@ -833,6 +1199,55 @@ void IfElseStatement::print()
     }
     
     cout << "\n}\n";
+}
+
+Value *IfElseStatement::codegen()
+{
+    Value *cond = if_condition->codegen();
+    if(!cond)
+    {
+        return nullptr;
+    }
+    cond = Builder->CreateICmpNE(cond, ConstantInt::get(*TheContext, APSInt(0)), "ifcond");
+
+    Function *TheFunction = Builder->GetInsertBlock()->getParent();
+    BasicBlock *ThenBB = BasicBlock::Create(*TheContext, "then", TheFunction);
+    BasicBlock *ElseBB = BasicBlock::Create(*TheContext, "else");
+    BasicBlock *MergeBB = BasicBlock::Create(*TheContext, "ifcont");
+
+    Builder->CreateCondBr(cond, ThenBB, ElseBB);
+    Builder->SetInsertPoint(ThenBB);
+
+    Value *ThenV = if_block->codegen();
+    if (!ThenV)
+    {
+        return nullptr;
+    }
+
+    Builder->CreateBr(MergeBB);
+    // Codegen of 'Then' can change the current block, update ThenBB for the PHI.
+    ThenBB = Builder->GetInsertBlock();
+    TheFunction->getBasicBlockList().push_back(ElseBB);
+    Builder->SetInsertPoint(ElseBB);
+
+    Value *ElseV = else_block->codegen();
+    if (!ElseV)
+    {
+        return nullptr;
+    }
+
+    Builder->CreateBr(MergeBB);
+    // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
+    ElseBB = Builder->GetInsertBlock();
+
+    // Emit merge block.
+    TheFunction->getBasicBlockList().push_back(MergeBB);
+    Builder->SetInsertPoint(MergeBB);
+    PHINode *PN = Builder->CreatePHI(Type::getDoubleTy(*TheContext), 2, "iftmp");
+
+    PN->addIncoming(ThenV, ThenBB);
+    PN->addIncoming(ElseV, ElseBB);
+    return PN;
 }
 
 void SwitchStatement::print()
