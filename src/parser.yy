@@ -174,7 +174,7 @@ driver_definition
 literal
 	: INTEGER_LITERAL	{$$ = new IntegerLiteral($1);}
 	| FLOAT_LITERAL		{$$ = new FloatLiteral($1);}
-	| STRING_LITERAL	{$$ = new StringLiterul(*($1));}
+	| STRING_LITERAL	{$$ = new StringLiteral(*($1));}
 	| BOOL_LITERAL		{$$ = new BooleanLiteral($1);}
 	;
 
