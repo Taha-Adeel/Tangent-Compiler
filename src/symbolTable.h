@@ -99,7 +99,7 @@ public:
 
 	static void setCurrentVariableType(std::string type_name) {currentVariableType = type_name;};
 	static std::string getCurrentVariableType() { return currentVariableType; };
-	void printSymbolTable(int indentation = 0);
+	void printSymbolTable(std::ostream& f, int indentation = 0);
 };
 
 #endif

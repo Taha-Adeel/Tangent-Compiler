@@ -9,9 +9,9 @@ typedef struct YYLTYPE
 	const char *filename;
 } YYLTYPE;
 
-std::ostream& operator << (std::ostream& os, const YYLTYPE& loc){
-	os << loc.filename << ": (" << loc.first_line << ":" << loc.first_column << ")-(" << loc.last_line << ":" << loc.last_column << ")";
-	return os;
+std::ostream& operator << (std::ostream& os, const YYLTYPE* loc){
+	if(loc == NULL) return os << "Inbuilt symbol";
+	return os << loc->filename << ": (" << loc->first_line << ":" << loc->first_column << ")-(" << loc->last_line << ":" << loc->last_column << ")";
 }
 
 /**
@@ -22,7 +22,7 @@ std::ostream& operator << (std::ostream& os, const YYLTYPE& loc){
  * @return std::ostream& 
  */
 std::ostream& operator << (std::ostream& out, const Symbol& symbol){
-	out << "Symbol: " << symbol.name << " Type Name: " << symbol.type_name << " Location: " << *(symbol.location);
+	out << "Symbol: " << symbol.name << " Type Name: " << symbol.type_name << " Location: " << (symbol.location);
 	return out;
 }
 
@@ -173,16 +173,16 @@ void SymbolTable::createObjectSymbolTable(std::string object_name, std::string t
  * @brief Utility function to display the symbol table
  * Prints each symbol table with its namespace name, followed by its child symbol tables
  */
-void SymbolTable::printSymbolTable(int indentation){
+void SymbolTable::printSymbolTable(std::ostream& out_file, int indentation){
 	for(int i = 0; i < indentation; i++)
-		std::cout << "\t";
-	std::cout << "Symbol Table: " << namespace_name << std::endl;
+		out_file << "\t";
+	out_file << "Symbol Table: " << namespace_name << '\n';
 	for(auto symbol : symbol_table){
 		for(int i = 0; i < indentation; i++)
-			std::cout << "\t";
-		std::cout << symbol.second << std::endl;
+			out_file << "\t";
+		out_file << symbol.second << '\n';
 	}
 	for(auto child_symbol_table : child_symbol_tables){
-		child_symbol_table.second->printSymbolTable(indentation + 1);
+		child_symbol_table.second->printSymbolTable(out_file, indentation + 1);
 	}
 }

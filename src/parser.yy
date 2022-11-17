@@ -1,16 +1,23 @@
 %require "3.8"
 /* %language "c++" */
 %code top{
-	#include <stdio.h>
+	#include <iostream>
+	#include <fstream>
+	#include <filesystem>
 	#include <string>
 	#include "../src/astNodes.h"
 
 	extern int yylex();
 	extern void yyrestart(FILE*);
+	void yyerror(const char* s);
 	extern int yylineno;
 
-	void yyerror(const char* s);
 	#define YYFPRINTF(f, fmt, ...)  printf(fmt, ##__VA_ARGS__)
+	#if YYDEBUG == 1
+	#define PARSER_TRACE_DEBUG
+	#define SYMBOL_TABLE_DEBUG
+	#define AST_DEBUG
+	#endif
 }
 
 %define parse.error detailed
@@ -360,13 +367,17 @@ void init_yylloc(const char* filename){
 }
 
 int main(int argc, char **argv){
-	#ifdef YYDEBUG
+	// The parser trace is generated only if yydebug is set to 1
+	#ifdef PARSER_TRACE_DEBUG
 		yydebug = 1;
 	#endif
 	
 	if(argc < 2){
 		init_yylloc("(stdin)");
 		yyparse();
+		#ifdef SYMBOL_TABLE_DEBUG
+			global_symbol_table.printSymbolTable(std::cout);
+		#endif
 	}
     else{
         for(int i = 1; i < argc; i++){
@@ -376,7 +387,16 @@ int main(int argc, char **argv){
             yyrestart(file);
 
 			yyparse();
-			global_symbol_table.printSymbolTable();
+
+			#ifdef SYMBOL_TABLE_DEBUG
+			int file_dir_path_size = (string(argv[i]).find_last_of('/') == string::npos) ? 0 : string(argv[i]).find_last_of('/') + 1;
+			string dirname = string(argv[i]).substr(0, file_dir_path_size);
+			string filename = string(argv[i]).substr(file_dir_path_size, string(argv[i]).size() - file_dir_path_size - 5);
+			filesystem::create_directory(dirname + "output/");
+			string symbol_table_filename = dirname + "output/" + filename + ".sym";
+			ofstream symbol_table_output_file(symbol_table_filename);
+			global_symbol_table.printSymbolTable(symbol_table_output_file);
+			#endif
 
             fclose(file);
         }

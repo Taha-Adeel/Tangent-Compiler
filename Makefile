@@ -30,7 +30,7 @@ lexer: $(BUILD_DIR)/lex.yy.cc $(BUILD_DIR)/parser.hh
 
 # Build an executable to parse the input tangent code files according to the grammar rules
 parser: $(BUILD_DIR)/parser.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp $(SRC_DIR)/symbolTable.cpp
-	$(CC) -std=c++2a -g -o $(BUILD_DIR)/$@ $^ --debug $(LLVM_INC_DIR:%=-I%)
+	$(CC) -std=c++2a -g -o $(BUILD_DIR)/$@ $^ $(LLVM_INC_DIR:%=-I%) -D PARSER_TRACE_DEBUG -D SYMBOL_TABLE_DEBUG
 
 # Generate HTML documentation describing our grammar and the DFA representing the parser.
 parser_documentation: $(SRC_DIR)/parser.yy
@@ -48,7 +48,7 @@ clean:
 #################### TESTING RULES ########################
 
 TESTS_DIR := ./tests
-TESTS_OUTPUT_DIR := test_outputs
+TESTS_OUTPUT_DIR := output
 
 # The testcases
 LEXER_CORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Lexer_Tests/Correct_codes/*.tngt))
