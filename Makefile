@@ -30,7 +30,7 @@ lexer: $(BUILD_DIR)/lex.yy.cc $(BUILD_DIR)/parser.hh
 
 # Build an executable to parse the input tangent code files according to the grammar rules
 parser: $(BUILD_DIR)/parser.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp $(SRC_DIR)/symbolTable.cpp
-	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $^ --debug $(LLVM_INC_DIR:%=-I%)
+	$(CC) -std=c++2a -g -o $(BUILD_DIR)/$@ $^ --debug $(LLVM_INC_DIR:%=-I%)
 
 # Generate HTML documentation describing our grammar and the DFA representing the parser.
 parser_documentation: $(SRC_DIR)/parser.yy
@@ -128,7 +128,7 @@ parser_correct_codes: $(PARSER_CORRECT_CODES) parser
 	for testcase in $(basename $(notdir $(PARSER_CORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
 		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(PARSER_CORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt$(NC)";\
 		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-		"$${ROOT_DIR}"/$(BUILD_DIR)/parser $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
+		gdb -ex=r --batch --args "$${ROOT_DIR}"/$(BUILD_DIR)/parser $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
 		if [ $$(grep "syntax error" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -eq 0 ] ; then \
 			echo "$(GREEN)   Testcase Passed\n$(NC)"; SUCCESSFUL=$$((SUCCESSFUL+1)); \
 		else echo "$(RED)   Testcase Failed\n$(NC)"; fi;\

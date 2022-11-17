@@ -54,9 +54,11 @@ std::string SymbolTable::currentVariableType = "";
 void SymbolTable::addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, SYMBOL_TYPE type){
 	if(type == SYMBOL_TYPE::UNKNOWN){
 		Symbol* type_name_symbol = lookUp(type_name);
-		if(type_name_symbol == NULL)
-			throw "Type name not found: " + type_name;
-		switch(type_name_symbol->getType()){
+		if(type_name_symbol == NULL){
+			std::cerr << std::string("Error: Type name not found: " + type_name) << std::endl;
+			type_name = "error-type";
+		}
+		else switch(type_name_symbol->getType()){
 			case SYMBOL_TYPE::INBUILT_TYPENAME: 
 				type = SYMBOL_TYPE::PRIMITIVE; 
 				break;

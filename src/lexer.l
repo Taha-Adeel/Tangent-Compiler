@@ -105,8 +105,8 @@ L               [a-zA-Z]
 
  /* Matches to any invalid tokens not matched to any other rules */
 .                      {
-                        printf("Error: %s: Line %d:%d\t%-12s - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
-                        fprintf(stderr, "   Error: %s: Line %d:%d - '%s' - Invalid token\n", yylloc.filename, yylineno, yylloc.first_column, yytext);
+                        printf("Error: %s: Line %d:%d\t%-12s - Invalid token\n", yylloc.filename.c_str(), yylineno, yylloc.first_column, yytext);
+                        fprintf(stderr, "   Error: %s: Line %d:%d - '%s' - Invalid token\n", yylloc.filename.c_str(), yylineno, yylloc.first_column, yytext);
                         return YYUNDEF;
                        }
 %%
@@ -160,12 +160,12 @@ void print_tokens_matched(){
             token_name[1] = token;
         else
             strcpy(token_name, yytname[token - 255]);
-        printf("%s: Line %d:%d\t%-12s was matched to the token %-20s (= %d) \n", yylloc.filename, yylloc.first_line, yylloc.first_column, yytext, token_name, token);
+        printf("%s: Line %d:%d\t%-12s was matched to the token %-20s (= %d) \n", yylloc.filename.c_str(), yylloc.first_line, yylloc.first_column, yytext, token_name, token);
     }
     printf("\n");
 }
 
-void init_yylloc(const char* filename){
+void init_yylloc(std::string filename){
 	yylloc.first_line = yylloc.last_line = yylineno = 1;
 	yylloc.first_column = yylloc.last_column = 0;
 	yylloc.filename = filename;

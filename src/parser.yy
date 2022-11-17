@@ -9,7 +9,7 @@
 	extern void yyrestart(FILE*);
 	extern int yylineno;
 
-	void yyerror(const char*s);
+	void yyerror(const char* s);
 	#define YYFPRINTF(f, fmt, ...)  printf(fmt, ##__VA_ARGS__)
 }
 
@@ -25,7 +25,7 @@
 		int first_column;
 		int last_line;
 		int last_column;
-		const char *filename;
+		std::string filename;
 	} YYLTYPE;
 	#define YYLTYPE_IS_DECLARED 1
 	#define YYLTYPE_IS_TRIVIAL 1
@@ -34,11 +34,11 @@
 %code{
 	#include "../src/symbolTable.h"
 
-	SymbolTable global_symbol_table;
+	SymbolTable global_symbol_table(NULL, "global");
 	SymbolTable* cur_symbol_table = &global_symbol_table;
 	Program* root;
 }
- 
+
 /* Listing the different types of the terminals and non-terminals */
 %union 
 {
@@ -86,7 +86,7 @@
 /* data types */
 %token CONST VAR
 %token <id> BOOL FLOAT INT STRING VOID 
-%token <id> POINT PATH IMAGE RECTANGLE CIRCLE ELLIPSE POLYGON CURVE FUNC PI COLOUR
+%token <id> POINT PATH IMAGE RECTANGLE CIRCLE ELLIPSE POLYGON CURVE PI COLOUR
 /* Literals */
 %token <valuei> INTEGER_LITERAL
 %token <valuef> FLOAT_LITERAL
@@ -152,23 +152,22 @@ driver_definition
  * Declarations
  *----------------------------------------------------------------------*/
  type
-	: INT   		{$$ = new Identifier(*($1));}
-	| FLOAT   		{$$ = new Identifier(*($1));}
-	| STRING   		{$$ = new Identifier(*($1));}
-	| BOOL   		{$$ = new Identifier(*($1));}
-	| VOID		   	{$$ = new Identifier(*($1));}
+	: INT   		{$$ = new Identifier("int");}
+	| FLOAT   		{$$ = new Identifier("float");}
+	| STRING   		{$$ = new Identifier("string");}
+	| BOOL   		{$$ = new Identifier("bool");}
+	| VOID		   	{$$ = new Identifier("void");}
+	| POINT 		{$$ = new Identifier("Point");}
+	| PATH			{$$ = new Identifier("Path");}
+	| IMAGE			{$$ = new Identifier("Image");}
+	| RECTANGLE 	{$$ = new Identifier("Rectangle");}
+	| CIRCLE		{$$ = new Identifier("Circle");}
+	| ELLIPSE		{$$ = new Identifier("Ellipse");}
+	| POLYGON		{$$ = new Identifier("Polygon");}
+	| CURVE			{$$ = new Identifier("Curve");}
+	| PI			{$$ = new Identifier("Pi");}
+	| COLOUR		{$$ = new Identifier("Colour");}
 	| IDENTIFIER   	{$$ = new Identifier(*($1));}
-	| POINT 		{$$ = new Identifier(*($1));}
-	| PATH			{$$ = new Identifier(*($1));}
-	| IMAGE			{$$ = new Identifier(*($1));}
-	| RECTANGLE 	{$$ = new Identifier(*($1));}
-	| CIRCLE		{$$ = new Identifier(*($1));}
-	| ELLIPSE		{$$ = new Identifier(*($1));}
-	| POLYGON		{$$ = new Identifier(*($1));}
-	| CURVE			{$$ = new Identifier(*($1));}
-	| FUNC			{$$ = new Identifier(*($1));}
-	| PI			{$$ = new Identifier(*($1));}
-	| COLOUR		{$$ = new Identifier(*($1));}
 	;
 
 literal
@@ -385,6 +384,6 @@ int main(int argc, char **argv){
 }
 
 void yyerror(const char*s){
-	fprintf(stdout, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename, yylloc.first_line, yylloc.first_column, s);
-	fprintf(stderr, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename, yylloc.first_line, yylloc.first_column, s);
+	fprintf(stdout, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename.c_str(), yylloc.first_line, yylloc.first_column, s);
+	fprintf(stderr, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename.c_str(), yylloc.first_line, yylloc.first_column, s);
 }

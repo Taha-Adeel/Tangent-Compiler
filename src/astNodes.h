@@ -169,7 +169,6 @@ protected:
     string id;  ///name the identifier
 
 public:
-    Identifier(char* name):id(string(name)){};
     Identifier(string name):id(name){};
     void print();
     string ret_id();
