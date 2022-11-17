@@ -53,10 +53,6 @@ void FloatLiteral::print()
     std::cout << get<float>(value);
     std::cout <<"\n}\n";
 }
-void StringLiteral::print()
-{
-    // return ConstantFP::get(*TheContext, APFloat(get<float>(value)));
-}
 
 void StringLiteral::print()
 {
@@ -906,10 +902,6 @@ void BreakStatement::print()
 void ConstructorDeclaration::print()
 {
 
-}
-void IfStatement::print()
-{
-    
 }
 
 /*------------------------------------------------------------------------

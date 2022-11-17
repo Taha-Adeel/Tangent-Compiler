@@ -150,6 +150,7 @@ static const char *const yytname[] =
     "'('", "')'", "'['", "']'", "SCOPE_ACCESS", "';'", "'{'", "'}'",
 };
 YYLTYPE yylloc;
+YYSTYPE yylval;
 
 void print_tokens_matched(){
     int token;

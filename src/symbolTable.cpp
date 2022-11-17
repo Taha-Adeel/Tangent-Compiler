@@ -41,6 +41,7 @@ SymbolTable::SymbolTable(SymbolTable* parent, std::string _namespace_name)
 	if(namespace_name == "")
 		namespace_name = parent->namespace_name + "::" + std::to_string(child_symbol_tables.size());
 }
+std::string SymbolTable::currentVariableType = "";
 
 /**
  * @brief Adds a new symbol to the symbol table when it is declared

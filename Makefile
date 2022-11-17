@@ -29,7 +29,7 @@ lexer: $(BUILD_DIR)/lex.yy.cc $(BUILD_DIR)/parser.hh
 	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $< $(LLVM_INC_DIR:%=-I%) -D STANDALONE_LEXER
 
 # Build an executable to parse the input tangent code files according to the grammar rules
-parser: $(BUILD_DIR)/parser.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp $(SRC_DIR)/symbolTable.cpp $(SRC_DIR)/codeGen.cpp
+parser: $(BUILD_DIR)/parser.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp $(SRC_DIR)/symbolTable.cpp
 	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $^ --debug $(LLVM_INC_DIR:%=-I%)
 
 # Generate HTML documentation describing our grammar and the DFA representing the parser.
