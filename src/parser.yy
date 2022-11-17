@@ -58,8 +58,8 @@
 	ACCESS_SPEC *access_spec;
 	FamilyMembers *class_member;
 	list<FamilyMembers*> *class_members;
-	Argument* argument;
-	list<Argument*>* arg_list;
+	Arg* argument;
+	list<Arg*>* arg_list;
 }
 
 /* Declaring types to the different non-terminals */
@@ -221,14 +221,14 @@ function_declaration
 	;
 
 args_list
-	: arg				{$$ = new list <Argument*>(); $$->push_back($1);}
+	: arg				{$$ = new list <Arg*>(); $$->push_back($1);}
 	| args_list ',' arg	{$$ = $1; $$->push_back($3);}
 	;
 
 arg
-	: type IDENTIFIER		{$$ = new Argument(*($1), Identifier(*($2)));}
-	| VAR type IDENTIFIER	{$$ = new Argument(*($2), Identifier(*($3)));}
-	| CONST type IDENTIFIER	{$$ = new Argument(*($2), Identifier(*($3)));}
+	: type IDENTIFIER		{$$ = new Arg(*($1), Identifier(*($2)));}
+	| VAR type IDENTIFIER	{$$ = new Arg(*($2), Identifier(*($3)));}
+	| CONST type IDENTIFIER	{$$ = new Arg(*($2), Identifier(*($3)));}
 	;
 
 /*------------------------------------------------------------------------

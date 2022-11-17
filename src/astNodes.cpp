@@ -24,11 +24,12 @@
 #include "llvm/Transforms/Utils/IntegerDivision.h"
 
 using namespace std;
-// using namespace llvm;
+using namespace llvm;
 
 static std::unique_ptr<LLVMContext> TheContext;
 static std::unique_ptr<Module> TheModule;
 static std::unique_ptr<IRBuilder<>> Builder;
+
 ////////////////////////////////////////////////////
 //            AST FUNCTION DEFINITION           ////
 ////////////////////////////////////////////////////
@@ -77,19 +78,19 @@ void FloatLiteral::print()
     std::cout << get<float>(value);
     std::cout <<"\n}\n";
 }
-void StringLiterul::print()
+void ::StringLiteral::print()
 {
-    return ConstantFP::get(*TheContext, APFloat(get<float>(value)));
+    // return ConstantFP::get(*TheContext, APFloat(get<float>(value)));
 }
 
-void StringLiterul::print()
+void ::StringLiteral::print()
 {
     cout<<"string literal\n{";
     cout << get<string>(value);
     cout<<"\n}\n";
 }
 
-Value *StringLiterul::codegen()
+Value *::StringLiteral::codegen()
 {
     return ConstantDataArray::getString(*TheContext, get<string>(value), true);
 }
@@ -888,11 +889,11 @@ datatype MemberAccess::evaluate()
 }
 
 
-void Argument::print()
+void Arg::print()
 {
 
 }
-datatype Argument::evaluate()
+datatype Arg::evaluate()
 {
     return value;
 }
@@ -957,7 +958,7 @@ datatype BooleanLiteral::evaluate()
     return value;
 }
 
-datatype StringLiterul::evaluate()
+datatype ::StringLiteral::evaluate()
 {
     return value;
 }

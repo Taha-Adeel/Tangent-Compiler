@@ -10,37 +10,13 @@ L               [a-zA-Z]
     #include <stdlib.h>
     #include <string.h>
     #include "../src/astNodes.h"
-    #include "parser.tab.hh"
+    #include "parser.hh"
 
     #define YY_USER_ACTION update_locations(); // Called before each token
     void comment();
     void update_locations();
 
     extern YYLTYPE yylloc;
-
-    #symbol table construction
-    struct symbol {		/* a word */
-    struct ref *reflist;
-    char *name;
-  };
-
-  struct ref {
-    struct ref *next;
-    char *filename;
-    int flags;
-    int lineno;
-  };
-
-  /* simple symtab of fixed size */
-  #define NHASH 9997
-  struct symbol symtab[NHASH];
-
-  struct symbol *lookup(char*);
-  void addref(int, char*, char*, int);
-
-  char *curfilename;		/* name of current input file */
-
-    
 %}
 
 %%
