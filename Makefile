@@ -5,8 +5,8 @@ LLVM_INC_DIR = $(wildcard /usr/include/llvm*)
 SRC_DIR := ./src
 BUILD_DIR := ./build
 
-.PHONY : all compiler lexer parser parser_documentation tests lexer_tests lexer_correct_codes lexer_incorrect_codes \
-	parser_tests parser_correct_codes parser_incorrect_codes clean
+.PHONY : all compiler lexer parser parser_documentation tests lexer_tests lexer_correct_codes_test lexer_incorrect_codes_test \
+	parser_tests parser_correct_codes_test parser_incorrect_codes_test clean
 
 # Default target
 all: compiler

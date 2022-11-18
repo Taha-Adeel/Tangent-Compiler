@@ -88,17 +88,27 @@ private:
 	void addInbuiltFunctions();
 	void addInbuiltConstants();
 
-	void createObjectSymbolTable(std::string object_name, std::string type_name);
+	SymbolTable* addPrimitiveVariable(std::string name, std::string type_name, YYLTYPE* location);
+	SymbolTable* addObjectVariable(std::string name, std::string type_name, YYLTYPE* location);
+	SymbolTable* addFamily(std::string name, YYLTYPE* location);
+	SymbolTable* addFunction(std::string name, std::string type_name, YYLTYPE* location);
 
 public:
 	SymbolTable(SymbolTable* parent = NULL, std::string namespace_name = "");
 	~SymbolTable(){/*TODO: delete all child symbol tables*/};
 
-	void addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type = KIND::UNKNOWN);
+	SymbolTable* addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type = KIND::UNKNOWN);
 	Symbol* lookUp(std::string name);
 
-	static void setCurrentVariableType(std::string type_name) {currentVariableType = type_name;};
-	static std::string getCurrentVariableType() { return currentVariableType; };
+	SymbolTable* startNewScope(){auto new_scope = new SymbolTable(this); return new_scope;};
+	SymbolTable* endScope(){return parent;};
+	SymbolTable* returnFromFunction(){return parent;};
+
+	std::string getNamespaceName(){return namespace_name;}
+	SymbolTable* getParent(){return parent;}
+	static void setCurrentVariableType(std::string type_name) {currentVariableType = type_name;}
+	static std::string getCurrentVariableType() { return currentVariableType; }
+
 	void printSymbolTable(std::ostream& f, int indentation = 0);
 };
 

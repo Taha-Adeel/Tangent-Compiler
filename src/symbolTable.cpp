@@ -38,7 +38,7 @@ std::ostream& operator << (std::ostream& os, const KIND& type){
  * @return std::ostream& 
  */
 std::ostream& operator << (std::ostream& out, const Symbol& symbol){
-	out << "Symbol: " << symbol.name << " Type Name: " << symbol.type_name << " Location: " << (symbol.location);
+	return out << symbol.name << " : " << symbol.type_name << " (" << symbol.type << ") " << symbol.location;
 	return out;
 }
 
@@ -63,8 +63,11 @@ SymbolTable::SymbolTable(SymbolTable* parent, std::string _namespace_name)
 		namespace_name = "global";
 		addInbuiltSymbols();
 	}
-	if(namespace_name == "")
+	if(namespace_name == ""){
 		namespace_name = parent->namespace_name + "::" + std::to_string(child_symbol_tables.size());
+	}
+	if(parent != NULL)
+		parent->child_symbol_tables[namespace_name] = this;
 }
 std::string SymbolTable::currentVariableType = "";
 
@@ -123,7 +126,33 @@ void SymbolTable::addInbuiltFunctions(){
  * 
  */
 void SymbolTable::addInbuiltConstants(){
-	addSymbol("Pi", "float", NULL, KIND::PRIMITIVE_VAR);
+	// addSymbol("Pi", "float", NULL, KIND::PRIMITIVE_VAR);
+}
+
+
+SymbolTable* SymbolTable::addPrimitiveVariable(std::string identifier_name, std::string type_name, YYLTYPE* location){
+	symbol_table[identifier_name] = Symbol(identifier_name, KIND::PRIMITIVE_VAR, type_name, location);
+	return this;
+}
+
+SymbolTable* SymbolTable::addObjectVariable(std::string identifier_name, std::string type_name, YYLTYPE* location){
+	symbol_table[identifier_name] = Symbol(identifier_name, KIND::OBJECT_VAR, type_name, location);
+	// TODO: Create a data entry for the object variable
+	return this;
+}
+
+SymbolTable* SymbolTable::addFunction(std::string identifier_name, std::string type_name, YYLTYPE* location){
+	symbol_table[identifier_name] = Symbol(identifier_name, KIND::FUNCTION, type_name, location);
+	SymbolTable* functionSymbolTable = new SymbolTable(this, identifier_name);
+
+	return functionSymbolTable;
+}
+
+SymbolTable* SymbolTable::addFamily(std::string identifier_name, YYLTYPE* location){
+	symbol_table[identifier_name] = Symbol(identifier_name, KIND::FAMILY, identifier_name, location);
+	SymbolTable* familySymbolTable = new SymbolTable(this, identifier_name);
+
+	return familySymbolTable;
 }
 
 /**
@@ -133,39 +162,47 @@ void SymbolTable::addInbuiltConstants(){
  * @param type_name 
  * @param location 
  * @param type 
+ * 
+ * @return The current symbol table 
  */
-void SymbolTable::addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type){
+SymbolTable* SymbolTable::addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type){
 	if(location != NULL)
-		std::cout << "Adding symbol: " << identifier_name << " of type: " << type_name << " at location: " << location << std::endl;
+		std::cerr << "Adding symbol: " << identifier_name << " of type: " << type_name << " at location: " << location << " in namespace " << namespace_name << std::endl;
 	if(type == KIND::UNKNOWN){
 		Symbol* type_name_symbol = lookUp(type_name);
-		if(type_name_symbol == NULL){
+		if(type_name_symbol == NULL)
 			yyerror(std::string("Error: Type name not found: " + type_name).c_str());
-			type_name = "error-type";
-		}
 		else switch(type_name_symbol->getType()){
 			case KIND::INBUILT_PRIMITIVE_TYPE: 
-				type = KIND::PRIMITIVE_VAR; 
-				break;
+				type = KIND::PRIMITIVE_VAR; break;
 			case KIND::INBUILT_FAMILY:
 			case KIND::FAMILY:
-				type = KIND::OBJECT_VAR;
-				createObjectSymbolTable(identifier_name, type_name);
-				break;
+				type = KIND::OBJECT_VAR; break;
 			default: 
 				yyerror(std::string("Error: Type name not found: " + type_name).c_str());
-				type_name = "error-type";
-				break;
 		}
 	}
-	// TODO: Create new symbol table for functions
 
 	if(lookUp(identifier_name) != NULL){
 		std::stringstream error;
 		error << "Error: Redeclaration of identifier \"" << identifier_name << "\". First defined at " << lookUp(identifier_name)->getLocation() << std::endl;
 		yyerror(error.str().c_str());
 	}
-	symbol_table[identifier_name] = Symbol(identifier_name, type, type_name, location);
+
+	switch(type){
+		case KIND::PRIMITIVE_VAR: return addPrimitiveVariable(identifier_name, type_name, location);
+		case KIND::OBJECT_VAR: return addObjectVariable(identifier_name, type_name, location);
+		case KIND::FUNCTION: return addFunction(identifier_name, type_name, location);
+		case KIND::FAMILY: return addFamily(identifier_name, location);
+		case KIND::INBUILT_PRIMITIVE_TYPE: 
+		case KIND::INBUILT_FAMILY:
+		case KIND::INBUILT_FUNCTION: symbol_table[identifier_name] = Symbol(identifier_name, type, type_name, location); return this;
+		default:
+			yyerror(std::string("Error: Unknown type: " + type_name).c_str());
+	}
+	// TODO: Create new symbol table for functions
+
+	return this;
 }
 
 /**
@@ -184,30 +221,13 @@ Symbol* SymbolTable::lookUp(std::string name){
 }
 
 /**
- * @brief Creates a new Symbol Table for an object and adds it to the child symbol tables
- * 
- * @param object_name object_name
- * @param type_name class/family name
- */
-void SymbolTable::createObjectSymbolTable(std::string object_name, std::string type_name){
-	Symbol* type_name_symbol = lookUp(type_name);
-	if(type_name_symbol == NULL)
-		yyerror(std::string("Type name not found: " + type_name).c_str());
-	if(type_name_symbol->getType() != KIND::FAMILY || type_name_symbol->getType() != KIND::INBUILT_FAMILY)
-		yyerror(std::string("Type name is not a typename: " + type_name).c_str());
-	SymbolTable* object_symbol_table = new SymbolTable(this, object_name);
-	// TODO: Add all the members of the class/family to the symbol table
-	child_symbol_tables[object_name] = object_symbol_table;
-}
-
-/**
  * @brief Utility function to display the symbol table
  * Prints each symbol table with its namespace name, followed by its child symbol tables
  */
 void SymbolTable::printSymbolTable(std::ostream& out_file, int indentation){
 	for(int i = 0; i < indentation; i++)
 		out_file << "\t";
-	out_file << "Symbol Table: " << namespace_name << '\n';
+	out_file << "\nSymbol Table: " << namespace_name << '\n';
 	for(auto& [name, symbol] : symbol_table){
 		if(symbol.getType() == KIND::INBUILT_FUNCTION || symbol.getType() == KIND::INBUILT_FAMILY || symbol.getType() == KIND::INBUILT_PRIMITIVE_TYPE)
 			continue;
