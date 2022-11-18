@@ -62,6 +62,7 @@ public:
 	std::string getName() { return name; }
 	KIND getKind() { return type; }
 	std::string getTypeName() { return type_name; }
+	void addArgTypeNames(std::string arg_types) { if(type == KIND::FUNCTION) type_name += "(" + arg_types + ")"; }
 	YYLTYPE* getLocation() { return location; }
 
 	friend std::ostream& operator << (std::ostream& out, const Symbol& symbol);
@@ -79,9 +80,11 @@ private:
 	std::map<std::string, Symbol> symbol_table;
 	std::map<std::string, SymbolTable*> child_symbol_tables;
 	SymbolTable* parent = NULL;
-	
+
+public:
 	static std::string currentVariableType;
 
+private:
 	void addInbuiltSymbols();
 	void addInbuiltPrimitiveTypenames();
 	void addInbuiltFamilyTypenames();
@@ -100,14 +103,12 @@ public:
 	SymbolTable* addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type = KIND::UNKNOWN);
 	Symbol* lookUp(std::string name);
 
-	SymbolTable* startNewScope(){auto new_scope = new SymbolTable(this); return new_scope;};
+	SymbolTable* startNewScope(std::string scope_name = ""){auto new_scope = new SymbolTable(this, scope_name); return new_scope;};
 	SymbolTable* endScope(){return parent;};
 	SymbolTable* returnFromFunction(){return parent;};
 
 	std::string getNamespaceName(){return namespace_name;}
 	SymbolTable* getParent(){return parent;}
-	static void setCurrentVariableType(std::string type_name) {currentVariableType = type_name;}
-	static std::string getCurrentVariableType() { return currentVariableType; }
 
 	void printSymbolTable(std::ostream& f, int indentation = 0);
 };

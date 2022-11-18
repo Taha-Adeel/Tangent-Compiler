@@ -138,12 +138,10 @@ SymbolTable* SymbolTable::addFamily(std::string identifier_name, YYLTYPE* locati
  * @return The current symbol table 
  */
 SymbolTable* SymbolTable::addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type){
-	if(location != NULL)
-		std::cerr << "Adding symbol: " << identifier_name << " of type: " << type_name << " at location: " << location << " in namespace " << namespace_name << std::endl;
 	if(type == KIND::UNKNOWN){
 		Symbol* type_name_symbol = lookUp(type_name);
 		if(type_name_symbol == NULL)
-			yyerror(std::string("Error: Type name not found: " + type_name).c_str());
+			yyerror(std::string("Semantic Error: Typename not declared before: " + type_name).c_str());
 		else switch(type_name_symbol->getKind()){
 			case KIND::INBUILT_PRIMITIVE_TYPE: 
 				type = KIND::PRIMITIVE_VAR; break;
@@ -151,13 +149,13 @@ SymbolTable* SymbolTable::addSymbol(std::string identifier_name, std::string typ
 			case KIND::FAMILY:
 				type = KIND::OBJECT_VAR; break;
 			default: 
-				yyerror(std::string("Error: Type name not found: " + type_name).c_str());
+				yyerror(std::string("Semantic Error: Invalid typename: " + type_name).c_str());
 		}
 	}
 
 	if(lookUp(identifier_name) != NULL){
 		std::stringstream error;
-		error << "Error: Redeclaration of identifier \"" << identifier_name << "\". First defined at " << lookUp(identifier_name)->getLocation() << std::endl;
+		error << "Semantic Error: Redeclaration of identifier \"" << identifier_name << "\". First defined at " << lookUp(identifier_name)->getLocation() << std::endl;
 		yyerror(error.str().c_str());
 	}
 
@@ -170,7 +168,7 @@ SymbolTable* SymbolTable::addSymbol(std::string identifier_name, std::string typ
 		case KIND::INBUILT_FAMILY:
 		case KIND::INBUILT_FUNCTION: symbol_table[identifier_name] = Symbol(identifier_name, type, type_name, location); return this;
 		default:
-			yyerror(std::string("Error: Unknown type: " + type_name).c_str());
+			yyerror(std::string("Semantic Error: Unknown type: " + type_name).c_str());
 	}
 	// TODO: Create new symbol table for functions
 

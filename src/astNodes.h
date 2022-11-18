@@ -222,6 +222,7 @@ protected:
     Identifier id;
 public:
     Arg(Identifier t_, Identifier id_): t(t_), id(id_){}
+    string getType(){return t.ret_id();};
     void print();
     datatype evaluate();
 };

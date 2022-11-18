@@ -151,7 +151,8 @@ external_declaration
 	;
 
 driver_definition
-	: DRIVER '(' ')' compound_statement {$$ = new DriverDefinition($4);}
+	: DRIVER 							{cur_symbol_table = cur_symbol_table->addSymbol("driver", "void->()", &@1, KIND::FUNCTION);} 
+		'(' ')' compound_statement 		{$$ = new DriverDefinition($5); cur_symbol_table = cur_symbol_table->returnFromFunction();}
 	;
 
 
@@ -185,9 +186,9 @@ literal
 	;
 
 variable_declaration
-	: VAR type { SymbolTable::setCurrentVariableType($2->ret_id()); }
+	: VAR type { SymbolTable::currentVariableType = $2->ret_id(); }
 	  		new_variable_list ';' { $$ = new VariableDeclaration(*($2), *($4)); }
-	| CONST type { SymbolTable::setCurrentVariableType($2->ret_id()); } 
+	| CONST type { SymbolTable::currentVariableType = $2->ret_id(); } 
 	  		new_variable_list ';' { $$ = new VariableDeclaration(*($2), *($4)); }
 	;
 
@@ -197,10 +198,29 @@ new_variable_list
 	;
 
 new_variable
-	: IDENTIFIER 							{cur_symbol_table->addSymbol(*$1, SymbolTable::getCurrentVariableType(), &@1); $$ = new Identifier(*($1));} 
-	| IDENTIFIER ASSIGN expression			{cur_symbol_table->addSymbol(*$1, SymbolTable::getCurrentVariableType(), &@1); Variable* temp = new Identifier(*($1)); $$ = new AssignmentExp(temp, $3);}
-	| IDENTIFIER '(' ')'					{cur_symbol_table->addSymbol(*$1, SymbolTable::getCurrentVariableType(), &@1); Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp);}
-	| IDENTIFIER '(' expression_list ')'	{cur_symbol_table->addSymbol(*$1, SymbolTable::getCurrentVariableType(), &@1); Variable* temp = new Identifier(*($1)); $$ = new FunctionCall(temp, *($3));}
+	: IDENTIFIER 							
+			{
+				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
+				$$ = new Identifier(*($1));
+			}
+	| IDENTIFIER ASSIGN expression			
+			{
+				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
+				Variable* temp = new Identifier(*($1)); 
+				$$ = new AssignmentExp(temp, $3);
+			}
+	| IDENTIFIER '(' ')'					
+			{
+				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
+				Variable* temp = new Identifier(*($1)); 
+				$$ = new FunctionCall(temp);
+			}
+	| IDENTIFIER '(' expression_list ')'	
+			{
+				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
+				Variable* temp = new Identifier(*($1)); 
+				$$ = new FunctionCall(temp, *($3));
+			}
 	;
 
 function_declaration
@@ -216,13 +236,19 @@ function_declaration
 			}
 	| type IDENTIFIER '(' 
 			{
-				cur_symbol_table = cur_symbol_table->addSymbol(*$2, $1->ret_id()+"->(", &@1, KIND::FUNCTION);
+				cur_symbol_table = cur_symbol_table->addSymbol(*$2, $1->ret_id()+"->", &@1, KIND::FUNCTION);
 			} 
-	  args_list ')' compound_statement	
+	  args_list ')'
+	  		{
+				std::string arg_types = "";
+				for(auto arg: *($5)) arg_types += arg->getType() + ",";
+				cur_symbol_table->lookUp(*$2)->addArgTypeNames(arg_types.substr(0, arg_types.size()-1));
+			}
+	  compound_statement	
 	  		{
 				cur_symbol_table = cur_symbol_table->returnFromFunction();
 				auto temp = new Identifier(*($2)); 
-				$$ = new FunctionDeclaration(temp, *($1), $7, *($5));
+				$$ = new FunctionDeclaration(temp, *($1), $8, *($5));
 			}
 	;
 
@@ -235,19 +261,16 @@ arg
 	: type IDENTIFIER
 		{
 			cur_symbol_table->addSymbol(*$2, $1->ret_id(), &@1); 
-			// cur_symbol_table->parent->typename += $1->ret_id; 
 			$$ = new Arg(*($1), Identifier(*($2)));
 		}
 	| VAR type IDENTIFIER	
 		{
 			cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@1); 
-			// cur_symbol_table->parent->typename += $2->ret_id; 
 			$$ = new Arg(*($2), Identifier(*($3)));
 		}
 	| CONST type IDENTIFIER	
 		{
 			cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@1); 
-			// cur_symbol_table->parent->typename += $2->ret_id; 
 			$$ = new Arg(*($2), Identifier(*($3)));
 		}
 	;
