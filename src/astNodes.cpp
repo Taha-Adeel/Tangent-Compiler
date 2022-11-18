@@ -20,9 +20,11 @@ TYPE Expression::get_type()
     return TYPE{(int)value.index()};
 }
 
+extern int yyerror(const char *s);
 datatype throwError()
 {
     datatype e = new error();
+    yyerror("Semantic Error: Type mismatch in eval function");
     return e;
 }
 

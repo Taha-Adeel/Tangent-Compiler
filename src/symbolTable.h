@@ -8,7 +8,7 @@
 #include <variant>
 #include <optional>
 
-enum class TYPE {INT, FLOAT, STRING, BOOL, VOID, ERROR, FAMILY, POINT, PATH, IMAGE, RECTANGLE, CIRCLE, ELLIPSE, POLYGON, CURVE, PI, COLOUR}; 
+enum class TYPE {INT, FLOAT, STRING, BOOL, FAMILY, ERROR}; 
 class Family
 {
     std::string name;
@@ -52,6 +52,7 @@ private:
 	KIND type;
 	std::string type_name;
 	YYLTYPE* location;
+	// TODO: Add another field to store the value of each symbol in the symbol table
 	// TODO: Add variables to represent var/const and public/private properties for the relevant symbols
 
 public:
