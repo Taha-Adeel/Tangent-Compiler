@@ -204,8 +204,26 @@ new_variable
 	;
 
 function_declaration
-	: type IDENTIFIER '(' ')' compound_statement			{auto temp = new Identifier(*($2)); $$ = new FunctionDeclaration(temp, *($1), $5);}
-	| type IDENTIFIER '(' args_list ')' compound_statement	{auto temp = new Identifier(*($2)); $$ = new FunctionDeclaration(temp, *($1), $6, *($4));}
+	: type IDENTIFIER '(' 
+			{ 
+				cur_symbol_table = cur_symbol_table->addSymbol(*$2, $1->ret_id()+"->()", &@1, KIND::FUNCTION); 
+			}
+	  ')' compound_statement	
+			{ 
+				cur_symbol_table = cur_symbol_table->returnFromFunction(); 
+				auto temp = new Identifier(*($2)); 
+				$$ = new FunctionDeclaration(temp, *($1), $6); 
+			}
+	| type IDENTIFIER '(' 
+			{
+				cur_symbol_table = cur_symbol_table->addSymbol(*$2, $1->ret_id()+"->(", &@1, KIND::FUNCTION);
+			} 
+	  args_list ')' compound_statement	
+	  		{
+				cur_symbol_table = cur_symbol_table->returnFromFunction();
+				auto temp = new Identifier(*($2)); 
+				$$ = new FunctionDeclaration(temp, *($1), $7, *($5));
+			}
 	;
 
 args_list
@@ -214,9 +232,24 @@ args_list
 	;
 
 arg
-	: type IDENTIFIER		{$$ = new Arg(*($1), Identifier(*($2)));}
-	| VAR type IDENTIFIER	{$$ = new Arg(*($2), Identifier(*($3)));}
-	| CONST type IDENTIFIER	{$$ = new Arg(*($2), Identifier(*($3)));}
+	: type IDENTIFIER
+		{
+			cur_symbol_table->addSymbol(*$2, $1->ret_id(), &@1); 
+			// cur_symbol_table->parent->typename += $1->ret_id; 
+			$$ = new Arg(*($1), Identifier(*($2)));
+		}
+	| VAR type IDENTIFIER	
+		{
+			cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@1); 
+			// cur_symbol_table->parent->typename += $2->ret_id; 
+			$$ = new Arg(*($2), Identifier(*($3)));
+		}
+	| CONST type IDENTIFIER	
+		{
+			cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@1); 
+			// cur_symbol_table->parent->typename += $2->ret_id; 
+			$$ = new Arg(*($2), Identifier(*($3)));
+		}
 	;
 
 /*------------------------------------------------------------------------
@@ -318,7 +351,9 @@ statement
 
 compound_statement
 	: '{' '}'					{$$ = new CompoundStatement(list<Statement*>());}
-	| '{' statement_list '}'	{$$ = new CompoundStatement(*($2));}
+	| '{' {cur_symbol_table = cur_symbol_table->startNewScope();} 
+			statement_list 
+	  '}' {cur_symbol_table = cur_symbol_table->endScope(); $$ = new CompoundStatement(*($3));}
 	;
 
 statement_list
