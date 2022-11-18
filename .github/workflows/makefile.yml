@@ -57,3 +57,15 @@ jobs:
     - name: Run Parser Tests with syntactically incorrect testcases
       run: |
         make parser_incorrect_codes_test
+
+    - name: Compile the semantic analyzer
+      run: |
+        make parser_with_semantic_analysis
+        
+    - name: Run Semantic Analysis tests with semantically correct codes
+      run: |
+        make semn_correct_codes_test
+
+    - name: Run Semantic Analysis tests with semantically incorrect codes
+      run: |
+        make semn_incorrect_codes_test
