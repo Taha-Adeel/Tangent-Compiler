@@ -1,5 +1,6 @@
 #include "symbolTable.h"
 #include <sstream>
+#include <iomanip>
 
 extern void yyerror(const char* s);
 typedef struct YYLTYPE
@@ -11,36 +12,6 @@ typedef struct YYLTYPE
 	const char *filename;
 } YYLTYPE;
 
-std::ostream& operator << (std::ostream& os, const YYLTYPE* loc){
-	if(loc == NULL) return os << "Inbuilt language defined symbol";
-	return os << "line " << loc->first_line << "-(" << loc->first_column << ".." << loc->last_column << ")";
-}
-
-std::ostream& operator << (std::ostream& os, const KIND& type){
-	switch(type){
-		case KIND::PRIMITIVE_VAR: return os << "Primitive variable";
-		case KIND::OBJECT_VAR: return os << "Object variable";
-		case KIND::FAMILY: return os << "Family typename";
-		case KIND::FUNCTION: return os << "Function";
-		case KIND::INBUILT_PRIMITIVE_TYPE: return os << "Inbuilt primitive typename";
-		case KIND::INBUILT_FAMILY: return os << "Inbuilt family typename";
-		case KIND::INBUILT_FUNCTION: return os << "Inbuilt function";
-		case KIND::UNKNOWN: 
-		default: return os << "Unknown";
-	}
-}
-
-/**
- * @brief Overloading << to print a symbol
- * 
- * @param out 
- * @param symbol 
- * @return std::ostream& 
- */
-std::ostream& operator << (std::ostream& out, const Symbol& symbol){
-	return out << symbol.name << " : " << symbol.type_name << " (" << symbol.type << ") " << symbol.location;
-	return out;
-}
 
 /// @brief Constructor and destructor for Symbol class
 Symbol::Symbol(std::string name, KIND type, std::string type_name, YYLTYPE* location)
@@ -49,6 +20,7 @@ Symbol::Symbol(std::string name, KIND type, std::string type_name, YYLTYPE* loca
 	if(location != NULL) 
 		this->location = new YYLTYPE(*location);
 }
+
 
 /**
  * @brief Construct a new Symbol Table::Symbol Table object
@@ -172,7 +144,7 @@ SymbolTable* SymbolTable::addSymbol(std::string identifier_name, std::string typ
 		Symbol* type_name_symbol = lookUp(type_name);
 		if(type_name_symbol == NULL)
 			yyerror(std::string("Error: Type name not found: " + type_name).c_str());
-		else switch(type_name_symbol->getType()){
+		else switch(type_name_symbol->getKind()){
 			case KIND::INBUILT_PRIMITIVE_TYPE: 
 				type = KIND::PRIMITIVE_VAR; break;
 			case KIND::INBUILT_FAMILY:
@@ -220,20 +192,68 @@ Symbol* SymbolTable::lookUp(std::string name){
 		return NULL;
 }
 
+/// @brief Overloaded insertion operator to print location of the symbol
+std::ostream& operator << (std::ostream& os, const YYLTYPE* loc){
+	if(loc == NULL) return os << "Language defined symbol";
+	std::stringstream ss; ss << "line " << loc->first_line << "-(" << loc->first_column << ".." << loc->last_column << ")";
+	return os << ss.str();
+}
+
+/// @brief Overloaded insertion operator to print the symbol kind
+std::ostream& operator << (std::ostream& os, const KIND& type){
+	switch(type){
+		case KIND::PRIMITIVE_VAR: return os << "Primitive variable";
+		case KIND::OBJECT_VAR: return os << "Object variable";
+		case KIND::FAMILY: return os << "Family typename";
+		case KIND::FUNCTION: return os << "Function";
+		case KIND::INBUILT_PRIMITIVE_TYPE: return os << "Inbuilt primitive typename";
+		case KIND::INBUILT_FAMILY: return os << "Inbuilt family typename";
+		case KIND::INBUILT_FUNCTION: return os << "Inbuilt function";
+		case KIND::UNKNOWN: 
+		default: return os << "Unknown";
+	}
+}
+
+int w1 = 15, w2 = 15, w3 = 25, w4 = 25;
+/// @brief Overloaded insertion operator to print the symbol as a row in a table
+std::ostream& operator << (std::ostream& out, Symbol& symbol){
+	return out << "|\t" << std::setw(w1) << std::left << symbol.getName()
+				<< "|\t" << std::setw(w2) << std::left << symbol.getTypeName()
+				<< "|\t" << std::setw(w3) << std::left << symbol.getKind()
+				<< "|\t" << std::setw(w4) << std::left << symbol.getLocation()
+				<< "|\n";
+}
+
+void printHeader(std::ostream& out, int indentation){
+	for(int i = 0; i < indentation; i++) out << '\t';
+	out << std::string(w1+w2+w3+w4+18, '-') << '\n';
+	for(int i = 0; i < indentation; i++) out << '\t';
+	out << "|\t" << std::setw(w1) << std::left << "Name"
+				<< "|\t" << std::setw(w2) << std::left << "Typename"
+				<< "|\t" << std::setw(w3) << std::left << "Kind"
+				<< "|\t" << std::setw(w4) << std::left << "Location"
+				<< "|\n";
+	for(int i = 0; i < indentation; i++) out << '\t';
+	out << std::string(w1+w2+w3+w4+18, '-') << '\n';
+}
+
 /**
  * @brief Utility function to display the symbol table
  * Prints each symbol table with its namespace name, followed by its child symbol tables
  */
 void SymbolTable::printSymbolTable(std::ostream& out_file, int indentation){
-	for(int i = 0; i < indentation; i++)
-		out_file << "\t";
-	out_file << "\nSymbol Table: " << namespace_name << '\n';
+	out_file << '\n';
+	for(int i = 0; i < indentation-1; i++)
+		out_file << '\t';
+	if(indentation) out_file << "--->";
+	out_file << "(" << namespace_name << ")\n";
+	if(symbol_table.size())
+		printHeader(out_file, indentation);
 	for(auto& [name, symbol] : symbol_table){
-		if(symbol.getType() == KIND::INBUILT_FUNCTION || symbol.getType() == KIND::INBUILT_FAMILY || symbol.getType() == KIND::INBUILT_PRIMITIVE_TYPE)
-			continue;
-		for(int i = 0; i < indentation; i++)
-			out_file << "\t";
-		out_file << symbol << '\n';
+		for(int i = 0; i < indentation; i++) out_file << '\t';
+		out_file << symbol;
+		for(int i = 0; i < indentation; i++) out_file << '\t';
+		out_file << std::string(w1+w2+w3+w4+18, '-') << '\n';
 	}
 	for(auto child_symbol_table : child_symbol_tables){
 		child_symbol_table.second->printSymbolTable(out_file, indentation + 1);

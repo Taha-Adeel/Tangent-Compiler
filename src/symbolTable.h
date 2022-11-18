@@ -60,7 +60,7 @@ public:
 	~Symbol(){/*TODO: Delete location*/};
 	
 	std::string getName() { return name; }
-	KIND getType() { return type; }
+	KIND getKind() { return type; }
 	std::string getTypeName() { return type_name; }
 	YYLTYPE* getLocation() { return location; }
 
