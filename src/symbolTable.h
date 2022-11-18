@@ -26,13 +26,13 @@ typedef std::variant<int, float, std::string, bool, Family, error> datatype;
  * @brief Enum representing the different types of symbols
  * 
  */
-enum class SYMBOL_TYPE{
+enum class KIND{
 	PRIMITIVE_VAR,		// int, float, string, bool, void
 	OBJECT_VAR,
-	FAMILY_TYPENAME,
+	FAMILY,
 	FUNCTION,
-	INBUILT_PRIMITIVE_TYPENAME,
-	INBUILT_FAMILY_TYPENAME,
+	INBUILT_PRIMITIVE_TYPE,
+	INBUILT_FAMILY,
 	INBUILT_FUNCTION,
 	UNKNOWN
 };
@@ -49,18 +49,18 @@ struct YYLTYPE;
 class Symbol{
 private:
 	std::string name;
-	SYMBOL_TYPE type;
+	KIND type;
 	std::string type_name;
 	YYLTYPE* location;
 	// Properties
 
 public:
 	Symbol(){};
-	Symbol(std::string name, SYMBOL_TYPE type, std::string type_name, YYLTYPE* location)
-		:name(name), type(type), type_name(type_name), location(location) {}
+	Symbol(std::string name, KIND type, std::string type_name, YYLTYPE* location);
+	~Symbol(){/*TODO: Delete location*/};
 	
 	std::string getName() { return name; }
-	SYMBOL_TYPE getType() { return type; }
+	KIND getType() { return type; }
 	std::string getTypeName() { return type_name; }
 	YYLTYPE* getLocation() { return location; }
 
@@ -94,7 +94,7 @@ public:
 	SymbolTable(SymbolTable* parent = NULL, std::string namespace_name = "");
 	~SymbolTable(){/*TODO: delete all child symbol tables*/};
 
-	void addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, SYMBOL_TYPE type = SYMBOL_TYPE::UNKNOWN);
+	void addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type = KIND::UNKNOWN);
 	Symbol* lookUp(std::string name);
 
 	static void setCurrentVariableType(std::string type_name) {currentVariableType = type_name;};

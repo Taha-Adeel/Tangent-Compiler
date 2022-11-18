@@ -76,7 +76,7 @@
 %type <stmt> driver_definition function_declaration variable_declaration family_declaration
 %type <stmt> jump_statement iteration_statement labeled_statement expression_statement
 %type <stmt> selection_statement compound_statement
-%type <stmt> constructor_declaration /*error*/
+%type <stmt> constructor_declaration error
 
 %type <exp> expression primary_expression
 %type <exp> new_variable literal variable
@@ -305,7 +305,7 @@ expression_list
 /*------------------------------------------------------------------------
  * Statements
  *------------------------------------------------------------------------*/
-	statement
+statement
 	: labeled_statement
 	| compound_statement
 	| variable_declaration
@@ -313,7 +313,7 @@ expression_list
 	| selection_statement
 	| iteration_statement
 	| jump_statement
-	/* | error ';' */
+	| error ';'
 	;
 
 compound_statement
@@ -404,6 +404,6 @@ int main(int argc, char **argv){
 }
 
 void yyerror(const char*s){
-	fprintf(stdout, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename.c_str(), yylloc.first_line, yylloc.first_column, s);
-	fprintf(stderr, "   %s: Line %d:%d:\n\t %s\n", yylloc.filename.c_str(), yylloc.first_line, yylloc.first_column, s);
+	fprintf(stdout, "%s: Line %d-(%d..%d):\n\t%s\n", yylloc.filename.c_str(), yylloc.first_line, yylloc.first_column, yylloc.last_column, s);
+	fprintf(stderr, "%s: Line %d-(%d..%d):\n\t%s\n", yylloc.filename.c_str(), yylloc.first_line, yylloc.first_column, yylloc.last_column, s);
 }
