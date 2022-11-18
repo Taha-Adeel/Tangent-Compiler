@@ -52,7 +52,7 @@ private:
 	KIND type;
 	std::string type_name;
 	YYLTYPE* location;
-	// Properties
+	// TODO: Add variables to represent var/const and public/private properties for the relevant symbols
 
 public:
 	Symbol(){};

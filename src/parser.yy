@@ -259,30 +259,56 @@ args_list
 
 arg
 	: type IDENTIFIER
-		{
-			cur_symbol_table->addSymbol(*$2, $1->ret_id(), &@1); 
-			$$ = new Arg(*($1), Identifier(*($2)));
-		}
+			{
+				cur_symbol_table->addSymbol(*$2, $1->ret_id(), &@1); 
+				$$ = new Arg(*($1), Identifier(*($2)));
+			}
 	| VAR type IDENTIFIER	
-		{
-			cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@1); 
-			$$ = new Arg(*($2), Identifier(*($3)));
-		}
+			{
+				cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@1); 
+				$$ = new Arg(*($2), Identifier(*($3)));
+			}
 	| CONST type IDENTIFIER	
-		{
-			cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@1); 
-			$$ = new Arg(*($2), Identifier(*($3)));
-		}
+			{
+				cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@1); 
+				$$ = new Arg(*($2), Identifier(*($3)));
+			}
 	;
 
 /*------------------------------------------------------------------------
  * Classes
  *------------------------------------------------------------------------*/
 family_declaration
-	: FAMILY IDENTIFIER '{' '}' ';'														{$$ = new FamilyDecl(Identifier(*$2));}
-	| FAMILY IDENTIFIER '{' class_members '}' ';' 										{$$ = new FamilyDecl(Identifier(*$2), *($4));}
-	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';' 				{$$ = new FamilyDecl(Identifier(*($2)),optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5), *($4))));}
-	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' class_members '}' ';'	{$$ = new FamilyDecl(Identifier(*($2)),*($7), optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5), *($4))));}
+	: FAMILY IDENTIFIER '{' '}' ';'														
+			{
+				cur_symbol_table->addSymbol(*$2, "Family", &@1, KIND::FAMILY);
+				$$ = new FamilyDecl(Identifier(*$2));
+			}
+	| FAMILY IDENTIFIER '{'
+			{ 
+				cur_symbol_table = cur_symbol_table->addSymbol(*$2, "Family", &@1, KIND::FAMILY); 
+			}
+	 class_members '}' ';' 	
+	 		{
+				$$ = new FamilyDecl(Identifier(*$2), *($5)); 
+				cur_symbol_table = cur_symbol_table->endScope();
+			}
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';' 				
+			{
+				cur_symbol_table->addSymbol(*$2, "Family", &@1, KIND::FAMILY);
+				// TODO: Copy public members from parent class
+				$$ = new FamilyDecl(Identifier(*($2)),optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5), *($4))));
+			}
+	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{'
+			{
+				cur_symbol_table = cur_symbol_table->addSymbol(*$2, "Family", &@1, KIND::FAMILY);
+				// TODO: Copy public members from parent class
+			}
+	 class_members '}' ';'	
+			{
+				$$ = new FamilyDecl(Identifier(*($2)),*($8), optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5), *($4))));
+				cur_symbol_table = cur_symbol_table->endScope();
+			}
 	;
 
 access_specifier
@@ -302,7 +328,21 @@ class_member
 	;
 
 constructor_declaration
-	: IDENTIFIER '(' args_list ')' compound_statement {$$ = new ConstructorDeclaration(Identifier(*($1)), $5, *($3));}
+	: IDENTIFIER '(' 
+			{
+				cur_symbol_table = cur_symbol_table->addSymbol(*$1, "void->", &@1, KIND::FUNCTION);
+			} 
+	  args_list ')'
+	  		{
+				std::string arg_types = "";
+				for(auto arg: *($4)) arg_types += arg->getType() + ",";
+				cur_symbol_table->lookUp(*$1)->addArgTypeNames(arg_types.substr(0, arg_types.size()-1));
+			}
+	  compound_statement	
+	  		{
+				cur_symbol_table = cur_symbol_table->returnFromFunction();
+				$$ = new ConstructorDeclaration(Identifier(*($1)), $7, *($4));
+			}
 	;
 
 /*------------------------------------------------------------------------
