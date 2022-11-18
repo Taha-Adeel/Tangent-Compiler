@@ -73,6 +73,32 @@ parser_incorrect_codes_test(){
 	SHOULD_FAIL=1
 }
 
+semn_correct_codes_test(){
+	TESTS_DIR+="Parser_Tests/Correct_codes"
+	EXE="${BUILD_DIR}/parser_with_semantic_analysis"
+	OUTPUT_FILE_EXTENSION=".txt"
+
+	BEGIN_TESTS_MSG="Running testcases with syntactically and semantically correct code for the Parser"
+	ALL_TESTS_SUCCESSFUL_MSG="All semantically valid testcases passed!"
+	TESTS_FAILED_MSG="Semantic analysis testcases failed!"
+
+	EXPECTED_ERROR_MSG="redeclaration"
+	SHOULD_FAIL=0
+}
+
+semn_incorrect_codes_test(){
+	TESTS_DIR+="Parser_Tests/Incorrect_codes"
+	EXE="${BUILD_DIR}/parser_with_semantic_analysis"
+	OUTPUT_FILE_EXTENSION=".txt"
+
+	BEGIN_TESTS_MSG="Running testcases with syntactically valid but semantically incorrect codes for the Parser"
+	ALL_TESTS_SUCCESSFUL_MSG="All semantic errors were caught by the parser!"
+	TESTS_FAILED_MSG="Semantic analysis testcases failed!"
+
+	EXPECTED_ERROR_MSG="redeclaration"
+	SHOULD_FAIL=1
+}
+
 # Call the appropriate test function
 "$1"
 

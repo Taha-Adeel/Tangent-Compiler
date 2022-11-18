@@ -10,7 +10,7 @@ BUILD_DIR := ./build
 
 # Default target
 all: compiler
-compiler: parser
+compiler: parser_with_semantic_analysis
 
 # $@ = build target of the rule (lhs)  ($(@D) = Directory of the $@, and $(@F) = only filename of $@. Similarly for others)
 # $^ = dependencies of the rule (rhs)
@@ -30,7 +30,11 @@ lexer: $(BUILD_DIR)/lex.yy.cc $(BUILD_DIR)/parser.hh
 
 # Build an executable to parse the input tangent code files according to the grammar rules
 parser: $(BUILD_DIR)/parser.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp $(SRC_DIR)/symbolTable.cpp
-	$(CC) -std=c++2a -g -o $(BUILD_DIR)/$@ $^ $(LLVM_INC_DIR:%=-I%) -D PARSER_TRACE_DEBUG -D SYMBOL_TABLE_DEBUG
+	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $^ $(LLVM_INC_DIR:%=-I%) -D PARSER_TRACE_DEBUG
+
+# Build an executable to parse the input tangent code files according to the grammar rules and perform semantic analysis
+parser_with_semantic_analysis: $(BUILD_DIR)/parser.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp $(SRC_DIR)/symbolTable.cpp
+	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $^ $(LLVM_INC_DIR:%=-I%) -D SYMBOL_TABLE_DEBUG
 
 # Generate HTML documentation describing our grammar and the DFA representing the parser.
 parser_documentation: $(SRC_DIR)/parser.yy
@@ -51,10 +55,11 @@ TESTS_DIR := ./tests
 TESTS_OUTPUT_DIR := output
 
 # Test the compiler against the testcases located in ./tests
-tests: lexer_tests parser_tests
+tests: lexer_tests parser_tests semantic_analysis_tests
 
 lexer_tests: lexer_incorrect_codes_test lexer_correct_codes_test
 parser_tests: parser parser_incorrect_codes_test parser_correct_codes_test
+semantic_analysis_tests: parser_with_semantic_analysis semn_incorrect_codes_test semn_correct_codes_test
 
 lexer_correct_codes_test \
 lexer_incorrect_codes_test: lexer
@@ -62,4 +67,8 @@ lexer_incorrect_codes_test: lexer
 
 parser_correct_codes_test \
 parser_incorrect_codes_test: parser
+	bash $(TESTS_DIR)/run_tests.sh $@
+
+semn_correct_codes_test \
+semn_incorrect_codes_test: parser_with_semantic_analysis
 	bash $(TESTS_DIR)/run_tests.sh $@
