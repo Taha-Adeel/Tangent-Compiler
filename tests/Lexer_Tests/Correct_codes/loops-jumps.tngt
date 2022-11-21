@@ -1,0 +1,32 @@
+#lexer-test for loops and jump stmts
+
+driver<: :>
+(:
+    #for loop
+    for(var int i := 1; i < 10; i++)
+    (:
+        a = j/i;
+    :)
+
+    #while loop
+    while(a <= 25)
+    (:
+        b := b-a;
+    :)
+
+    #switchCase
+    switch(b)
+    (:
+        case 5: s := "test"; break;
+        case 2: s := "tldr"; break;
+        default: s := "touch_grass";
+    :)
+
+    #return stmt
+    if(c <= 30)
+    (:
+        return;
+    :)
+
+
+:)
