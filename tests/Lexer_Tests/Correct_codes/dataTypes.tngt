@@ -1,0 +1,23 @@
+#lexer-test to check matching of datatype keywords
+
+driver<: :>
+(:
+    #primitive datatypes
+    var int i;
+    var bool b;
+    var float f;
+    var string s;
+    const var int param1, param2;
+
+    #non-primitive datatypes
+    var Point x;
+    var Path line;
+    var Circle circ;
+    var Image jpg;
+    var Rectangle rect;
+    var Ellipse elli;
+    var Polygon pol;
+    var Colour col;
+    var Curve cur;
+    
+:)
