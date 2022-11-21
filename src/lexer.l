@@ -144,12 +144,10 @@ static const char *const yytname[] =
   "INTEGER_LITERAL", "FLOAT_LITERAL", "BOOL_LITERAL", "STRING_LITERAL",
   "IF", "ELSE", "SWITCH", "CASE", "DEFAULT", "WHILE", "FOR", "BREAK",
   "CONTINUE", "SEND", "FAMILY", "INHERITS", "PUBLIC", "PRIVATE", "DRIVER",
-  "IDENTIFIER", "','", "ASSIGN", "ADD_ASSIGN", "SUB_ASSIGN", "MUL_ASSIGN",
-  "DIV_ASSIGN", "MOD_ASSIGN", "'?'", "':'", "LOGICAL_OR", "LOGICAL_AND",
-  "EQ", "NOT_EQ", "LS_THAN", "LS_THAN_EQ", "GR_THAN", "GR_THAN_EQ", "'+'",
-  "'-'", "'*'", "'/'", "'%'", "INC", "DEC", "INC_POST", "DEC_POST",
-  "UPLUS", "UMINUS", "LOGICAL_NOT", "'('", "')'", "'['", "']'",
-  "SCOPE_ACCESS", "';'", "'{'", "'}'"
+  "IDENTIFIER", "ASSIGN", "ADD_ASSIGN", "SUB_ASSIGN", "MUL_ASSIGN",
+  "DIV_ASSIGN", "MOD_ASSIGN", "LOGICAL_OR", "LOGICAL_AND", "LOGICAL_NOT",
+  "EQ", "NOT_EQ", "LS_THAN", "LS_THAN_EQ", "GR_THAN", "GR_THAN_EQ", "INC",
+  "DEC", "INC_POST", "DEC_POST", "SCOPE_ACCESS",
 };
 YYLTYPE yylloc;
 YYSTYPE yylval;

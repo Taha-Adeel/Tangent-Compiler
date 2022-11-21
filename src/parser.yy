@@ -113,6 +113,9 @@
 /* Variables */
 %token <id> IDENTIFIER
 
+/* Operators */
+%token ASSIGN ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN LOGICAL_OR LOGICAL_AND LOGICAL_NOT EQ NOT_EQ LS_THAN LS_THAN_EQ GR_THAN GR_THAN_EQ INC DEC INC_POST DEC_POST SCOPE_ACCESS
+
 /* The operator precedence and associativity rules for the language. The higher precedence operators are listed below the lower precedence rules. */
 %left ','
 %right ASSIGN ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN

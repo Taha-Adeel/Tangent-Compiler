@@ -1,0 +1,11 @@
+#lexer-test to check matching of literals
+
+driver<: :>
+(:
+    1;          #integer literal
+    2.34;       #float literal
+    "Testing";  #string literal
+    true;       #bool literal
+    false;      #bool literal
+
+:)

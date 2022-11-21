@@ -1,0 +1,42 @@
+#lexer-test to check matching of operators
+#syntactically incorrect but lexically correct code
+
+driver<: :>
+(:
+
+    #Arithmetic Operators
+    a+b;        #add
+    a-b;        #subtract
+    a*b;        #multiply
+    a/b;        #divide
+    a%b;        #modulus
+
+    #Assignment Operators
+    a := 5;     #Assgn
+    b += 3;     #Add_Assgn
+    a -= 45;    #Sub_Assgn
+    a /= 2;     #Div_Assgn
+    a *= 5;     #Mul_Assgn
+    a %= 34;    #Mod_Assgn
+    a++;        #increment
+    a--;        #decrement
+
+    #Logical Operators
+    a & b;      #and
+    a | b;      #or
+    a!b;         #not
+
+    #Relational Operators
+    a == b;
+    a != b;
+    a >= b;
+    a <= b;
+    a > b;
+    a < b;
+
+    #scope acess
+    obj>>field;
+
+
+
+:)
