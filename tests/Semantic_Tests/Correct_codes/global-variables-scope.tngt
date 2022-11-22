@@ -1,0 +1,14 @@
+#semantic and symbol table test for global variables
+
+var int val := 10;
+var bool check := false;
+var string word := "Testing"; 
+
+driver<: :>
+(:
+    var int a := 6+val;
+    var int b := 4-val;
+    var int c := (a+b)*val;
+    print(c);
+    print(word);
+:)
