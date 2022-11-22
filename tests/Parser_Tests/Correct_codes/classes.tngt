@@ -3,9 +3,9 @@
 family Vehicle
 (:
         public var int wheels;
-        var string name;
+        public var string name;
         private var string color;
-        void vehicleInfo<: :>
+        public void vehicleInfo<: :>
         (:
             print("Vehicle:- " + name + "\n");
             print("Color:- " + color + "\n");

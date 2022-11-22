@@ -28,6 +28,10 @@ Value *IntegerLiteral::codegen()
     return ConstantInt::get(*TheContext, APSInt(get<int>(value)));
 }
 
+// void StringLiteral::print()
+// {
+//     return ConstantFP::get(*TheContext, APFloat(get<float>(value)));
+// }
 Value *::StringLiteral::codegen()
 {
     return ConstantDataArray::getString(*TheContext, get<string>(value), true);

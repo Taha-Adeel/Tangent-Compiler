@@ -5,12 +5,12 @@ LLVM_INC_DIR = $(wildcard /usr/include/llvm*)
 SRC_DIR := ./src
 BUILD_DIR := ./build
 
-.PHONY : all compiler lexer parser parser_documentation tests lexer_tests lexer_correct_codes lexer_incorrect_codes \
-	parser_tests parser_correct_codes parser_incorrect_codes clean
+.PHONY : all compiler lexer parser parser_documentation tests lexer_tests lexer_correct_codes_test lexer_incorrect_codes_test \
+	parser_tests parser_correct_codes_test parser_incorrect_codes_test clean
 
 # Default target
 all: compiler
-compiler: parser
+compiler: parser_with_semantic_analysis
 
 # $@ = build target of the rule (lhs)  ($(@D) = Directory of the $@, and $(@F) = only filename of $@. Similarly for others)
 # $^ = dependencies of the rule (rhs)
@@ -29,15 +29,19 @@ lexer: $(BUILD_DIR)/lex.yy.cc $(BUILD_DIR)/parser.hh
 	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $< $(LLVM_INC_DIR:%=-I%) -D STANDALONE_LEXER
 
 # Build an executable to parse the input tangent code files according to the grammar rules
-parser: $(BUILD_DIR)/parser.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp $(SRC_DIR)/symbolTable.cpp $(SRC_DIR)/codeGen.cpp
-	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $^ --debug $(LLVM_INC_DIR:%=-I%)
+parser: $(BUILD_DIR)/parser.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp $(SRC_DIR)/symbolTable.cpp
+	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $^ $(LLVM_INC_DIR:%=-I%) -D PARSER_TRACE_DEBUG
+
+# Build an executable to parse the input tangent code files according to the grammar rules and perform semantic analysis
+parser_with_semantic_analysis: $(BUILD_DIR)/parser.cc $(BUILD_DIR)/lex.yy.cc $(SRC_DIR)/astNodes.cpp $(SRC_DIR)/symbolTable.cpp
+	$(CC) -std=c++2a -o $(BUILD_DIR)/$@ $^ $(LLVM_INC_DIR:%=-I%) -D SYMBOL_TABLE_DEBUG -D AST_DEBUG
 
 # Generate HTML documentation describing our grammar and the DFA representing the parser.
 parser_documentation: $(SRC_DIR)/parser.yy
 	mkdir -p $(BUILD_DIR)
-	bison -o $(BUILD_DIR)/parser.cc $< --verbose --xml=$(BUILD_DIR)/$(<F:%.y=%.xml)
-	xsltproc $$(bison --print-datadir)/xslt/xml2xhtml.xsl $(BUILD_DIR)/$(<F:%.y=%.xml) > ./documentation/$(<F:%.y=%.html)
-	xdg-open ./documentation/$(<F:%.y=%.html)
+	bison -o $(BUILD_DIR)/parser.cc $< --verbose --xml=$(BUILD_DIR)/$(<F:%.yy=%.xml)
+	xsltproc $$(bison --print-datadir)/xslt/xml2xhtml.xsl $(BUILD_DIR)/$(<F:%.yy=%.xml) > ./documentation/$(<F:%.yy=%.html)
+	xdg-open ./documentation/$(<F:%.yy=%.html)
 
 
 # Remove all generated files
@@ -48,112 +52,23 @@ clean:
 #################### TESTING RULES ########################
 
 TESTS_DIR := ./tests
-TESTS_OUTPUT_DIR := test_outputs
-
-# The testcases
-LEXER_CORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Lexer_Tests/Correct_codes/*.tngt))
-LEXER_INCORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Lexer_Tests/Incorrect_codes/*.tngt))
-PARSER_CORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Parser_Tests/Correct_codes/*.tngt))
-PARSER_INCORRECT_CODES := $(sort $(wildcard $(TESTS_DIR)/Parser_Tests/Incorrect_codes/*.tngt))
-
-BLACK := \e[0;30m
-RED := \e[0;31m
-GREEN := \e[0;32m
-YELLOW := \e[0;33m
-BLUE := \e[0;34m
-PURPLE := \e[0;35m
-CYAN := \e[0;36m
-WHITE := \e[0;0m
-B := \e[1m
-I := \e[3m
-U := \e[4m
-NC := \e[0m
+TESTS_OUTPUT_DIR := output
 
 # Test the compiler against the testcases located in ./tests
-tests: lexer_tests parser_tests
+tests: lexer_tests parser_tests semantic_analysis_tests
 
-# Lexer Tests
-lexer_tests: lexer_incorrect_codes lexer_correct_codes
+lexer_tests: lexer_incorrect_codes_test lexer_correct_codes_test
+parser_tests: parser parser_incorrect_codes_test parser_correct_codes_test
+semantic_analysis_tests: parser_with_semantic_analysis semn_incorrect_codes_test semn_correct_codes_test
 
-lexer_correct_codes: $(LEXER_CORRECT_CODES) lexer
-	@echo "$(WHITE)\n###################################################################################$(NC)\n"; \
-	echo "$(BLUE)$(B)$(U)Running testcases with lexicologically correct code for the Lexical Analyzer$(NC)\n"; \
-	ROOT_DIR="$$(pwd)"; \
-	cd $(<D); \
-	mkdir -p $(TESTS_OUTPUT_DIR); \
-	TOTAL=0; SUCCESSFUL=0; \
-	for testcase in $(basename $(notdir $(LEXER_CORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
-		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_CORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt$(NC)";\
-		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-		"$${ROOT_DIR}"/$(BUILD_DIR)/lexer $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-		if [ $$(grep "Invalid token" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -eq 0 ] ; then \
-			echo "$(GREEN)   Testcase Passed\n$(NC)"; SUCCESSFUL=$$((SUCCESSFUL+1)); \
-		else echo "$(RED)   Testcase Failed\n$(NC)"; fi;\
-	done; \
-	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
-		echo "$(GREEN)$(B)Success: All valid Lexical Analyzer testcases passed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
-	else \
-		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
+lexer_correct_codes_test \
+lexer_incorrect_codes_test: lexer
+	bash $(TESTS_DIR)/run_tests.sh $@
 
-lexer_incorrect_codes: $(LEXER_INCORRECT_CODES) lexer
-	@echo "$(WHITE)\n###################################################################################$(NC)\n"; \
-	echo "$(BLUE)$(B)$(U)Running testcases with lexicologically incorrect code for the Lexical Analyzer$(NC)\n"; \
-	ROOT_DIR="$$(pwd)"; \
-	cd $(<D); \
-	mkdir -p $(TESTS_OUTPUT_DIR); \
-	TOTAL=0; SUCCESSFUL=0; \
-	for testcase in $(basename $(notdir $(LEXER_INCORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
-		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(LEXER_INCORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt$(NC)";\
-		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-		"$${ROOT_DIR}"/$(BUILD_DIR)/lexer $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-		if [ $$(grep "Invalid token" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -gt 0 ] ; then \
-			echo "$(GREEN)   Testcase Passed, as the invalid tokens are rejected by the lexer\n$(NC)"; SUCCESSFUL=$$((SUCCESSFUL+1)); \
-		else echo "$(RED)   Testcase Failed\n$(NC)"; fi;\
-	done; \
-	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
-		echo "$(GREEN)$(B)Success: All invalid tokens were rejected by the Lexical Analyzer.$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
-	else \
-		echo "$(RED)Error: Lexical Analyzer testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
+parser_correct_codes_test \
+parser_incorrect_codes_test: parser
+	bash $(TESTS_DIR)/run_tests.sh $@
 
-# Parser Tests
-parser_tests: parser parser_incorrect_codes parser_correct_codes
-
-parser_correct_codes: $(PARSER_CORRECT_CODES) parser
-	@echo "$(WHITE)\n########################################################################$(NC)\n"; \
-	echo "$(BLUE)$(B)$(U)Running testcases with syntactically correct code for the Parser$(NC)\n"; \
-	ROOT_DIR="$$(pwd)"; \
-	cd $(<D); \
-	mkdir -p $(TESTS_OUTPUT_DIR); \
-	TOTAL=0; SUCCESSFUL=0; \
-	for testcase in $(basename $(notdir $(PARSER_CORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
-		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(PARSER_CORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt$(NC)";\
-		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-		"$${ROOT_DIR}"/$(BUILD_DIR)/parser $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-		if [ $$(grep "syntax error" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -eq 0 ] ; then \
-			echo "$(GREEN)   Testcase Passed\n$(NC)"; SUCCESSFUL=$$((SUCCESSFUL+1)); \
-		else echo "$(RED)   Testcase Failed\n$(NC)"; fi;\
-	done; \
-	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
-		echo "$(GREEN)$(B)Success: All syntactically valid testcases passed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
-	else \
-		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
-
-parser_incorrect_codes: $(PARSER_INCORRECT_CODES) parser
-	@echo "$(WHITE)\n########################################################################$(NC)\n"; \
-	echo "$(BLUE)$(B)$(U)Running testcases with syntactically incorrect code for the Parser$(NC)\n"; \
-	ROOT_DIR="$$(pwd)"; \
-	cd $(<D); \
-	mkdir -p $(TESTS_OUTPUT_DIR); \
-	TOTAL=0; SUCCESSFUL=0; \
-	for testcase in $(basename $(notdir $(PARSER_INCORRECT_CODES))); do TOTAL=$$((TOTAL+1)); \
-		echo "$(YELLOW)$(I)Running Testcase ($${TOTAL}/$(words $(PARSER_INCORRECT_CODES))): $${testcase}.tngt$(NC)$(I) ~> $${testcase}-output.txt$(NC)";\
-		touch $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-		"$${ROOT_DIR}"/$(BUILD_DIR)/parser $${testcase}.tngt > $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt; \
-		if [ $$(grep "syntax error" $(TESTS_OUTPUT_DIR)/$${testcase}-output.txt | wc -w) -gt 0 ] ; then \
-			echo "$(GREEN)   Testcase Passed. All syntax errors detected\n$(NC)"; SUCCESSFUL=$$((SUCCESSFUL+1)); \
-		else echo "$(RED)   Testcase Failed\n$(NC)"; fi;\
-	done; \
-	if [ $${SUCCESSFUL} -eq $${TOTAL} ] ; then \
-		echo "$(GREEN)$(B)Success: All syntax errors were caught by the parser!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; \
-	else \
-		echo "$(RED)Error: Parser testcases failed!$(NC) (Outputs can be viewed in $(<D)/$(TESTS_OUTPUT_DIR))\n"; fi; \
+semn_correct_codes_test \
+semn_incorrect_codes_test: parser_with_semantic_analysis
+	bash $(TESTS_DIR)/run_tests.sh $@
