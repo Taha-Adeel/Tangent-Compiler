@@ -160,22 +160,22 @@ driver_definition
  * Declarations
  *----------------------------------------------------------------------*/
  type
-	: INT   		{$$ = new Identifier("int", &@1);}
-	| FLOAT   		{$$ = new Identifier("float", &@1);}
-	| STRING   		{$$ = new Identifier("string", &@1);}
-	| BOOL   		{$$ = new Identifier("bool", &@1);}
-	| VOID		   	{$$ = new Identifier("void", &@1);}
-	| POINT 		{$$ = new Identifier("Point", &@1);}
-	| PATH			{$$ = new Identifier("Path", &@1);}
-	| IMAGE			{$$ = new Identifier("Image", &@1);}
-	| RECTANGLE 	{$$ = new Identifier("Rectangle", &@1);}
-	| CIRCLE		{$$ = new Identifier("Circle", &@1);}
-	| ELLIPSE		{$$ = new Identifier("Ellipse", &@1);}
-	| POLYGON		{$$ = new Identifier("Polygon", &@1);}
-	| CURVE			{$$ = new Identifier("Curve", &@1);}
-	| PI			{$$ = new Identifier("Pi", &@1);}
-	| COLOUR		{$$ = new Identifier("Colour", &@1);}
-	| IDENTIFIER   	{$$ = new Identifier(*($1), &@1);}
+	: INT   		{$$ = new Identifier(&@1, "int");}
+	| FLOAT   		{$$ = new Identifier(&@1, "float");}
+	| STRING   		{$$ = new Identifier(&@1, "string");}
+	| BOOL   		{$$ = new Identifier(&@1, "bool");}
+	| VOID		   	{$$ = new Identifier(&@1, "void");}
+	| POINT 		{$$ = new Identifier(&@1, "Point");}
+	| PATH			{$$ = new Identifier(&@1, "Path");}
+	| IMAGE			{$$ = new Identifier(&@1, "Image");}
+	| RECTANGLE 	{$$ = new Identifier(&@1, "Rectangle");}
+	| CIRCLE		{$$ = new Identifier(&@1, "Circle");}
+	| ELLIPSE		{$$ = new Identifier(&@1, "Ellipse");}
+	| POLYGON		{$$ = new Identifier(&@1, "Polygon");}
+	| CURVE			{$$ = new Identifier(&@1, "Curve");}
+	| PI			{$$ = new Identifier(&@1, "Pi");}
+	| COLOUR		{$$ = new Identifier(&@1, "Colour");}
+	| IDENTIFIER   	{$$ = new Identifier(&@1, *($1));}
 	;
 
 literal
@@ -201,24 +201,24 @@ new_variable
 	: IDENTIFIER 							
 			{
 				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
-				$$ = new Identifier(*($1), &@1);
+				$$ = new Identifier(&@$, *($1));
 			}
 	| IDENTIFIER ASSIGN expression			
 			{
 				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
-				Variable* temp = new Identifier(*($1)); 
+				Variable* temp = new Identifier(&@$, *($1)); 
 				$$ = new AssignmentExp(temp, $3, &@$);
 			}
 	| IDENTIFIER '(' ')'					
 			{
 				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
-				Variable* temp = new Identifier(*($1), &@1); 
+				Variable* temp = new Identifier(&@$, *($1)); 
 				$$ = new FunctionCall(temp, vector<Expression *>(), &@$);
 			}
 	| IDENTIFIER '(' expression_list ')'	
 			{
 				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
-				Variable* temp = new Identifier(*($1), &@1); 
+				Variable* temp = new Identifier(&@$, *($1)); 
 				$$ = new FunctionCall(temp, *($3), &@$);
 			}
 	;
@@ -231,7 +231,7 @@ function_declaration
 	  ')' compound_statement	
 			{ 
 				cur_symbol_table = cur_symbol_table->returnFromFunction(); 
-				auto temp = new Identifier(*($2), &@2); 
+				auto temp = new Identifier(&@2, *($2)); 
 				$$ = new FunctionDeclaration(temp, *($1), $6, vector<Arg *>(), &@$); 
 			}
 	| type IDENTIFIER '(' 
@@ -247,7 +247,7 @@ function_declaration
 	  compound_statement	
 	  		{
 				cur_symbol_table = cur_symbol_table->returnFromFunction();
-				auto temp = new Identifier(*($2), &@2); 
+				auto temp = new Identifier(&@2, *($2)); 
 				$$ = new FunctionDeclaration(temp, *($1), $8, *($5), &@$);
 			}
 	;
@@ -261,17 +261,17 @@ arg
 	: type IDENTIFIER
 			{
 				cur_symbol_table->addSymbol(*$2, $1->ret_id(), &@2); 
-				$$ = new Arg(*($1), Identifier(*($2), &@2), &@$);
+				$$ = new Arg(*($1), Identifier(&@2, *($2)), &@$);
 			}
 	| VAR type IDENTIFIER	
 			{
 				cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@3); 
-				$$ = new Arg(*($2), Identifier(*($3), &@3), &@$);
+				$$ = new Arg(*($2), Identifier(&@3, *($3)), &@$);
 			}
 	| CONST type IDENTIFIER	
 			{
 				cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@3); 
-				$$ = new Arg(*($2), Identifier(*($3), &@3), &@$);
+				$$ = new Arg(*($2), Identifier(&@3, *($3)), &@$);
 			}
 	;
 
@@ -282,7 +282,7 @@ family_declaration
 	: FAMILY IDENTIFIER '{' '}' ';'														
 			{
 				cur_symbol_table->addSymbol(*$2, "Family", &@1, KIND::FAMILY);
-				$$ = new FamilyDecl(Identifier(*$2, &@2), &@$);
+				$$ = new FamilyDecl(Identifier(&@2, *$2), &@$);
 			}
 	| FAMILY IDENTIFIER '{'
 			{ 
@@ -290,14 +290,14 @@ family_declaration
 			}
 	 class_members '}' ';' 	
 	 		{
-				$$ = new FamilyDecl(Identifier(*$2, &@2), *($5), optional<pair<Identifier, ACCESS_SPEC>>(), &@$); 
+				$$ = new FamilyDecl(Identifier(&@2, *$2), *($5), optional<pair<Identifier, ACCESS_SPEC>>(), &@$); 
 				cur_symbol_table = cur_symbol_table->endScope();
 			}
 	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';' 				
 			{
 				cur_symbol_table->addSymbol(*$2, "Family", &@1, KIND::FAMILY);
 				// TODO: Copy public members from parent class
-				$$ = new FamilyDecl(Identifier(*($2), &@2), vector<FamilyMembers*>(), optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5, &@5), *($4))), &@$);
+				$$ = new FamilyDecl(Identifier(&@2, *($2)), vector<FamilyMembers*>(), optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(&@5, *$5), *($4))), &@$);
 			}
 	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{'
 			{
@@ -306,7 +306,7 @@ family_declaration
 			}
 	 class_members '}' ';'	
 			{
-				$$ = new FamilyDecl(Identifier(*($2), &@2),*($8), optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5, &@5), *($4))), &@$);
+				$$ = new FamilyDecl(Identifier(&@2, *($2)),*($8), optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(&@5, *$5), *($4))), &@$);
 				cur_symbol_table = cur_symbol_table->endScope();
 			}
 	;
@@ -341,7 +341,7 @@ constructor_declaration
 	  compound_statement	
 	  		{
 				cur_symbol_table = cur_symbol_table->returnFromFunction();
-				$$ = new ConstructorDeclaration(Identifier(*($1), &@1), $7, *($4), &@$);
+				$$ = new ConstructorDeclaration(Identifier(&@1, *($1)), $7, *($4), &@$);
 			}
 	;
 
@@ -357,8 +357,8 @@ primary_expression
 	;
 
 variable
-	: IDENTIFIER						{$$ = new Identifier(*($1), &@1);}
-	| variable SCOPE_ACCESS IDENTIFIER	{$$ = new MemberAccess((Variable*)$1, *($3), &@$);}
+	: IDENTIFIER						{$$ = new Identifier(&@1, *($1));}
+	| variable SCOPE_ACCESS IDENTIFIER	{$$ = new MemberAccess((Variable*)$1, Identifier(&@3, *$3), &@$);}
 	| variable '[' expression ']'		{$$ = new ArrayAccess($1, $3, &@$);}
 	;
 
@@ -436,7 +436,7 @@ selection_statement
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement		{Expression* temp = new Identifier(*($1), &@1);$$ = new LabeledStatement(temp, $3, &@$);}
+	: IDENTIFIER ':' statement		{Expression* temp = new Identifier(&@1, *($1));$$ = new LabeledStatement(temp, $3, &@$);}
 	| CASE expression ':' statement	{$$ = new CaseLabel($2, $4, &@$);}
 	| DEFAULT ':' statement			{$$ = new DefaultLabel($3, &@$);}
 	;

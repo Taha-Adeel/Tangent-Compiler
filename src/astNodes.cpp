@@ -1,7 +1,6 @@
 // contains implementations of the member methods and constructors in astNodes.h
 
 #include "astNodes.h"
-#include "symbolTable.h"
 #include <iostream>
 #include <stdlib.h>
 #include <string>
@@ -9,16 +8,25 @@
 #include <map>
 #include <vector>
 
-using namespace std;
+#include "symbolTable.h"
+extern SymbolTable* cur_symbol_table;
 
+using namespace std;
 ////////////////////////////////////////////////////
 //            AST traversal and evaluation      ////
 ////////////////////////////////////////////////////
 
+typedef struct YYLTYPE{
+	int first_line;
+	int first_column;
+	int last_line;
+	int last_column;
+	const char *filename;
+} YYLTYPE;
 
-TYPE Expression::get_type()
-{
-    return TYPE{(int)value.index()};
+ASTNode::ASTNode(YYLTYPE* location, string node_name): location(location), node_name(node_name) {
+    if(location != NULL) 
+        this->location = new YYLTYPE(*location);
 }
 
 extern int yyerror(const char *s);
@@ -447,9 +455,9 @@ void CompGT::print(ostream& out, int indentation)
 }
 datatype CompGT::evaluate()
 {
-    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
         return throwError();
-    if(LHS->get_type() == TYPE::FAMILY)
+    if(cur_symbol_table->lookUp(LHS->get_type())->getKind() != KIND::INBUILT_PRIMITIVE_TYPE)
         return throwError(); // can't perform comparison for these types
     // value = (LHS->evaluate() != RHS->evaluate());
     return value;
@@ -469,10 +477,8 @@ void CompLT::print(ostream& out, int indentation)
 }
 datatype CompLT::evaluate()
 {
-    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
         return throwError();
-    if(LHS->get_type() == TYPE::STRING)
-        return throwError(); // can't perform comparison for these types
     // value = (LHS < RHS);
     return value;
 }
@@ -491,9 +497,9 @@ void CompGE::print(ostream& out, int indentation)
 }
 datatype CompGE::evaluate()
 {
-    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
         return throwError();
-    if(LHS->get_type() == TYPE::STRING)
+    if(cur_symbol_table->lookUp(LHS->get_type())->getKind() != KIND::INBUILT_PRIMITIVE_TYPE)
         return throwError(); // can't perform comparison for these types
     // value = (LHS >= RHS);
     return value;
@@ -513,9 +519,9 @@ void CompLE::print(ostream& out, int indentation)
 }
 datatype CompLE::evaluate()
 {
-    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
         return throwError();
-    if(LHS->get_type() == TYPE::STRING)
+    if(cur_symbol_table->lookUp(LHS->get_type())->getKind() != KIND::INBUILT_PRIMITIVE_TYPE)
         return throwError(); // can't perform comparison for these types
     // value = (LHS <= RHS);
     return value;
@@ -535,9 +541,9 @@ void CompEQ::print(ostream& out, int indentation)
 }
 datatype CompEQ::evaluate()
 {
-    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
         return throwError();
-    if(LHS->get_type() == TYPE::STRING)
+    if(cur_symbol_table->lookUp(LHS->get_type())->getKind() != KIND::INBUILT_PRIMITIVE_TYPE)
         return throwError(); // can't perform comparison for these types
     // value = (LHS == RHS);
     return value;
@@ -557,9 +563,9 @@ void CompNEQ::print(ostream& out, int indentation)
 }
 datatype CompNEQ::evaluate()
 {
-    if(LHS->get_type() == TYPE::ERROR || RHS->get_type() == TYPE::ERROR || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
         return throwError();
-    if(LHS->get_type() == TYPE::STRING)
+    if(cur_symbol_table->lookUp(LHS->get_type())->getKind() != KIND::INBUILT_PRIMITIVE_TYPE)
         return throwError(); // can't perform comparison for these types
     // value = (LHS != RHS);
     return value;
@@ -927,14 +933,6 @@ void Program::print(ostream& out, int indentation)
  *  Functions to print the AST
  *------------------------------------------------------------------------*/
 
-typedef struct YYLTYPE
-{
-	int first_line;
-	int first_column;
-	int last_line;
-	int last_column;
-	const char *filename;
-} YYLTYPE;
 std::ostream& printLoc(ostream& os, const YYLTYPE* loc){
 	if(loc == NULL) return os << "";
 	std::stringstream ss; ss << "<" << loc->first_line << "-" << loc->first_column << ".." << loc->last_line << "-" << loc->last_column << ">";
