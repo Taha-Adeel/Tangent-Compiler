@@ -39,9 +39,9 @@ parser_with_semantic_analysis: $(BUILD_DIR)/parser.cc $(BUILD_DIR)/lex.yy.cc $(S
 # Generate HTML documentation describing our grammar and the DFA representing the parser.
 parser_documentation: $(SRC_DIR)/parser.yy
 	mkdir -p $(BUILD_DIR)
-	bison -o $(BUILD_DIR)/parser.cc $< --verbose --xml=$(BUILD_DIR)/$(<F:%.y=%.xml)
-	xsltproc $$(bison --print-datadir)/xslt/xml2xhtml.xsl $(BUILD_DIR)/$(<F:%.y=%.xml) > ./documentation/$(<F:%.y=%.html)
-	xdg-open ./documentation/$(<F:%.y=%.html)
+	bison -o $(BUILD_DIR)/parser.cc $< --verbose --xml=$(BUILD_DIR)/$(<F:%.yy=%.xml)
+	xsltproc $$(bison --print-datadir)/xslt/xml2xhtml.xsl $(BUILD_DIR)/$(<F:%.yy=%.xml) > ./documentation/$(<F:%.yy=%.html)
+	xdg-open ./documentation/$(<F:%.yy=%.html)
 
 
 # Remove all generated files

@@ -28,16 +28,18 @@ Symbol::Symbol(std::string name, KIND type, std::string type_name, YYLTYPE* loca
  * @param parent The parent symbol table
  * @param namespace_name 
  */
-SymbolTable::SymbolTable(SymbolTable* parent, std::string _namespace_name)
+SymbolTable::SymbolTable(SymbolTable* parent, std::string _namespace_name, bool append)
 	:parent(parent), namespace_name(_namespace_name) 
 {
 	if(parent == NULL) {
 		namespace_name = "global";
 		addInbuiltSymbols();
 	}
-	if(namespace_name == ""){
-		namespace_name = parent->namespace_name + "::" + std::to_string(child_symbol_tables.size());
-	}
+	if(append && namespace_name != "") 
+		namespace_name = parent->getNamespaceName() + "::" + namespace_name;
+	if(namespace_name == "")
+		namespace_name = parent->getNamespaceName() + "::" + std::to_string(child_symbol_tables.size());
+	
 	if(parent != NULL)
 		parent->child_symbol_tables[namespace_name] = this;
 }

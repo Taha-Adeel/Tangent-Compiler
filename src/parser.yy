@@ -50,8 +50,8 @@
 %union 
 {
 	Program *pgm;
-	list <Statement*> *stmt_list;
-	list <Expression*> *exp_list;
+	vector<Statement*> *stmt_list;
+	vector<Expression*> *exp_list;
 	Expression *exp;
 	Statement* stmt;
 	Identifier *t;
@@ -62,9 +62,9 @@
 	string *values;
 	ACCESS_SPEC *access_spec;
 	FamilyMembers *class_member;
-	list<FamilyMembers*> *class_members;
+	vector<FamilyMembers*> *class_members;
 	Arg* argument;
-	list<Arg*>* arg_list;
+	vector<Arg*>* arg_list;
 }
 
 /* Declaring types to the different non-terminals */
@@ -78,7 +78,7 @@
 %type <stmt> selection_statement compound_statement
 %type <stmt> constructor_declaration error
 
-%type <exp> expression primary_expression
+%type <exp> expression primary_expression iter_expression
 %type <exp> new_variable literal variable
 %type <argument> arg
 %type <t> type
@@ -135,11 +135,11 @@
  *------------------------------------------------------------------------*/
 program
 	: %empty				{$$ = new Program(); root = $$;}
- 	| translation_unit		{$$ = new Program($1); root = $$;}
+ 	| translation_unit		{$$ = new Program($1, &@1); root = $$;}
 	;
 
 translation_unit
-	: external_declaration					{$$ = new list <Statement*>(); $$->push_back($1);}
+	: external_declaration					{$$ = new vector<Statement*>(); $$->push_back($1);}
 	| translation_unit external_declaration	{$$ = $1; $$->push_back($2);}
 	;
 
@@ -152,7 +152,7 @@ external_declaration
 
 driver_definition
 	: DRIVER 							{cur_symbol_table = cur_symbol_table->addSymbol("driver", "void->()", &@1, KIND::FUNCTION);} 
-		'(' ')' compound_statement 		{$$ = new DriverDefinition($5); cur_symbol_table = cur_symbol_table->returnFromFunction();}
+		'(' ')' compound_statement 		{$$ = new DriverDefinition($5, &@$); cur_symbol_table = cur_symbol_table->returnFromFunction();}
 	;
 
 
@@ -160,40 +160,40 @@ driver_definition
  * Declarations
  *----------------------------------------------------------------------*/
  type
-	: INT   		{$$ = new Identifier("int");}
-	| FLOAT   		{$$ = new Identifier("float");}
-	| STRING   		{$$ = new Identifier("string");}
-	| BOOL   		{$$ = new Identifier("bool");}
-	| VOID		   	{$$ = new Identifier("void");}
-	| POINT 		{$$ = new Identifier("Point");}
-	| PATH			{$$ = new Identifier("Path");}
-	| IMAGE			{$$ = new Identifier("Image");}
-	| RECTANGLE 	{$$ = new Identifier("Rectangle");}
-	| CIRCLE		{$$ = new Identifier("Circle");}
-	| ELLIPSE		{$$ = new Identifier("Ellipse");}
-	| POLYGON		{$$ = new Identifier("Polygon");}
-	| CURVE			{$$ = new Identifier("Curve");}
-	| PI			{$$ = new Identifier("Pi");}
-	| COLOUR		{$$ = new Identifier("Colour");}
-	| IDENTIFIER   	{$$ = new Identifier(*($1));}
+	: INT   		{$$ = new Identifier("int", &@1);}
+	| FLOAT   		{$$ = new Identifier("float", &@1);}
+	| STRING   		{$$ = new Identifier("string", &@1);}
+	| BOOL   		{$$ = new Identifier("bool", &@1);}
+	| VOID		   	{$$ = new Identifier("void", &@1);}
+	| POINT 		{$$ = new Identifier("Point", &@1);}
+	| PATH			{$$ = new Identifier("Path", &@1);}
+	| IMAGE			{$$ = new Identifier("Image", &@1);}
+	| RECTANGLE 	{$$ = new Identifier("Rectangle", &@1);}
+	| CIRCLE		{$$ = new Identifier("Circle", &@1);}
+	| ELLIPSE		{$$ = new Identifier("Ellipse", &@1);}
+	| POLYGON		{$$ = new Identifier("Polygon", &@1);}
+	| CURVE			{$$ = new Identifier("Curve", &@1);}
+	| PI			{$$ = new Identifier("Pi", &@1);}
+	| COLOUR		{$$ = new Identifier("Colour", &@1);}
+	| IDENTIFIER   	{$$ = new Identifier(*($1), &@1);}
 	;
 
 literal
-	: INTEGER_LITERAL	{$$ = new IntegerLiteral($1);}
-	| FLOAT_LITERAL		{$$ = new FloatLiteral($1);}
-	| STRING_LITERAL	{$$ = new StringLiteral(*($1));}
-	| BOOL_LITERAL		{$$ = new BooleanLiteral($1);}
+	: INTEGER_LITERAL	{$$ = new IntegerLiteral($1, &@1);}
+	| FLOAT_LITERAL		{$$ = new FloatLiteral($1, &@1);}
+	| STRING_LITERAL	{$$ = new StringLiteral(*($1), &@1);}
+	| BOOL_LITERAL		{$$ = new BooleanLiteral($1, &@1);}
 	;
 
 variable_declaration
 	: VAR type { SymbolTable::currentVariableType = $2->ret_id(); }
-	  		new_variable_list ';' { $$ = new VariableDeclaration(*($2), *($4)); }
+	  		new_variable_list ';' { $$ = new VariableDeclaration(*($2), *($4), &@$); }
 	| CONST type { SymbolTable::currentVariableType = $2->ret_id(); } 
-	  		new_variable_list ';' { $$ = new VariableDeclaration(*($2), *($4)); }
+	  		new_variable_list ';' { $$ = new VariableDeclaration(*($2), *($4), &@$); }
 	;
 
 new_variable_list
-	: new_variable						 {$$ = new list <Expression*>(); $$->push_back($1);}
+	: new_variable						 {$$ = new vector<Expression*>(); $$->push_back($1);}
 	| new_variable_list ',' new_variable {$$ = $1; $$->push_back($3);}
 	;
 
@@ -201,25 +201,25 @@ new_variable
 	: IDENTIFIER 							
 			{
 				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
-				$$ = new Identifier(*($1));
+				$$ = new Identifier(*($1), &@1);
 			}
 	| IDENTIFIER ASSIGN expression			
 			{
 				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
 				Variable* temp = new Identifier(*($1)); 
-				$$ = new AssignmentExp(temp, $3);
+				$$ = new AssignmentExp(temp, $3, &@$);
 			}
 	| IDENTIFIER '(' ')'					
 			{
 				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
-				Variable* temp = new Identifier(*($1)); 
-				$$ = new FunctionCall(temp);
+				Variable* temp = new Identifier(*($1), &@1); 
+				$$ = new FunctionCall(temp, vector<Expression *>(), &@$);
 			}
 	| IDENTIFIER '(' expression_list ')'	
 			{
 				cur_symbol_table->addSymbol(*$1, SymbolTable::currentVariableType, &@1); 
-				Variable* temp = new Identifier(*($1)); 
-				$$ = new FunctionCall(temp, *($3));
+				Variable* temp = new Identifier(*($1), &@1); 
+				$$ = new FunctionCall(temp, *($3), &@$);
 			}
 	;
 
@@ -231,8 +231,8 @@ function_declaration
 	  ')' compound_statement	
 			{ 
 				cur_symbol_table = cur_symbol_table->returnFromFunction(); 
-				auto temp = new Identifier(*($2)); 
-				$$ = new FunctionDeclaration(temp, *($1), $6); 
+				auto temp = new Identifier(*($2), &@2); 
+				$$ = new FunctionDeclaration(temp, *($1), $6, vector<Arg *>(), &@$); 
 			}
 	| type IDENTIFIER '(' 
 			{
@@ -247,31 +247,31 @@ function_declaration
 	  compound_statement	
 	  		{
 				cur_symbol_table = cur_symbol_table->returnFromFunction();
-				auto temp = new Identifier(*($2)); 
-				$$ = new FunctionDeclaration(temp, *($1), $8, *($5));
+				auto temp = new Identifier(*($2), &@2); 
+				$$ = new FunctionDeclaration(temp, *($1), $8, *($5), &@$);
 			}
 	;
 
 args_list
-	: arg				{$$ = new list <Arg*>(); $$->push_back($1);}
+	: arg				{$$ = new vector<Arg*>(); $$->push_back($1);}
 	| args_list ',' arg	{$$ = $1; $$->push_back($3);}
 	;
 
 arg
 	: type IDENTIFIER
 			{
-				cur_symbol_table->addSymbol(*$2, $1->ret_id(), &@1); 
-				$$ = new Arg(*($1), Identifier(*($2)));
+				cur_symbol_table->addSymbol(*$2, $1->ret_id(), &@2); 
+				$$ = new Arg(*($1), Identifier(*($2), &@2), &@$);
 			}
 	| VAR type IDENTIFIER	
 			{
-				cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@1); 
-				$$ = new Arg(*($2), Identifier(*($3)));
+				cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@3); 
+				$$ = new Arg(*($2), Identifier(*($3), &@3), &@$);
 			}
 	| CONST type IDENTIFIER	
 			{
-				cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@1); 
-				$$ = new Arg(*($2), Identifier(*($3)));
+				cur_symbol_table->addSymbol(*$3, $2->ret_id(), &@3); 
+				$$ = new Arg(*($2), Identifier(*($3), &@3), &@$);
 			}
 	;
 
@@ -282,7 +282,7 @@ family_declaration
 	: FAMILY IDENTIFIER '{' '}' ';'														
 			{
 				cur_symbol_table->addSymbol(*$2, "Family", &@1, KIND::FAMILY);
-				$$ = new FamilyDecl(Identifier(*$2));
+				$$ = new FamilyDecl(Identifier(*$2, &@2), &@$);
 			}
 	| FAMILY IDENTIFIER '{'
 			{ 
@@ -290,14 +290,14 @@ family_declaration
 			}
 	 class_members '}' ';' 	
 	 		{
-				$$ = new FamilyDecl(Identifier(*$2), *($5)); 
+				$$ = new FamilyDecl(Identifier(*$2, &@2), *($5), optional<pair<Identifier, ACCESS_SPEC>>(), &@$); 
 				cur_symbol_table = cur_symbol_table->endScope();
 			}
 	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{' '}' ';' 				
 			{
 				cur_symbol_table->addSymbol(*$2, "Family", &@1, KIND::FAMILY);
 				// TODO: Copy public members from parent class
-				$$ = new FamilyDecl(Identifier(*($2)),optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5), *($4))));
+				$$ = new FamilyDecl(Identifier(*($2), &@2), vector<FamilyMembers*>(), optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5, &@5), *($4))), &@$);
 			}
 	| FAMILY IDENTIFIER INHERITS access_specifier IDENTIFIER '{'
 			{
@@ -306,7 +306,7 @@ family_declaration
 			}
 	 class_members '}' ';'	
 			{
-				$$ = new FamilyDecl(Identifier(*($2)),*($8), optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5), *($4))));
+				$$ = new FamilyDecl(Identifier(*($2), &@2),*($8), optional<pair<Identifier, ACCESS_SPEC>>(make_pair(Identifier(*$5, &@5), *($4))), &@$);
 				cur_symbol_table = cur_symbol_table->endScope();
 			}
 	;
@@ -317,14 +317,14 @@ access_specifier
 	;
 
 class_members
-	: class_member 					{$$ = new list<FamilyMembers*>(); $$->push_back($1);}
+	: class_member 					{$$ = new vector<FamilyMembers*>(); $$->push_back($1);}
 	| class_members class_member	{$$ =$1; $$->push_back($2);}
 	;
 
 class_member
-	: access_specifier variable_declaration	{$$ = new FamilyMembers(*($1), $2);}
-	| access_specifier function_declaration	{$$ = new FamilyMembers(*($1), $2);}
-	| constructor_declaration				{$$ = new FamilyMembers(ACCESS_SPEC::PUBLIC, $1);}
+	: access_specifier variable_declaration	{$$ = new FamilyMembers(*($1), $2, &@$);}
+	| access_specifier function_declaration	{$$ = new FamilyMembers(*($1), $2, &@$);}
+	| constructor_declaration				{$$ = new FamilyMembers(ACCESS_SPEC::PUBLIC, $1, &@$);}
 	;
 
 constructor_declaration
@@ -341,7 +341,7 @@ constructor_declaration
 	  compound_statement	
 	  		{
 				cur_symbol_table = cur_symbol_table->returnFromFunction();
-				$$ = new ConstructorDeclaration(Identifier(*($1)), $7, *($4));
+				$$ = new ConstructorDeclaration(Identifier(*($1), &@1), $7, *($4), &@$);
 			}
 	;
 
@@ -351,50 +351,50 @@ constructor_declaration
 primary_expression
 	: literal							{$$ = (Expression*)$1;}
 	| variable							{$$ = (Expression*)$1;}
-	| variable '(' ')'					{$$ = new FunctionCall($1);}
-	| variable '(' expression_list ')'	{$$ = new FunctionCall($1, *($3));}
+	| variable '(' ')'					{$$ = new FunctionCall($1, vector<Expression*>(), &@$);}
+	| variable '(' expression_list ')'	{$$ = new FunctionCall($1, *($3), &@$);}
 	| '(' expression ')'				{$$ = $2;}
 	;
 
 variable
-	: IDENTIFIER						{$$ = new Identifier(*($1));}
-	| variable SCOPE_ACCESS IDENTIFIER	{$$ = new MemberAccess((Variable*)$1, *($3));}
-	| variable '[' expression ']'		{$$ = new ArrayAccess($1, $3);}
+	: IDENTIFIER						{$$ = new Identifier(*($1), &@1);}
+	| variable SCOPE_ACCESS IDENTIFIER	{$$ = new MemberAccess((Variable*)$1, *($3), &@$);}
+	| variable '[' expression ']'		{$$ = new ArrayAccess($1, $3, &@$);}
 	;
 
 expression
 	: primary_expression						//$$ = $1
-	| '+' expression %prec UPLUS				{$$ = new UnaryPlus($2);}
-	| '-' expression %prec UMINUS				{$$ = new UnaryMinus($2);}
-	| expression '*' expression					{$$ = new Multiplication($1, $3);}
-	| expression '/' expression					{$$ = new Division($1, $3);}
-	| expression '%' expression					{$$ = new ModularDiv($1, $3);}
-	| expression '+' expression					{$$ = new Addition($1, $3);}
-	| expression '-' expression					{$$ = new Subtraction($1, $3);}
-	| expression EQ expression					{$$ = new CompEQ($1, $3);}
-	| expression NOT_EQ expression				{$$ = new CompNEQ($1, $3);}
-	| expression LS_THAN expression				{$$ = new CompLT($1, $3);}
-	| expression LS_THAN_EQ expression			{$$ = new CompLE($1, $3);}
-	| expression GR_THAN expression				{$$ = new CompGT($1, $3);}
-	| expression GR_THAN_EQ expression			{$$ = new CompGE($1, $3);}
-	| expression LOGICAL_AND expression			{$$ = new LogicalAND($1, $3);}
-	| expression LOGICAL_OR expression			{$$ = new LogicalOR($1, $3);}
-	| LOGICAL_NOT expression					{$$ = new LogicalNOT($2);}
-	| INC variable								{$$ = new PrefixInc((Variable*)$2);}
-	| DEC variable								{$$ = new PostfixDec((Variable*)$2);}
-	| variable INC %prec INC_POST				{$$ = new PostfixInc((Variable*)$1);}
-	| variable DEC %prec DEC_POST				{$$ = new PostfixDec((Variable*)$1);}
-	| variable ASSIGN expression				{$$ = new AssignmentExp((Variable*)$1, $3);}
-	| variable MUL_ASSIGN expression			{$$ = new MulAssign((Variable*)$1, $3);}
-	| variable DIV_ASSIGN expression			{$$ = new DivAssign((Variable*)$1, $3);}
-	| variable MOD_ASSIGN expression			{$$ = new ModAssign((Variable*)$1, $3);}
-	| variable ADD_ASSIGN expression			{$$ = new AddAssign((Variable*)$1, $3);}
-	| variable SUB_ASSIGN expression			{$$ = new SubAssign((Variable*)$1, $3);}
-	| expression '?' expression ':' expression	{$$ = new TernaryOperator($1, $3, $5);}
+	| '+' expression %prec UPLUS				{$$ = new UnaryPlus($2, &@$);}
+	| '-' expression %prec UMINUS				{$$ = new UnaryMinus($2, &@$);}
+	| expression '*' expression					{$$ = new Multiplication($1, $3, &@$);}
+	| expression '/' expression					{$$ = new Division($1, $3, &@$);}
+	| expression '%' expression					{$$ = new ModularDiv($1, $3, &@$);}
+	| expression '+' expression					{$$ = new Addition($1, $3, &@$);}
+	| expression '-' expression					{$$ = new Subtraction($1, $3, &@$);}
+	| expression EQ expression					{$$ = new CompEQ($1, $3, &@$);}
+	| expression NOT_EQ expression				{$$ = new CompNEQ($1, $3, &@$);}
+	| expression LS_THAN expression				{$$ = new CompLT($1, $3, &@$);}
+	| expression LS_THAN_EQ expression			{$$ = new CompLE($1, $3, &@$);}
+	| expression GR_THAN expression				{$$ = new CompGT($1, $3, &@$);}
+	| expression GR_THAN_EQ expression			{$$ = new CompGE($1, $3, &@$);}
+	| expression LOGICAL_AND expression			{$$ = new LogicalAND($1, $3, &@$);}
+	| expression LOGICAL_OR expression			{$$ = new LogicalOR($1, $3, &@$);}
+	| LOGICAL_NOT expression					{$$ = new LogicalNOT($2, &@$);}
+	| INC variable								{$$ = new PrefixInc((Variable*)$2, &@$);}
+	| DEC variable								{$$ = new PostfixDec((Variable*)$2, &@$);}
+	| variable INC %prec INC_POST				{$$ = new PostfixInc((Variable*)$1, &@$);}
+	| variable DEC %prec DEC_POST				{$$ = new PostfixDec((Variable*)$1, &@$);}
+	| variable ASSIGN expression				{$$ = new AssignmentExp((Variable*)$1, $3, &@$);}
+	| variable MUL_ASSIGN expression			{$$ = new MulAssign((Variable*)$1, $3, &@$);}
+	| variable DIV_ASSIGN expression			{$$ = new DivAssign((Variable*)$1, $3, &@$);}
+	| variable MOD_ASSIGN expression			{$$ = new ModAssign((Variable*)$1, $3, &@$);}
+	| variable ADD_ASSIGN expression			{$$ = new AddAssign((Variable*)$1, $3, &@$);}
+	| variable SUB_ASSIGN expression			{$$ = new SubAssign((Variable*)$1, $3, &@$);}
+	| expression '?' expression ':' expression	{$$ = new TernaryOperator($1, $3, $5, &@$);}
 	;
 
 expression_list
-	: expression						{$$ = new list <Expression*>(); ($$)->push_back($1);}
+	: expression						{$$ = new vector<Expression*>(); ($$)->push_back($1);}
 	| expression_list ',' expression	{$$ = $1; ($$)->push_back($3);}
 	;
 
@@ -413,47 +413,50 @@ statement
 	;
 
 compound_statement
-	: '{' '}'					{$$ = new CompoundStatement(list<Statement*>());}
+	: '{' '}'					{$$ = new CompoundStatement(vector<Statement*>(), &@$);}
 	| '{' {cur_symbol_table = cur_symbol_table->startNewScope();} 
 			statement_list 
-	  '}' {cur_symbol_table = cur_symbol_table->endScope(); $$ = new CompoundStatement(*($3));}
+	  '}' {cur_symbol_table = cur_symbol_table->endScope(); $$ = new CompoundStatement(*($3), &@$);}
 	;
 
 statement_list
-	: statement					{$$ = new list <Statement*>(); ($$)->push_back($1);}
+	: statement					{$$ = new vector<Statement*>(); ($$)->push_back($1);}
 	| statement_list statement	{$$ = $1; ($$)->push_back($2);}
 	;
 
 expression_statement
-	: ';'			 	  {$$ = new ExpressionStatement();}
-	| expression_list ';' {$$ = new ExpressionStatement($1);}
+	: ';'			 	  {$$ = new ExpressionStatement(NULL, &@$);}
+	| expression_list ';' {$$ = new ExpressionStatement($1, &@$);}
 	;
 
 selection_statement
-	: IF '(' expression ')' compound_statement							{$$ = new IfStatement($3, (CompoundStatement*)$5);}
-	| IF '(' expression ')' compound_statement ELSE compound_statement 	{$$ = new IfElseStatement($3, (CompoundStatement*)$5, (CompoundStatement*)$7);}
-	| SWITCH '(' expression ')' statement								{$$ = new SwitchStatement($3, (CompoundStatement*)$5);}
+	: IF '(' expression ')' compound_statement							{$$ = new IfStatement($3, (CompoundStatement*)$5, &@$);}
+	| IF '(' expression ')' compound_statement ELSE compound_statement 	{$$ = new IfElseStatement($3, (CompoundStatement*)$5, (CompoundStatement*)$7, &@$);}
+	| SWITCH '(' expression ')' statement								{$$ = new SwitchStatement($3, (CompoundStatement*)$5, &@$);}
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement		{Expression* temp = new Identifier(*($1));$$ = new LabeledStatement(temp, $3);}
-	| CASE expression ':' statement	{$$ = new CaseLabel($2, $4);}
-	| DEFAULT ':' statement			{$$ = new DefaultLabel($3);}
+	: IDENTIFIER ':' statement		{Expression* temp = new Identifier(*($1), &@1);$$ = new LabeledStatement(temp, $3, &@$);}
+	| CASE expression ':' statement	{$$ = new CaseLabel($2, $4, &@$);}
+	| DEFAULT ':' statement			{$$ = new DefaultLabel($3, &@$);}
 	;
 
 iteration_statement
-	: WHILE '(' ')' compound_statement														{$$ = new WhileLoop((CompoundStatement*)$4);}
-	| WHILE '(' expression ')' compound_statement											{$$ = new WhileLoop((CompoundStatement*)$5, $3);}
-	| FOR '(' expression_statement expression_statement ')' compound_statement				{$$ = new ForLoop((CompoundStatement*)$6, (ExpressionStatement*)$3, (ExpressionStatement*)$4, NULL);}
-	| FOR '(' expression_statement expression_statement expression ')' compound_statement 	{$$ = new ForLoop((CompoundStatement*)$7, (ExpressionStatement*)$3, (ExpressionStatement*)$4, $5);}
-	| FOR '(' variable_declaration expression_statement ')' compound_statement 				{$$ = new ForLoop((CompoundStatement*)$6, (ExpressionStatement*)$3, (ExpressionStatement*)$4, NULL);} 
-	| FOR '(' variable_declaration expression_statement expression ')' compound_statement 	{$$ = new ForLoop((CompoundStatement*)$7, (ExpressionStatement*)$3, (ExpressionStatement*)$4, $5);}
+	: WHILE '(' {cur_symbol_table = cur_symbol_table->startNewScope("while", true);} 
+		 iter_expression ')' compound_statement											{$$ = new WhileLoop((CompoundStatement*)$6, $4, &@$); cur_symbol_table = cur_symbol_table->endScope();}
+	| FOR '(' {cur_symbol_table = cur_symbol_table->startNewScope("for", true);}
+		statement expression_statement iter_expression ')' compound_statement 	{$$ = new ForLoop((CompoundStatement*)$8, (ExpressionStatement*)$4, (ExpressionStatement*)$5, $6, &@$); cur_symbol_table = cur_symbol_table->endScope();}
+	;
+
+iter_expression
+	:  %empty {$$ = NULL;}
+	| expression
 	;
 
 jump_statement
-	: CONTINUE ';' 				{$$ = new ContinueStatement();}
-	| BREAK ';'					{$$ = new BreakStatement();}
-	| SEND expression_statement	{$$ = new ReturnStatement((((ExpressionStatement*)$2)->getValue()).back());}
+	: CONTINUE ';' 				{$$ = new ContinueStatement(&@$);}
+	| BREAK ';'					{$$ = new BreakStatement(&@$);}
+	| SEND expression_statement	{$$ = new ReturnStatement((((ExpressionStatement*)$2)->getValue()).back(), &@$);}
 	;
 
 %%
@@ -462,6 +465,16 @@ void init_yylloc(const char* filename){
 	yylloc.first_line = yylloc.last_line = yylineno = 1;
 	yylloc.first_column = yylloc.last_column = 0;
 	yylloc.filename = filename;
+}
+
+string createOutputFile(string file_path, string extension){
+	int file_dir_path_size = (file_path.find_last_of('/') == string::npos) ? 0 : file_path.find_last_of('/') + 1;
+	string dirname = file_path.substr(0, file_dir_path_size);
+	string filename = file_path.substr(file_dir_path_size, file_path.size() - file_dir_path_size - 5);
+	filesystem::create_directory(dirname + "output/");
+	string output_filename = dirname + "output/" + filename + extension;
+
+	return output_filename;
 }
 
 int main(int argc, char **argv){
@@ -487,13 +500,13 @@ int main(int argc, char **argv){
 			yyparse();
 
 			#ifdef SYMBOL_TABLE_DEBUG
-			int file_dir_path_size = (string(argv[i]).find_last_of('/') == string::npos) ? 0 : string(argv[i]).find_last_of('/') + 1;
-			string dirname = string(argv[i]).substr(0, file_dir_path_size);
-			string filename = string(argv[i]).substr(file_dir_path_size, string(argv[i]).size() - file_dir_path_size - 5);
-			filesystem::create_directory(dirname + "output/");
-			string symbol_table_filename = dirname + "output/" + filename + ".sym";
-			ofstream symbol_table_output_file(symbol_table_filename);
-			global_symbol_table.printSymbolTable(symbol_table_output_file);
+				ofstream symbol_table_output_file(createOutputFile(argv[i], ".sym"));
+				global_symbol_table.printSymbolTable(symbol_table_output_file);
+			#endif
+
+			#ifdef AST_DEBUG
+				ofstream ast_output_file(createOutputFile(argv[i], ".ast-dump"));
+				/* ast_output_file << *root; */
 			#endif
 
             fclose(file);
