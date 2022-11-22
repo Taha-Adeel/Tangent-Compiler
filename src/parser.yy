@@ -13,11 +13,6 @@
 	extern int yylineno;
 
 	#define YYFPRINTF(f, fmt, ...)  printf(fmt, ##__VA_ARGS__)
-	#if YYDEBUG == 1
-	#define PARSER_TRACE_DEBUG
-	#define SYMBOL_TABLE_DEBUG
-	#define AST_DEBUG
-	#endif
 }
 
 %define parse.error detailed
