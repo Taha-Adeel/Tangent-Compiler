@@ -1,0 +1,10 @@
+# lexer-test to check working comments
+#sample program
+
+
+driver<: :>
+(:
+    #The comments will be ignored
+    #Comment-1
+    #comment-2
+:)

@@ -1,0 +1,20 @@
+#semantic-test for wrongful redeclaration of function Name
+
+void calculate<: var int a, var int b:>
+(:
+    var int addn := a+b;
+    print(addn);
+:)
+
+void calculate<: var int c, var int d:>
+(:
+    var int mult := c*d;
+    print(mult);
+:)
+
+driver<: :>
+(:
+    var int a := 2;
+    var int b := 3;
+    calculate(a,b);
+:)

@@ -1,0 +1,10 @@
+#sample program to check for semantics and working of symbol table
+
+driver<: :>
+(:
+    print("Hello World");
+    var int a := 4;
+    var int b := 10;
+    var int sum := a+b;
+    print(sum);
+:)

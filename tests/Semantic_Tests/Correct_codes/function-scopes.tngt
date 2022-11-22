@@ -1,0 +1,44 @@
+#semantic and symbol table test for function scope
+
+void add<: var int a, var int b :>
+(:
+    var int ans := a+b;
+    print(ans);
+:)
+
+void multiply<: var int a, var int b :>
+(:
+    var int ans := a*b;
+    print(ans);
+:)
+
+void divide<: var float c, var float d :>
+(:
+    var float ans := c/d;
+    print(ans);
+:)
+
+bool checkOddEve<: var int n :>
+(:
+    var bool ans;
+    if(n % 2 = 0)
+    (:
+        ans = true;
+    :)
+    else
+    (:
+        ans = false;
+    :)
+    send ans;
+:)
+
+driver<: :>
+(:
+    var int a := 6, b := 7;
+    var float c := 3.4, d := 12.35;
+    var bool result := checkOddEve(a);
+    add(a,b);
+    multiply(a,b);
+    divide(c,d);
+    print(result);
+:)
