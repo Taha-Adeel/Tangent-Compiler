@@ -30,7 +30,7 @@ protected:
     YYLTYPE* location = NULL;
 public:
     /// @brief prints the description/properties/value of the current node
-    virtual void print(ostream& out_file, int indentation = 0) = 0;
+    virtual void print(ostream& out_file, int indentation = 0);
 };
 
 /*------------------------------------------------------------------------

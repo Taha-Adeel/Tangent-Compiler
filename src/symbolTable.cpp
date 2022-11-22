@@ -192,6 +192,11 @@ Symbol* SymbolTable::lookUp(std::string name){
 		return NULL;
 }
 
+
+/*************************************************/
+/* Utility Functions to display the Symbol Table */
+/*************************************************/
+
 /// @brief Overloaded insertion operator to print location of the symbol
 std::ostream& operator << (std::ostream& os, const YYLTYPE* loc){
 	if(loc == NULL) return os << "Language defined symbol";

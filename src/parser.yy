@@ -506,7 +506,7 @@ int main(int argc, char **argv){
 
 			#ifdef AST_DEBUG
 				ofstream ast_output_file(createOutputFile(argv[i], ".ast-dump"));
-				/* ast_output_file << *root; */
+				root->print(ast_output_file);
 			#endif
 
             fclose(file);
