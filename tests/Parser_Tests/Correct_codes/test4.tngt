@@ -12,7 +12,7 @@ driver<: :>
     #using OR
     var int aaa := 4;
     if(b1%2 = 0 | b1%3 = 0)
-    (:
+    (:functions
         print(b1);
         print("is divisible by at least one of 2 and 3\n");
     :)

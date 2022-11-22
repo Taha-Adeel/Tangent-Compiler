@@ -1,0 +1,22 @@
+#semantic test for using undefined variables
+
+void checkOdd<: var int n :>
+(:
+    var string ans;
+    if(n%2 = 0)
+    (:
+        ans := "not odd";
+    :)
+    else
+    (:
+        ans := "yes odd";
+    :)
+    print(ans);
+:)
+
+driver<: :>
+(:
+    var int sum := a+b;
+    print(sum);
+    checkEven(sum);
+:)
