@@ -19,13 +19,13 @@ driver<: :>
     (:
         case 5: s := "test"; break;
         case 2: s := "tldr"; break;
-        default: s := "touch_grass";
+        default: s := "touch grass";
     :)
 
-    #return stmt
+    #send stmt
     if(c <= 30)
     (:
-        return;
+        send;
     :)
 
 

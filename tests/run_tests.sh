@@ -74,7 +74,7 @@ parser_incorrect_codes_test(){
 }
 
 semn_correct_codes_test(){
-	TESTS_DIR+="Parser_Tests/Correct_codes"
+	TESTS_DIR+="Semantic_Tests/Correct_codes"
 	EXE="${BUILD_DIR}/parser_with_semantic_analysis"
 	OUTPUT_FILE_EXTENSION=".sym"
 
@@ -87,7 +87,7 @@ semn_correct_codes_test(){
 }
 
 semn_incorrect_codes_test(){
-	TESTS_DIR+="Parser_Tests/Incorrect_codes"
+	TESTS_DIR+="Semantic_Tests/Incorrect_codes"
 	EXE="${BUILD_DIR}/parser_with_semantic_analysis"
 	OUTPUT_FILE_EXTENSION=".sym"
 

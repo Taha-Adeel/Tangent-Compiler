@@ -1,0 +1,40 @@
+#lexer-test to check matching of family and function tokens
+
+#class
+family Vehicle
+(:
+
+    public:
+        Colour c;
+        int wheels;
+        float calculateSpeed<: var int a, var float b :>;
+        float calculateMileage<: var int c, var float d:>;
+        void dummyFunction<: :>;
+    
+    private:
+        int plate_no;
+        string owner;
+
+:);
+
+float Vehicle::calculateSpeed<: var int a, var float b :>
+(:
+    var float speed := a+b;
+    send speed;
+:)
+
+float Vehicle::calculateMileage<: var int c, var float d :>
+(:
+    var float mileage := c*d;
+    send mileage;
+:)
+
+void Vehicle::dummyFunction<: :>
+(:
+    #nothing happens here;
+:)
+
+driver<: var int c, var float d :>
+(:
+    var Vehicle car;
+:)
