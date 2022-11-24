@@ -140,7 +140,7 @@ SymbolTable* SymbolTable::addFamily(std::string identifier_name, YYLTYPE* locati
  * @return The current symbol table 
  */
 SymbolTable* SymbolTable::addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type){
-	if(type == KIND::UNKNOWN){
+	if(type == KIND::ERROR){
 		Symbol* type_name_symbol = lookUp(type_name);
 		if(type_name_symbol == NULL)
 			yyerror(std::string("Semantic Error: Typename not declared before: " + type_name).c_str());
@@ -214,7 +214,7 @@ std::ostream& operator << (std::ostream& os, const KIND& type){
 		case KIND::INBUILT_PRIMITIVE_TYPE: return os << "Inbuilt primitive typename";
 		case KIND::INBUILT_FAMILY: return os << "Inbuilt family typename";
 		case KIND::INBUILT_FUNCTION: return os << "Inbuilt function";
-		case KIND::UNKNOWN: 
+		case KIND::ERROR: 
 		default: return os << "Unknown";
 	}
 }

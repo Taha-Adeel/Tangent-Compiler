@@ -12,6 +12,8 @@
 // #include <llvm/IR/Value.h>
 
 #include "symbolTable.h"
+extern SymbolTable global_symbol_table;
+extern SymbolTable *cur_symbol_table;
 using namespace std;
 
 /*------------------------------------------------------------------------
@@ -89,7 +91,7 @@ public:
      * 
      * @param val the value of the int literal
      */
-    IntegerLiteral(int val, YYLTYPE* location = NULL):Literal(location, "IntegerLiteral"){value = val;}
+    IntegerLiteral(int val, YYLTYPE* location = NULL):Literal(location, "IntegerLiteral"){value = val; typename_of_expression = "int";}
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
@@ -106,7 +108,7 @@ public:
      * 
      * @param val value of float literal
      */
-    FloatLiteral(float val, YYLTYPE* location = NULL):Literal(location, "FloatLiteral"){value = val;}
+    FloatLiteral(float val, YYLTYPE* location = NULL):Literal(location, "FloatLiteral"){value = val; typename_of_expression = "float";}
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
@@ -124,7 +126,7 @@ public:
      * 
      * @param val value of the string literal
      */
-    StringLiteral(string val, YYLTYPE* location = NULL):Literal(location, "StringLiteral") {value = val;}
+    StringLiteral(string val, YYLTYPE* location = NULL):Literal(location, "StringLiteral") {value = val; typename_of_expression = "string";}
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
@@ -141,7 +143,7 @@ public:
      * 
      * @param val value of boolean literal
      */
-    BooleanLiteral(bool val, YYLTYPE* location = NULL):Literal(location, "BoolLiteral") {value = val;}
+    BooleanLiteral(bool val, YYLTYPE* location = NULL):Literal(location, "BoolLiteral") {value = val; typename_of_expression = "bool";}
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
@@ -166,9 +168,10 @@ class Identifier : public Variable
 {
 protected:
     string id;  ///name the identifier
+    Symbol* symbol = NULL;
 
 public:
-    Identifier(YYLTYPE* location = NULL, string name = "Identifier"):Variable(location, name), id(name){};
+    Identifier(YYLTYPE* location = NULL, string name = "Identifier");
     void print(ostream& out_file, int indentation = 0);
     string ret_id();
     datatype evaluate();
@@ -182,8 +185,8 @@ public:
 class MemberAccess : public Variable
 {
 protected:
-    Variable *accessor_name;
-    Identifier id;
+    Variable *object;
+    Identifier member;
 
 public:
    /**
@@ -192,7 +195,7 @@ public:
     * @param v 
     * @param s 
     */
-    MemberAccess(Variable *v, Identifier id, YYLTYPE* location = NULL):Variable(location, "MemberAcess"), accessor_name(v), id(id){}
+    MemberAccess(Variable *v, Identifier id, YYLTYPE* location = NULL);
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
@@ -209,7 +212,7 @@ protected:
 
 public:
     ArrayAccess(Expression *name, Expression *ind, YYLTYPE* location = NULL)
-        : Variable(location, "ArrayAccess") ,array_name((Variable*)name),index(ind){}
+        : Variable(location, "ArrayAccess") ,array_name((Variable*)name),index(ind){typename_of_expression = array_name->get_type();}
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
@@ -236,7 +239,8 @@ protected:
 
 public:
     FunctionCall(Expression *name, vector<Expression *> l = vector<Expression *>(), YYLTYPE* location = NULL)
-        :Expression(location, "FunctionCall"), func_name((Variable*)name), args_list(l){}
+        :Expression(location, "FunctionCall"), func_name((Variable*)name), args_list(l)
+    {typename_of_expression = func_name->get_type().substr(0, func_name->get_type().find("->"));}
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
@@ -251,7 +255,7 @@ protected:
 
 public:
     AssignmentExp();
-    AssignmentExp(Variable *L, Expression *R, YYLTYPE* location = NULL, string name = "AssignmentExp"):Expression(location, name), LHS(L), RHS(R){}
+    AssignmentExp(Variable *L, Expression *R, YYLTYPE* location = NULL, string name = "AssignmentExp");
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
@@ -308,7 +312,7 @@ class UnaryIncrement : public UnaryOperation
 {
 protected:
     Variable *var;
-    UnaryIncrement(Variable* v, YYLTYPE* location = NULL, string name = "UnaryIncrement"):UnaryOperation(location, name), var(v){}
+    UnaryIncrement(Variable* v, YYLTYPE* location = NULL, string name = "UnaryIncrement"):UnaryOperation(location, name), var(v){typename_of_expression = var->get_type();}
 public:
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
@@ -334,7 +338,7 @@ class UnaryDecrement : public UnaryOperation
 {
 protected:
     Variable *var;
-    UnaryDecrement(Variable *v, YYLTYPE* location = NULL, string name = "UnaryDecrement"):UnaryOperation(location, name), var(v){}
+    UnaryDecrement(Variable *v, YYLTYPE* location = NULL, string name = "UnaryDecrement"):UnaryOperation(location, name), var(v){typename_of_expression = var->get_type();}
 public:
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
@@ -362,7 +366,7 @@ protected:
     Expression *exp;
 
 public:
-    UnaryPlus(Expression *e, YYLTYPE* location = NULL):UnaryOperation(location, "UnaryPlus"), exp(e){}
+    UnaryPlus(Expression *e, YYLTYPE* location = NULL):UnaryOperation(location, "UnaryPlus"), exp(e){typename_of_expression = exp->get_type();}
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
@@ -373,7 +377,7 @@ protected:
     Expression *exp;
 
 public:
-    UnaryMinus(Expression *e, YYLTYPE* location = NULL):UnaryOperation(location, "UnaryMinus"), exp(e){}
+    UnaryMinus(Expression *e, YYLTYPE* location = NULL):UnaryOperation(location, "UnaryMinus"), exp(e){typename_of_expression = exp->get_type();}
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
@@ -391,8 +395,7 @@ public:
     /// @param cond conditon
     /// @param t_eval expression to eval on cond == true
     /// @param f_eval expression to eval on cond == false
-    TernaryOperator(Expression *cond, Expression *t_eval, Expression *f_eval, YYLTYPE* location = NULL)
-        :Expression(location, "TernaryOperator"), condition(cond), true_eval(t_eval), false_eval(f_eval){}
+    TernaryOperator(Expression *cond, Expression *t_eval, Expression *f_eval, YYLTYPE* location = NULL);
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
@@ -405,7 +408,7 @@ protected:
     Expression *RHS;
     BinaryOperation();
 public:
-    BinaryOperation(Expression *L, Expression *R, YYLTYPE* location = NULL, string name = "BinaryOperation"):Expression(location, name), LHS(L), RHS(R){}
+    BinaryOperation(Expression *L, Expression *R, YYLTYPE* location = NULL, string name = "BinaryOperation");
     void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };

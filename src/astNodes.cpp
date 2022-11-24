@@ -23,17 +23,11 @@ typedef struct YYLTYPE{
 	int last_column;
 	const char *filename;
 } YYLTYPE;
-std::ostream& printLoc(ostream& os, const YYLTYPE* loc){
-	if(loc == NULL) return os << "";
+std::string toString(const YYLTYPE* loc){
+	if(loc == NULL) return "";
 	std::stringstream ss; ss << "<" << loc->first_line << "-" << loc->first_column << ".." << loc->last_line << "-" << loc->last_column << ">";
-	return os << ss.str();
+	return ss.str();
 }
-
-ASTNode::ASTNode(YYLTYPE* location, string node_name): location(location), node_name(node_name) {
-    if(location != NULL) 
-        this->location = new YYLTYPE(*location);
-}
-
 extern int yyerror(const char *s);
 datatype throwError()
 {
@@ -42,12 +36,65 @@ datatype throwError()
     return e;
 }
 
-bool checkError(datatype value)
+ASTNode::ASTNode(YYLTYPE* location, string node_name): location(location), node_name(node_name) {
+    if(location != NULL) 
+        this->location = new YYLTYPE(*location);
+}
+
+Identifier::Identifier(YYLTYPE* location, string name)
+    :Variable(location, "Identifier"), id(name)
 {
-    if(value.index() == 5)
-        return true;
-    else
-        return false;
+    symbol = cur_symbol_table->lookUp(id);
+    if(symbol == NULL) {
+        cur_symbol_table->addSymbol(id, "error-type", location, KIND::ERROR);
+        symbol = cur_symbol_table->lookUp(id);
+        yyerror(("Semantic Error: Identifier " + id + " at " + toString(location) + " is not declared").c_str());
+    }
+    typename_of_expression = symbol->getTypeName();
+}
+
+MemberAccess::MemberAccess(Variable *v, Identifier id, YYLTYPE* location)
+    :Variable(location, "MemberAcess"), object(v), member(id)
+{
+    Symbol* member_symbol = global_symbol_table.getSymbolTable(object->get_type())->lookUp(member.ret_id());
+    if(member_symbol == NULL) {
+        yyerror(("Semantic Error: " + toString(location) + ": Family" + object->get_type() + " has no member named " + member.ret_id()).c_str());
+    }
+    typename_of_expression = member_symbol->getTypeName();
+}
+
+AssignmentExp::AssignmentExp(Variable *L, Expression *R, YYLTYPE* location, string name)
+    :Expression(location, name), LHS(L), RHS(R)
+{
+    if(LHS->get_type() != RHS->get_type()){
+        stringstream error;
+        error << "Semantic Error: Type mismatch in " << name << " at " << toString(location) << ". Expected " << LHS->get_type() << " but got " << RHS->get_type();
+        yyerror(error.str().c_str());
+    }
+}
+
+TernaryOperator::TernaryOperator(Expression *cond, Expression *t_eval, Expression *f_eval, YYLTYPE* location)
+    :Expression(location, "TernaryOperator"), condition(cond), true_eval(t_eval), false_eval(f_eval)
+{
+    if(condition->get_type() != "bool")
+        yyerror(("Semantic Error: Condition in ternary operator at " + toString(location) + " must be of type bool.").c_str());
+    if(true_eval->get_type() != false_eval->get_type()){
+        stringstream error;
+        error << "Semantic Error: Type mismatch in ternary operator at " << toString(location) << ". Types found are " << t_eval->get_type() << " are " << f_eval->get_type();
+        yyerror(error.str().c_str());
+    }
+    typename_of_expression = true_eval->get_type();
+}
+
+BinaryOperation::BinaryOperation(Expression *L, Expression *R, YYLTYPE* location, string name)
+    :Expression(location, name), LHS(L), RHS(R)
+{
+    if(LHS->get_type() != RHS->get_type()){
+        stringstream error;
+        error << "Semantic Error: Type mismatch in " << name << " at " << toString(location) << ". Types found are " << LHS->get_type() << " and " << RHS->get_type();
+        yyerror(error.str().c_str());
+    }
+    typename_of_expression = LHS->get_type();
 }
 
 /* Evaluate and print functions for Literals*/
@@ -60,21 +107,21 @@ void indent(ostream &out, int indentation){ for (int i = 0; i < indentation; i++
 
 void IntegerLiteral::print(ostream& out, int indentation)
 {
-    indent(out, indentation); out <<"int literal"; printLoc(out, location); out << "\n{";
+    indent(out, indentation); out <<"int literal" << toString(location) << "\n{";
     indent(out, indentation+1); out << get<int>(value);
     indent(out, indentation); out <<"\n}\n";
 }
 
 void FloatLiteral::print(ostream& out, int indentation)
 {
-    indent(out, indentation); out <<"float literal"; printLoc(out, location); out << "\n{";
+    indent(out, indentation); out <<"float literal" << toString(location) << "\n{";
     indent(out, indentation+1); out << get<float>(value);
     indent(out, indentation); out <<"\n}\n"; 
 }
 
 void StringLiteral::print(ostream& out, int indentation)
 {
-    indent(out, indentation); out<<"string literal"; printLoc(out, location); out << "\n{";
+    indent(out, indentation); out<<"string literal" << toString(location) << "\n{";
     indent(out, indentation+1); out << get<string>(value);
     indent(out, indentation); out<<"\n}\n";
 }
@@ -88,7 +135,7 @@ void BooleanLiteral::print(ostream& out, int indentation)
 
 void Identifier::print(ostream& out, int indentation)
 {
-    indent(out, indentation); out<<"Identifier"; printLoc(out, location); out << "\n{";
+    indent(out, indentation); out<<"Identifier" << toString(location) << "\n{";
     indent(out, indentation+1); out << id;
     indent(out, indentation); out<<"\n}\n";
 }
@@ -105,7 +152,7 @@ datatype Identifier::evaluate()
 
 void ArrayAccess::print(ostream& out, int indentation)
 {
-    indent(out, indentation); out<<"int literal"; printLoc(out, location); out << "\n{";
+    indent(out, indentation); out<<"int literal" << toString(location) << "\n{";
     indent(out, indentation);     out<<"array name:\n{";
                                      array_name->print(out, indentation+1);
     indent(out, indentation);     out<<"\n}\n";
@@ -122,7 +169,7 @@ datatype ArrayAccess::evaluate()
 
 void FunctionCall::print(ostream& out, int indentation)
 {
-    out<<"function call:"; printLoc(out, location); out << "\n{";
+    out<<"function call:" << toString(location) << "\n{";
         func_name->print(out, indentation+1);
         out << "\narguments{\n";
         for (auto const &v : args_list)
@@ -142,7 +189,7 @@ datatype FunctionCall::evaluate()
 
 void AssignmentExp::print(ostream& out, int indentation)
 {
-    out<<"assignment expr"; printLoc(out, location); out << "\n{";
+    out<<"assignment expr" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -163,7 +210,7 @@ datatype AssignmentExp::evaluate()
 
 void AddAssign::print(ostream& out, int indentation)
 {
-    out<<"add assign"; printLoc(out, location); out << "\n{";
+    out<<"add assign" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -180,7 +227,7 @@ datatype AddAssign::evaluate()
 
 void SubAssign::print(ostream& out, int indentation)
 {
-    out<<"subtract assign"; printLoc(out, location); out << "\n{";
+    out<<"subtract assign" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -198,7 +245,7 @@ datatype SubAssign::evaluate()
 
 void MulAssign::print(ostream& out, int indentation)
 {
-    out<<"multiply assign"; printLoc(out, location); out << "\n{";
+    out<<"multiply assign" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -216,7 +263,7 @@ datatype MulAssign::evaluate()
 
 void DivAssign::print(ostream& out, int indentation)
 {
-    out<<"div assign"; printLoc(out, location); out << "\n{";
+    out<<"div assign" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -234,7 +281,7 @@ datatype DivAssign::evaluate()
 
 void ModAssign::print(ostream& out, int indentation)
 {
-    out<<"modulus assign"; printLoc(out, location); out << "\n{";
+    out<<"modulus assign" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -252,7 +299,7 @@ datatype ModAssign::evaluate()
 
 void Addition::print(ostream& out, int indentation)
 {
-    out<<"addition"; printLoc(out, location); out << "\n{";
+    out<<"addition" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -270,7 +317,7 @@ datatype Addition::evaluate()
 
 void Subtraction::print(ostream& out, int indentation)
 {
-    out<<"subtraction"; printLoc(out, location); out << "\n{";
+    out<<"subtraction" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -288,7 +335,7 @@ datatype Subtraction::evaluate()
 
 void Multiplication::print(ostream& out, int indentation)
 {
-    out<<"multiplication"; printLoc(out, location); out << "\n{";
+    out<<"multiplication" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -306,7 +353,7 @@ datatype Multiplication::evaluate()
 
 void Division::print(ostream& out, int indentation)
 {
-    out<<"division"; printLoc(out, location); out << "\n{";
+    out<<"division" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -324,7 +371,7 @@ datatype Division::evaluate()
 
 void ModularDiv::print(ostream& out, int indentation)
 {
-    out<<"modular division"; printLoc(out, location); out << "\n{";
+    out<<"modular division" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -342,7 +389,7 @@ datatype ModularDiv::evaluate()
 
 void UnaryPlus::print(ostream& out, int indentation)
 {
-    out<<"Unary +\n"; printLoc(out, location); out << "{\n";
+    out<<"Unary +\n" << toString(location) << "{\n";
     exp->print(out, indentation+1);
     out<<"\n}\n";
 }
@@ -353,7 +400,7 @@ datatype UnaryPlus::evaluate()
 
 void UnaryMinus::print(ostream& out, int indentation)
 {
-    out<<"Unary -\n"; printLoc(out, location); out << "{\n";
+    out<<"Unary -\n" << toString(location) << "{\n";
     exp->print(out, indentation+1);
     out<<"\n}\n";
 }
@@ -364,7 +411,7 @@ datatype UnaryMinus::evaluate()
 
 void LogicalAND::print(ostream& out, int indentation)
 {
-    out<<"logical and"; printLoc(out, location); out << "\n{";
+    out<<"logical and" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -381,7 +428,7 @@ datatype LogicalAND::evaluate()
 
 void LogicalOR::print(ostream& out, int indentation)
 {
-    out<<"logical or"; printLoc(out, location); out << "\n{";
+    out<<"logical or" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -411,7 +458,7 @@ datatype LogicalOR::evaluate()
 
 void LogicalNOT::print(ostream& out, int indentation)
 {
-    out<<"logical not -\n"; printLoc(out, location); out << "{\n";
+    out<<"logical not -\n" << toString(location) << "{\n";
     exp->print(out, indentation+1);
     out<<"\n}\n";
 }
@@ -447,7 +494,7 @@ datatype LogicalNOT::evaluate()
 
 void CompGT::print(ostream& out, int indentation)
 {
-    out<<"CompGT"; printLoc(out, location); out << "\n{";
+    out<<"CompGT" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -469,7 +516,7 @@ datatype CompGT::evaluate()
 
 void CompLT::print(ostream& out, int indentation)
 {
-    out<<"CompLT"; printLoc(out, location); out << "\n{";
+    out<<"CompLT" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -489,7 +536,7 @@ datatype CompLT::evaluate()
 
 void CompGE::print(ostream& out, int indentation)
 {
-    out<<"CompGE"; printLoc(out, location); out << "\n{";
+    out<<"CompGE" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -511,7 +558,7 @@ datatype CompGE::evaluate()
 
 void CompLE::print(ostream& out, int indentation)
 {
-    out<<"CompLE"; printLoc(out, location); out << "\n{";
+    out<<"CompLE" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -533,7 +580,7 @@ datatype CompLE::evaluate()
 
 void CompEQ::print(ostream& out, int indentation)
 {
-    out<<"CompEQ"; printLoc(out, location); out << "\n{";
+    out<<"CompEQ" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -555,7 +602,7 @@ datatype CompEQ::evaluate()
 
 void CompNEQ::print(ostream& out, int indentation)
 {
-    out<<"CompNEQ"; printLoc(out, location); out << "\n{";
+    out<<"CompNEQ" << toString(location) << "\n{";
         out<<"LHS\n{\n";
             LHS->print(out, indentation+1);
         out<<"\n}\n";
@@ -577,11 +624,11 @@ datatype CompNEQ::evaluate()
 
 void MemberAccess::print(ostream& out, int indentation)
 {
-    out<<"Member Access:\n"; printLoc(out, location); out << "{\n";
+    out<<"Member Access:\n" << toString(location) << "{\n";
     out<<"accessor name:\n";
-    accessor_name->print(out, indentation+1);
+    object->print(out, indentation+1);
     out<<"\n accessee name :\n";
-    id.print(out, indentation+1);
+    member.print(out, indentation+1);
     out<<"\n}\n";
 }
 datatype MemberAccess::evaluate()
@@ -682,7 +729,7 @@ datatype TernaryOperator::evaluate()
 
 void ExpressionStatement::print(ostream& out, int indentation)
 {
-    out << "Expression Statement:"; printLoc(out, location); out << "n->{";
+    out << "Expression Statement:" << toString(location) << "n->{";
     out<<"expressions:\n";
     for(auto &i:*exp)
     {
@@ -700,7 +747,7 @@ vector<Expression *> ExpressionStatement::getValue()
 
 void CompoundStatement::print(ostream& out, int indentation)
 {
-    out << "Compound Statement:"; printLoc(out, location); out << "\n{";
+    out << "Compound Statement:" << toString(location) << "\n{";
     for (auto ele : stmt_list)
     {
         out << "\n->";
@@ -711,7 +758,7 @@ void CompoundStatement::print(ostream& out, int indentation)
 
 void FunctionDeclaration::print(ostream& out, int indentation)
 {
-    out << "Function Definition:"; printLoc(out, location); out << "\n{";
+    out << "Function Definition:" << toString(location) << "\n{";
     func_name->print(out, indentation+1);
     
     out << "\nReturn type : \n";
@@ -732,7 +779,7 @@ void FunctionDeclaration::print(ostream& out, int indentation)
 
 void VariableDeclaration::print(ostream& out, int indentation)
 {
-    out << "Variable Declaration: "; printLoc(out, location); out << "{\n";
+    out << "Variable Declaration: " << toString(location) << "{\n";
     out << "type : \n";
     variable_type.print(out, indentation+1);
 
@@ -747,14 +794,14 @@ void VariableDeclaration::print(ostream& out, int indentation)
 
 void DriverDefinition::print(ostream& out, int indentation)
 {
-    out << "Driver Definition:\n"; printLoc(out, location); out << "{\n";
+    out << "Driver Definition:\n" << toString(location) << "{\n";
     func_body->print(out, indentation+1);
     out << "\n}\n";
 }
 
 void VariableInitialization::print(ostream& out, int indentation)
 {
-    out << "Variable Initialisation: \n"; printLoc(out, location); out << "{\n";
+    out << "Variable Initialisation: \n" << toString(location) << "{\n";
     out << "type: \n";
     variable_type.print(out, indentation+1);
     out<<"initialisation:\n";
@@ -764,7 +811,7 @@ void VariableInitialization::print(ostream& out, int indentation)
 
 void LabeledStatement::print(ostream& out, int indentation)
 {
-    out << "Labelled Statement:\n"; printLoc(out, location); out << "{\n";
+    out << "Labelled Statement:\n" << toString(location) << "{\n";
     label->print(out, indentation+1);
     stmt->print(out, indentation+1);
     out << "\n}\n";
@@ -772,7 +819,7 @@ void LabeledStatement::print(ostream& out, int indentation)
 
 void CaseLabel::print(ostream& out, int indentation)
 {
-    out << "Case Label "; printLoc(out, location); out << "{\n";
+    out << "Case Label " << toString(location) << "{\n";
     label->print(out, indentation+1);
     out << "statements:";
     stmt->print(out, indentation+1);
@@ -781,7 +828,7 @@ void CaseLabel::print(ostream& out, int indentation)
 
 void DefaultLabel::print(ostream& out, int indentation)
 {
-    out << "Default Label \n"; printLoc(out, location); out << "{\n";
+    out << "Default Label \n" << toString(location) << "{\n";
     out << "statements:";
     out << "\n";
     stmt->print(out, indentation+1);
@@ -790,7 +837,7 @@ void DefaultLabel::print(ostream& out, int indentation)
 
 void IterationStatement::print(ostream& out, int indentation)
 {
-    out << "Default Label \n"; printLoc(out, location); out << "{\n";
+    out << "Default Label \n" << toString(location) << "{\n";
     out << "body:\n";
     body->print(out, indentation+1);
     out << "condition:\n";
@@ -800,7 +847,7 @@ void IterationStatement::print(ostream& out, int indentation)
 
 void WhileLoop::print(ostream& out, int indentation)
 {
-    out << "While loop:\n"; printLoc(out, location); out << "{\n";
+    out << "While loop:\n" << toString(location) << "{\n";
     out << "condition:\n";
     condition->print(out, indentation+1);
     out << "body:\n";
@@ -810,7 +857,7 @@ void WhileLoop::print(ostream& out, int indentation)
 
 void ForLoop::print(ostream& out, int indentation)
 {
-    out << "For loop:\n"; printLoc(out, location); out << "{\n";
+    out << "For loop:\n" << toString(location) << "{\n";
     out << "initialisation:\n";
     if (initialization)
         initialization->print(out, indentation+1);
@@ -836,7 +883,7 @@ void ForLoop::print(ostream& out, int indentation)
 
 void IfStatement::print(ostream& out, int indentation)
 {
-    out << "If statement: \n"; printLoc(out, location); out << "{\n";
+    out << "If statement: \n" << toString(location) << "{\n";
     out << "condition :\n";
     condition->print(out, indentation+1);
     if(if_block)
@@ -849,7 +896,7 @@ void IfStatement::print(ostream& out, int indentation)
 
 void IfElseStatement::print(ostream& out, int indentation)
 {
-    out << "If else block:\n"; printLoc(out, location); out << "{\n";
+    out << "If else block:\n" << toString(location) << "{\n";
     
     out << "condition :\n";
     if_condition->print(out, indentation+1);
@@ -871,7 +918,7 @@ void IfElseStatement::print(ostream& out, int indentation)
 
 void SwitchStatement::print(ostream& out, int indentation)
 {
-    out << "switch block:\n"; printLoc(out, location); out << "{\n";
+    out << "switch block:\n" << toString(location) << "{\n";
     out << "expression:\n";
     exp->print(out, indentation+1);
     out << "cases:\n";
@@ -881,7 +928,7 @@ void SwitchStatement::print(ostream& out, int indentation)
 
 void TernaryOperator::print(ostream& out, int indentation)
 {
-    out << "ternary:\n"; printLoc(out, location); out << "{\n";
+    out << "ternary:\n" << toString(location) << "{\n";
     out << "condition:\n";
     condition->print(out, indentation+1);
     out << "if true:\n";
@@ -893,7 +940,7 @@ void TernaryOperator::print(ostream& out, int indentation)
 
 void ReturnStatement::print(ostream& out, int indentation)
 {
-    out << "ternary:\n{\nreturns"; printLoc(out, location); out << ":\n";
+    out << "ternary:\n{\nreturns" << toString(location) << ":\n";
     return_val->print(out, indentation+1);
     out << "\n}\n";
 }
@@ -921,7 +968,7 @@ void ConstructorDeclaration::print(ostream& out, int indentation)
 
 void Program::print(ostream& out, int indentation)
 {
-    out << "Program:\n"; printLoc(out, location); out << "{\n";
+    out << "Program:\n" << toString(location) << "{\n";
     out << "global declarations:\n";
     for (auto &ele : *stmt_list)
     {
@@ -941,5 +988,5 @@ void ASTNode::print(ostream& out, int indentation){
     for(int i = 0; i < indentation-1; i++)
 		cout << '\t';
 	if(indentation) out << "  ->";
-    out << this->node_name << " " << this << " "; printLoc(out, this->location) << "\n";
+    out << this->node_name << " " << this << " " << toString(location) << "\n";
 }

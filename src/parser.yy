@@ -5,6 +5,7 @@
 	#include <fstream>
 	#include <filesystem>
 	#include <string>
+	#include <string.h>
 	#include "../src/astNodes.h"
 
 	extern int yylex();
@@ -513,6 +514,9 @@ int main(int argc, char **argv){
 }
 
 void yyerror(const char*s){
-	fprintf(stdout, "%s: Line %d-(%d..%d):\n\t%s\n", yylloc.filename.c_str(), yylloc.first_line, yylloc.first_column, yylloc.last_column, s);
-	fprintf(stderr, "%s: Line %d-(%d..%d):\n\t%s\n", yylloc.filename.c_str(), yylloc.first_line, yylloc.first_column, yylloc.last_column, s);
+	#ifndef SEMANTIC_ERROR_DEBUG
+	/* if(strstr(s, "Semantic Error:") != NULL) return; */
+	#endif
+	fprintf(stdout, "%s: Line %d:\n\t%s\n", yylloc.filename.c_str(), yylloc.first_line, s);
+	fprintf(stderr, "%s: Line %d:\n\t%s\n", yylloc.filename.c_str(), yylloc.first_line, s);
 }

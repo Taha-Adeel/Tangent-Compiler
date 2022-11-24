@@ -34,7 +34,7 @@ enum class KIND{
 	INBUILT_PRIMITIVE_TYPE,
 	INBUILT_FAMILY,
 	INBUILT_FUNCTION,
-	UNKNOWN
+	ERROR
 };
 
 // Forward declaration of data type used to store location of symbol
@@ -101,8 +101,9 @@ public:
 	SymbolTable(SymbolTable* parent = NULL, std::string namespace_name = "", bool append = false);
 	~SymbolTable(){/*TODO: delete all child symbol tables*/};
 
-	SymbolTable* addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type = KIND::UNKNOWN);
+	SymbolTable* addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type = KIND::ERROR);
 	Symbol* lookUp(std::string name);
+	SymbolTable* getSymbolTable(std::string name){return child_symbol_tables[name];}
 
 	SymbolTable* startNewScope(std::string scope_name = "", bool append = true){auto new_scope = new SymbolTable(this, scope_name, append); return new_scope;};
 	SymbolTable* endScope(){return parent;};
