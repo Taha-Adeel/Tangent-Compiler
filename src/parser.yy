@@ -357,7 +357,7 @@ primary_expression
 
 variable
 	: IDENTIFIER						{$$ = new Identifier(&@1, *($1));}
-	| variable SCOPE_ACCESS IDENTIFIER	{$$ = new MemberAccess((Variable*)$1, Identifier(&@3, *$3), &@$);}
+	| variable SCOPE_ACCESS IDENTIFIER	{$$ = new MemberAccess((Variable*)$1, Identifier(&@3, *$3, true), &@$);}
 	| variable '[' expression ']'		{$$ = new ArrayAccess($1, $3, &@$);}
 	;
 

@@ -171,7 +171,7 @@ protected:
     Symbol* symbol = NULL;
 
 public:
-    Identifier(YYLTYPE* location = NULL, string name = "Identifier");
+    Identifier(YYLTYPE* location = NULL, string name = "Identifier", bool class_member = false);
     void print(ostream& out_file, int indentation = 0);
     string ret_id();
     datatype evaluate();

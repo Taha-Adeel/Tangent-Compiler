@@ -11,6 +11,12 @@ typedef struct YYLTYPE
 	int last_column;
 	const char *filename;
 } YYLTYPE;
+/// @brief Overloaded insertion operator to print location of the symbol
+std::ostream& operator << (std::ostream& os, const YYLTYPE* loc){
+	if(loc == NULL) return os << "Language defined symbol";
+	std::stringstream ss; ss << "line " << loc->first_line << "-(" << loc->first_column << ".." << loc->last_column << ")";
+	return os << ss.str();
+}
 
 
 /// @brief Constructor and destructor for Symbol class
@@ -46,90 +52,6 @@ SymbolTable::SymbolTable(SymbolTable* parent, std::string _namespace_name, bool 
 std::string SymbolTable::currentVariableType = "";
 
 /**
- * @brief Prepopulate the symbol table with inbuilt symbols provided by our language
- * 
- */
-void SymbolTable::addInbuiltSymbols(){
-	addInbuiltPrimitiveTypenames();
-	addInbuiltFamilyTypenames();
-	addInbuiltFunctions();
-	addInbuiltConstants();
-}
-
-/**
- * @brief Add the inbuilt primitive typenames such as int, float, string, bool and void
- * 
- */
-void SymbolTable::addInbuiltPrimitiveTypenames(){
-	addSymbol("int", "int", NULL, KIND::INBUILT_PRIMITIVE_TYPE);
-	addSymbol("float", "float", NULL, KIND::INBUILT_PRIMITIVE_TYPE);
-	addSymbol("string", "string", NULL, KIND::INBUILT_PRIMITIVE_TYPE);
-	addSymbol("bool", "bool", NULL, KIND::INBUILT_PRIMITIVE_TYPE);
-	addSymbol("void", "void", NULL, KIND::INBUILT_PRIMITIVE_TYPE);
-}
-
-/**
- * @brief Add the inbuilt family typenames such as Point, Path, Image, Rectangle, Circle, Ellipse, Polygon, Curve, Color
- * 
- */
-void SymbolTable::addInbuiltFamilyTypenames(){
-	addSymbol("Point", "Point", NULL, KIND::INBUILT_FAMILY);
-	addSymbol("Path", "Path", NULL, KIND::INBUILT_FAMILY);
-	addSymbol("Image", "Image", NULL, KIND::INBUILT_FAMILY);
-	addSymbol("Rectangle", "Rectangle", NULL, KIND::INBUILT_FAMILY);
-	addSymbol("Circle", "Circle", NULL, KIND::INBUILT_FAMILY);
-	addSymbol("Ellipse", "Ellipse", NULL, KIND::INBUILT_FAMILY);
-	addSymbol("Polygon", "Polygon", NULL, KIND::INBUILT_FAMILY);
-	addSymbol("Curve", "Curve", NULL, KIND::INBUILT_FAMILY);
-	addSymbol("Color", "Color", NULL, KIND::INBUILT_FAMILY);
-
-	// TODO: Create a new symbol table for each of the family types and add the inbuilt functions and constants
-}
-
-/**
- * @brief Add the inbuilt functions such as print, draw, etc. 
- * 
- */
-void SymbolTable::addInbuiltFunctions(){
-	addSymbol("print", "void", NULL, KIND::INBUILT_FUNCTION);
-	addSymbol("draw", "void", NULL, KIND::INBUILT_FUNCTION);
-}
-
-/**
- * @brief Add the inbuilt constants such as Pi, etc. 
- * 
- */
-void SymbolTable::addInbuiltConstants(){
-	// addSymbol("Pi", "float", NULL, KIND::PRIMITIVE_VAR);
-}
-
-
-SymbolTable* SymbolTable::addPrimitiveVariable(std::string identifier_name, std::string type_name, YYLTYPE* location){
-	symbol_table[identifier_name] = Symbol(identifier_name, KIND::PRIMITIVE_VAR, type_name, location);
-	return this;
-}
-
-SymbolTable* SymbolTable::addObjectVariable(std::string identifier_name, std::string type_name, YYLTYPE* location){
-	symbol_table[identifier_name] = Symbol(identifier_name, KIND::OBJECT_VAR, type_name, location);
-	// TODO: Create a data entry for the object variable
-	return this;
-}
-
-SymbolTable* SymbolTable::addFunction(std::string identifier_name, std::string type_name, YYLTYPE* location){
-	symbol_table[identifier_name] = Symbol(identifier_name, KIND::FUNCTION, type_name, location);
-	SymbolTable* functionSymbolTable = new SymbolTable(this, identifier_name);
-
-	return functionSymbolTable;
-}
-
-SymbolTable* SymbolTable::addFamily(std::string identifier_name, YYLTYPE* location){
-	symbol_table[identifier_name] = Symbol(identifier_name, KIND::FAMILY, identifier_name, location);
-	SymbolTable* familySymbolTable = new SymbolTable(this, identifier_name);
-
-	return familySymbolTable;
-}
-
-/**
  * @brief Adds a new symbol to the symbol table when it is declared
  * 
  * @param identifier_name 
@@ -140,7 +62,7 @@ SymbolTable* SymbolTable::addFamily(std::string identifier_name, YYLTYPE* locati
  * @return The current symbol table 
  */
 SymbolTable* SymbolTable::addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type){
-	if(type == KIND::ERROR){
+	if(type == KIND::UNKNOWN){
 		Symbol* type_name_symbol = lookUp(type_name);
 		if(type_name_symbol == NULL)
 			yyerror(std::string("Semantic Error: Typename not declared before: " + type_name).c_str());
@@ -167,8 +89,9 @@ SymbolTable* SymbolTable::addSymbol(std::string identifier_name, std::string typ
 		case KIND::FUNCTION: return addFunction(identifier_name, type_name, location);
 		case KIND::FAMILY: return addFamily(identifier_name, location);
 		case KIND::INBUILT_PRIMITIVE_TYPE: 
-		case KIND::INBUILT_FAMILY:
+		case KIND::INBUILT_FAMILY: 
 		case KIND::INBUILT_FUNCTION: symbol_table[identifier_name] = Symbol(identifier_name, type, type_name, location); return this;
+		case KIND::ERROR: symbol_table[identifier_name] = Symbol(identifier_name, type, "error-type", location); return this;
 		default:
 			yyerror(std::string("Semantic Error: Unknown type: " + type_name).c_str());
 	}
@@ -193,16 +116,99 @@ Symbol* SymbolTable::lookUp(std::string name){
 }
 
 
+SymbolTable* SymbolTable::addPrimitiveVariable(std::string identifier_name, std::string type_name, YYLTYPE* location){
+	symbol_table[identifier_name] = Symbol(identifier_name, KIND::PRIMITIVE_VAR, type_name, location);
+	return this;
+}
+
+SymbolTable* SymbolTable::addObjectVariable(std::string identifier_name, std::string type_name, YYLTYPE* location){
+	symbol_table[identifier_name] = Symbol(identifier_name, KIND::OBJECT_VAR, type_name, location);
+	// TODO: Create a data entry for the object variable
+	return this;
+}
+
+SymbolTable* SymbolTable::addFunction(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type){
+	symbol_table[identifier_name] = Symbol(identifier_name, type, type_name, location);
+	SymbolTable* functionSymbolTable = new SymbolTable(this, identifier_name);
+
+	return functionSymbolTable;
+}
+
+SymbolTable* SymbolTable::addFamily(std::string identifier_name, YYLTYPE* location, KIND type){
+	symbol_table[identifier_name] = Symbol(identifier_name, type, identifier_name, location);
+	SymbolTable* familySymbolTable = new SymbolTable(this, identifier_name);
+
+	return familySymbolTable;
+}
+
+/******************************************************************/
+/* Prepopulate the Symbol Table with the language defined symbols */
+/******************************************************************/
+
+
+/**
+ * @brief Prepopulate the symbol table with inbuilt symbols provided by our language
+ * 
+ */
+void SymbolTable::addInbuiltSymbols(){
+	addInbuiltPrimitiveTypenames();
+	addInbuiltFamilyTypenames();
+	addInbuiltFunctions();
+	addInbuiltConstants();
+}
+
+/**
+ * @brief Add the inbuilt primitive typenames such as int, float, string, bool and void
+ * 
+ */
+void SymbolTable::addInbuiltPrimitiveTypenames(){
+	addSymbol("int", "int", NULL, KIND::INBUILT_PRIMITIVE_TYPE);
+	addSymbol("float", "float", NULL, KIND::INBUILT_PRIMITIVE_TYPE);
+	addSymbol("string", "string", NULL, KIND::INBUILT_PRIMITIVE_TYPE);
+	addSymbol("bool", "bool", NULL, KIND::INBUILT_PRIMITIVE_TYPE);
+	addSymbol("void", "void", NULL, KIND::INBUILT_PRIMITIVE_TYPE);
+	addSymbol("error-type", "error-type", NULL, KIND::ERROR);
+}
+
+/**
+ * @brief Add the inbuilt family typenames such as Point, Path, Image, Rectangle, Circle, Ellipse, Polygon, Curve, Color
+ * 
+ */
+void SymbolTable::addInbuiltFamilyTypenames(){
+	addFamily("Point", NULL, KIND::INBUILT_FAMILY);
+	addFamily("Path", NULL, KIND::INBUILT_FAMILY);
+	addFamily("Image", NULL, KIND::INBUILT_FAMILY);
+	addFamily("Rectangle", NULL, KIND::INBUILT_FAMILY);
+	addFamily("Circle", NULL, KIND::INBUILT_FAMILY);
+	addFamily("Ellipse", NULL, KIND::INBUILT_FAMILY);
+	addFamily("Polygon", NULL, KIND::INBUILT_FAMILY);
+	addFamily("Curve", NULL, KIND::INBUILT_FAMILY);
+	addFamily("Color", NULL, KIND::INBUILT_FAMILY);
+
+	// TODO: Create a new symbol table for each of the family types and add the inbuilt functions and constants
+}
+
+/**
+ * @brief Add the inbuilt functions such as print, draw, etc. 
+ * 
+ */
+void SymbolTable::addInbuiltFunctions(){
+	addFunction("print", "void", NULL, KIND::INBUILT_FUNCTION);
+	addFunction("draw", "void", NULL, KIND::INBUILT_FUNCTION);
+}
+
+/**
+ * @brief Add the inbuilt constants such as Pi, etc. 
+ * 
+ */
+void SymbolTable::addInbuiltConstants(){
+	addSymbol("Pi", "float", NULL, KIND::PRIMITIVE_VAR);
+}
+
+
 /*************************************************/
 /* Utility Functions to display the Symbol Table */
 /*************************************************/
-
-/// @brief Overloaded insertion operator to print location of the symbol
-std::ostream& operator << (std::ostream& os, const YYLTYPE* loc){
-	if(loc == NULL) return os << "Language defined symbol";
-	std::stringstream ss; ss << "line " << loc->first_line << "-(" << loc->first_column << ".." << loc->last_column << ")";
-	return os << ss.str();
-}
 
 /// @brief Overloaded insertion operator to print the symbol kind
 std::ostream& operator << (std::ostream& os, const KIND& type){
@@ -211,8 +217,8 @@ std::ostream& operator << (std::ostream& os, const KIND& type){
 		case KIND::OBJECT_VAR: return os << "Object variable";
 		case KIND::FAMILY: return os << "Family typename";
 		case KIND::FUNCTION: return os << "Function";
-		case KIND::INBUILT_PRIMITIVE_TYPE: return os << "Inbuilt primitive typename";
-		case KIND::INBUILT_FAMILY: return os << "Inbuilt family typename";
+		case KIND::INBUILT_PRIMITIVE_TYPE: return os << "Inbuilt primitive type";
+		case KIND::INBUILT_FAMILY: return os << "Inbuilt family type";
 		case KIND::INBUILT_FUNCTION: return os << "Inbuilt function";
 		case KIND::ERROR: 
 		default: return os << "Unknown";

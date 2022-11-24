@@ -34,7 +34,8 @@ enum class KIND{
 	INBUILT_PRIMITIVE_TYPE,
 	INBUILT_FAMILY,
 	INBUILT_FUNCTION,
-	ERROR
+	ERROR,
+	UNKNOWN
 };
 
 // Forward declaration of data type used to store location of symbol
@@ -94,14 +95,14 @@ private:
 
 	SymbolTable* addPrimitiveVariable(std::string name, std::string type_name, YYLTYPE* location);
 	SymbolTable* addObjectVariable(std::string name, std::string type_name, YYLTYPE* location);
-	SymbolTable* addFamily(std::string name, YYLTYPE* location);
-	SymbolTable* addFunction(std::string name, std::string type_name, YYLTYPE* location);
+	SymbolTable* addFamily(std::string name, YYLTYPE* location, KIND type = KIND::FAMILY);
+	SymbolTable* addFunction(std::string name, std::string type_name, YYLTYPE* location, KIND type = KIND::FUNCTION);
 
 public:
 	SymbolTable(SymbolTable* parent = NULL, std::string namespace_name = "", bool append = false);
 	~SymbolTable(){/*TODO: delete all child symbol tables*/};
 
-	SymbolTable* addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type = KIND::ERROR);
+	SymbolTable* addSymbol(std::string identifier_name, std::string type_name, YYLTYPE* location, KIND type = KIND::UNKNOWN);
 	Symbol* lookUp(std::string name);
 	SymbolTable* getSymbolTable(std::string name){return child_symbol_tables[name];}
 

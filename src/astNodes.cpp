@@ -41,9 +41,10 @@ ASTNode::ASTNode(YYLTYPE* location, string node_name): location(location), node_
         this->location = new YYLTYPE(*location);
 }
 
-Identifier::Identifier(YYLTYPE* location, string name)
+Identifier::Identifier(YYLTYPE* location, string name, bool class_member)
     :Variable(location, "Identifier"), id(name)
 {
+    if(class_member) return;
     symbol = cur_symbol_table->lookUp(id);
     if(symbol == NULL) {
         cur_symbol_table->addSymbol(id, "error-type", location, KIND::ERROR);
@@ -56,9 +57,19 @@ Identifier::Identifier(YYLTYPE* location, string name)
 MemberAccess::MemberAccess(Variable *v, Identifier id, YYLTYPE* location)
     :Variable(location, "MemberAcess"), object(v), member(id)
 {
+    Symbol* class_name = global_symbol_table.lookUp(object->get_type());
+    if(class_name == NULL) {
+        yyerror(("Semantic Error: Class " + object->get_type() + " at " + toString(location) + " is not declared").c_str());
+        typename_of_expression = "error-type"; return;
+    }
+    if(class_name->getKind() != KIND::INBUILT_FAMILY && class_name->getKind() != KIND::FAMILY) {
+        yyerror(("Semantic Error: Variable of type " + object->get_type() + " at " + toString(location) + " is not an object").c_str());
+        typename_of_expression = "error-type"; return;
+    }
     Symbol* member_symbol = global_symbol_table.getSymbolTable(object->get_type())->lookUp(member.ret_id());
     if(member_symbol == NULL) {
-        yyerror(("Semantic Error: " + toString(location) + ": Family" + object->get_type() + " has no member named " + member.ret_id()).c_str());
+        yyerror(("Semantic Error: " + toString(location) + ": Family " + object->get_type() + " has no member named " + member.ret_id()).c_str());
+        typename_of_expression = "error-type"; return;
     }
     typename_of_expression = member_symbol->getTypeName();
 }
