@@ -18,11 +18,10 @@ using namespace std;
 
 /*------------------------------------------------------------------------
  * Defining the Class Hierarchy
-
  *------------------------------------------------------------------------*/
 
 /**
- * @brief Base Class for all NOdes in AST
+ * @brief Base Class for all Nodes in AST
  * 
  */
 class ASTNode
@@ -32,8 +31,13 @@ protected:
     YYLTYPE* location = NULL;
 public:
     ASTNode(YYLTYPE* location = NULL, string node_name = "ASTNode");
+
     /// @brief prints the description/properties/value of the current node
-    virtual void print(ostream& out_file, int indentation = 0);
+    static ostream* out_file;
+    void indent(int indentation = 0);
+    void print(int indentation = 0, ostream &out = *out_file);
+    virtual void printData(){};
+    virtual void printMembers(int indentation = 0){}; 
 };
 
 /*------------------------------------------------------------------------
@@ -55,11 +59,11 @@ public:
     
     /// @brief Evaluates the value of the current Expression based on current value and the children of the nodes if they exist
     virtual datatype evaluate() = 0;
+    void printData();
 
     // virtual llvm::Value *codegen() = 0;
-
     
-    string typename_of_expression = "Unknown";
+    string typename_of_expression = "error-type";
     string get_type(){return typename_of_expression;};
 };
 
@@ -92,8 +96,8 @@ public:
      * @param val the value of the int literal
      */
     IntegerLiteral(int val, YYLTYPE* location = NULL):Literal(location, "IntegerLiteral"){value = val; typename_of_expression = "int";}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
+    void printData();
     // llvm::Value *codegen() override;
 };
 /**
@@ -109,8 +113,8 @@ public:
      * @param val value of float literal
      */
     FloatLiteral(float val, YYLTYPE* location = NULL):Literal(location, "FloatLiteral"){value = val; typename_of_expression = "float";}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
+    void printData();
     // llvm::Value *codegen() override;
 };
 
@@ -127,8 +131,8 @@ public:
      * @param val value of the string literal
      */
     StringLiteral(string val, YYLTYPE* location = NULL):Literal(location, "StringLiteral") {value = val; typename_of_expression = "string";}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
+    void printData();
     // llvm::Value *codegen() override;
 };
 /**
@@ -144,8 +148,8 @@ public:
      * @param val value of boolean literal
      */
     BooleanLiteral(bool val, YYLTYPE* location = NULL):Literal(location, "BoolLiteral") {value = val; typename_of_expression = "bool";}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
+    void printData();
     // llvm::Value *codegen() override;
 };
 
@@ -172,9 +176,9 @@ protected:
 
 public:
     Identifier(YYLTYPE* location = NULL, string name = "Identifier", bool class_member = false);
-    void print(ostream& out_file, int indentation = 0);
     string ret_id();
     datatype evaluate();
+    void printData();
     // llvm::Value *codegen() override;
 };
 
@@ -196,7 +200,7 @@ public:
     * @param s 
     */
     MemberAccess(Variable *v, Identifier id, YYLTYPE* location = NULL);
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
     datatype evaluate();
 };
 
@@ -213,7 +217,7 @@ protected:
 public:
     ArrayAccess(Expression *name, Expression *ind, YYLTYPE* location = NULL)
         : Variable(location, "ArrayAccess") ,array_name((Variable*)name),index(ind){typename_of_expression = array_name->get_type();}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
     datatype evaluate();
 };
 
@@ -225,8 +229,8 @@ protected:
 public:
     Arg(Identifier t_, Identifier id_, YYLTYPE* location = NULL): Expression(location, "Arg"), t(t_), id(id_){}
     string getType(){return t.ret_id();};
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
+    void printMembers(int indentation = 0);
 };
 
 /* Function Call */
@@ -241,7 +245,7 @@ public:
     FunctionCall(Expression *name, vector<Expression *> l = vector<Expression *>(), YYLTYPE* location = NULL)
         :Expression(location, "FunctionCall"), func_name((Variable*)name), args_list(l)
     {typename_of_expression = func_name->get_type().substr(0, func_name->get_type().find("->"));}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
     datatype evaluate();
 };
 
@@ -256,7 +260,7 @@ protected:
 public:
     AssignmentExp();
     AssignmentExp(Variable *L, Expression *R, YYLTYPE* location = NULL, string name = "AssignmentExp");
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
     datatype evaluate();
 };
 
@@ -264,7 +268,6 @@ class AddAssign : public AssignmentExp
 {
 public:
     AddAssign(Variable *L, Expression *R, YYLTYPE* location = NULL): AssignmentExp(L, R, location, "AddAssign"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
@@ -272,7 +275,6 @@ class SubAssign : public AssignmentExp
 {
 public:
     SubAssign(Variable *L, Expression *R, YYLTYPE* location = NULL): AssignmentExp(L, R, location, "SubAssign"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
@@ -280,7 +282,6 @@ class MulAssign : public AssignmentExp
 {
 public:
     MulAssign(Variable *L, Expression *R, YYLTYPE* location = NULL):  AssignmentExp(L, R, location, "MulAssign"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
@@ -288,7 +289,6 @@ class DivAssign : public AssignmentExp
 {
 public:
     DivAssign(Variable *L, Expression *R, YYLTYPE* location = NULL):  AssignmentExp(L, R, location, "DivAssign"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
@@ -296,7 +296,6 @@ class ModAssign : public AssignmentExp
 {
 public:
     ModAssign(Variable *L, Expression *R, YYLTYPE* _location = NULL):  AssignmentExp(L, R, location, "ModAssign"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate(); // evaluation is different from AssignmentExp
 };
 
@@ -314,7 +313,6 @@ protected:
     Variable *var;
     UnaryIncrement(Variable* v, YYLTYPE* location = NULL, string name = "UnaryIncrement"):UnaryOperation(location, name), var(v){typename_of_expression = var->get_type();}
 public:
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
 
@@ -322,7 +320,6 @@ class PostfixInc : public UnaryIncrement
 {
 public:
     PostfixInc(Variable *v, YYLTYPE* location = NULL):UnaryIncrement(v, location, "PostfixInc"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
 
@@ -330,7 +327,6 @@ class PrefixInc : public UnaryIncrement
 {
 public:
     PrefixInc(Variable *v, YYLTYPE* location = NULL):UnaryIncrement(v, location, "PrefixInc"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
 
@@ -340,7 +336,6 @@ protected:
     Variable *var;
     UnaryDecrement(Variable *v, YYLTYPE* location = NULL, string name = "UnaryDecrement"):UnaryOperation(location, name), var(v){typename_of_expression = var->get_type();}
 public:
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
 
@@ -348,7 +343,6 @@ class PostfixDec : public UnaryDecrement
 {
 public:
     PostfixDec(Variable *v, YYLTYPE* location = NULL):UnaryDecrement(v, location, "PostfixDec"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
 
@@ -356,7 +350,6 @@ class PrefixDec : public UnaryDecrement
 {
 public:
     PrefixDec(Variable *v, YYLTYPE* location = NULL):UnaryDecrement(v, location, "PrefixDec"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
 
@@ -367,7 +360,6 @@ protected:
 
 public:
     UnaryPlus(Expression *e, YYLTYPE* location = NULL):UnaryOperation(location, "UnaryPlus"), exp(e){typename_of_expression = exp->get_type();}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
 
@@ -378,7 +370,6 @@ protected:
 
 public:
     UnaryMinus(Expression *e, YYLTYPE* location = NULL):UnaryOperation(location, "UnaryMinus"), exp(e){typename_of_expression = exp->get_type();}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
 
@@ -396,7 +387,7 @@ public:
     /// @param t_eval expression to eval on cond == true
     /// @param f_eval expression to eval on cond == false
     TernaryOperator(Expression *cond, Expression *t_eval, Expression *f_eval, YYLTYPE* location = NULL);
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
     datatype evaluate();
 };
 
@@ -409,7 +400,7 @@ protected:
     BinaryOperation();
 public:
     BinaryOperation(Expression *L, Expression *R, YYLTYPE* location = NULL, string name = "BinaryOperation");
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
     datatype evaluate();
 };
 
@@ -417,7 +408,6 @@ class Addition : public BinaryOperation
 {
 public:
     Addition(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "Addition"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     /*
     Note : in the implmentation of evaluate function, check the type of both expressions
@@ -431,7 +421,6 @@ class Subtraction : public BinaryOperation
 {
 public:
     Subtraction(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "Subtraction"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
 };
@@ -440,7 +429,6 @@ class Multiplication : public BinaryOperation
 {
 public:
     Multiplication(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "Multiplication"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
 };
@@ -449,7 +437,6 @@ class Division : public BinaryOperation
 {
 public:
     Division(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "Division"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
 };
@@ -458,7 +445,6 @@ class ModularDiv : public BinaryOperation
 {
 public:
     ModularDiv(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "ModularDiv"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
 };
@@ -469,7 +455,6 @@ class LogicalAND : public BinaryOperation
 {
 public:
     LogicalAND(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "LogicalAND"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
 
@@ -477,7 +462,6 @@ class LogicalOR : public BinaryOperation
 {
 public:
     LogicalOR(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "LogicalOR"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
 
@@ -488,7 +472,6 @@ protected:
 
 public:
     LogicalNOT(Expression *e, YYLTYPE* location = NULL):UnaryOperation(location, "LogicalNOT"), exp(e){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
 };
 
@@ -498,7 +481,6 @@ class CompGT : public BinaryOperation
 {
 public:
     CompGT(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "CompGT"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
 };
@@ -507,7 +489,6 @@ class CompLT : public BinaryOperation
 {
 public:
     CompLT(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "CompLT"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
 };
@@ -516,7 +497,6 @@ class CompGE : public BinaryOperation
 {
 public:
     CompGE(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "CompGE"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
 };
@@ -525,7 +505,6 @@ class CompLE : public BinaryOperation
 {
 public:
     CompLE(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "CompLE"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
 };
@@ -534,7 +513,6 @@ class CompEQ : public BinaryOperation
 {
 public:
     CompEQ(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "CompEQ"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
 };
@@ -543,7 +521,6 @@ class CompNEQ : public BinaryOperation
 {
 public:
     CompNEQ(Expression *L, Expression *R, YYLTYPE* location = NULL):BinaryOperation(L, R, location, "CompNEQ"){}
-    void print(ostream& out_file, int indentation = 0);
     datatype evaluate();
     // llvm::Value *codegen() override;
 };
@@ -568,7 +545,7 @@ public:
     ExpressionStatement(vector<Expression *>*e = NULL, YYLTYPE* location = NULL):Statement(location, "ExpressionStatement"), exp(e){}
     /// @brief print the content of expression statement
     vector<Expression *> getValue();
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 
 /// @brief Class to represent Compound Statements in the AST. Derives from Statement. Represents a collection of statements
@@ -583,7 +560,7 @@ public:
     /// @param l list of statements
     CompoundStatement(vector<Statement *> l = vector<Statement *>(), YYLTYPE* location = NULL):Statement(location, "CompoundStatement"), stmt_list(l){}
     /// @brief print the content of compound statement
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 
 /* Family */
@@ -601,7 +578,7 @@ protected:
 
 public:
     FamilyMembers(ACCESS_SPEC acc_spec, Statement *member_, YYLTYPE* location = NULL):Statement(location, "FamilyMembers"), access_specifier(acc_spec), member(member_){}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 class FamilyDecl : public Statement
 {
@@ -628,7 +605,8 @@ public:
      */
     FamilyDecl(Identifier fam_name_, optional<pair<Identifier, ACCESS_SPEC>> parent_class_, YYLTYPE* _location = NULL)
         : Statement(location, "FamilyDecl"), fam_name(fam_name_), parent_class(parent_class_){}
-    void print(ostream& out_file, int indentation = 0);
+    void printData();
+    void printMembers(int indentation = 0);
 };
 class ConstructorDeclaration : public Statement
 {
@@ -640,7 +618,7 @@ protected:
 public:
     ConstructorDeclaration(Identifier class_name_, Statement *body_, vector<Arg *> arg_list_, YYLTYPE* location = NULL)
         :Statement(location, "ConstructorDeclaration"), class_name(class_name_), body((CompoundStatement *)body_), arg_list(arg_list_){}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 
 /* Declaration Statements */
@@ -664,7 +642,7 @@ public:
     FunctionDeclaration(Identifier *_name, Identifier _t, Statement *_stmt, vector<Arg *> _arg_list = vector<Arg *>(), YYLTYPE* location = NULL)
         :Statement(location, "FunctionDeclaration"), func_name(_name), return_type(_t), func_body((CompoundStatement *)_stmt), arg_list(_arg_list){}
     /// @brief print the content of function definition
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 /// @brief Class to represent Variable Declaration in the AST. Derives from Statement
 class VariableDeclaration : public Statement
@@ -679,7 +657,7 @@ public:
     /// @param l list of identifires
     VariableDeclaration(Identifier t, vector<Expression *> l = vector<Expression*>(), YYLTYPE* location = NULL)
         :Statement(location, "VariableDeclaration"), variable_type(t), variable_list(l){}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 /// @brief Class to represent definition of driver function in the AST. Derives from CompoundStatement
 class DriverDefinition : public Statement
@@ -694,7 +672,7 @@ public:
     // DriverDefinition(CompoundStatement* body) : func_body(body) {};
     DriverDefinition(Statement *body, YYLTYPE* location = NULL) 
         :Statement(location, "DriverDefinition"), func_body((CompoundStatement *)body) {}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 /// @brief Class to represent variable initialization in the AST. Derives from Statement
 class VariableInitialization : public Statement
@@ -709,7 +687,7 @@ public:
     /// @param e paired assignment expression
     VariableInitialization(Identifier t, AssignmentExp *e, YYLTYPE* location = NULL)
         :Statement(location, "VariableInitialization"), variable_type(t), exp(e){}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 
 /* Labeled Statements */
@@ -726,7 +704,7 @@ public:
     LabeledStatement() = default;
     LabeledStatement(Expression *lb, Statement *st, YYLTYPE* location = NULL)
         :Statement(location, "LabeledStatement"), label(lb), stmt(st){}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 /// @brief Class to represent 'case' in the AST. Derives from Statement
 class CaseLabel : public LabeledStatement
@@ -737,7 +715,6 @@ public:
     /// @param st_list statement to execute in said case
     CaseLabel(Expression *lb, Statement *st, YYLTYPE* location = NULL)
         :LabeledStatement(lb, st, location){}
-    void print(ostream& out_file, int indentation = 0);
 };
 /// @brief Class to represent 'default' in the AST. Derives from Statement
 class DefaultLabel : public LabeledStatement
@@ -747,7 +724,6 @@ public:
     /// @param st_list statement in default case
     DefaultLabel(Statement *st, YYLTYPE* location = NULL)
         :LabeledStatement(NULL, st, location){}
-    void print(ostream& out_file, int indentation = 0);
 };
 
 /* Iteration Statements */
@@ -763,7 +739,7 @@ public:
     /// @brief Constructor for IterationStatement
     IterationStatement(CompoundStatement *b, Expression *cond, YYLTYPE* location = NULL, string _type = "IterationStatement")
         :Statement(location, _type), body(b), condition(cond){}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 /// @brief Class to represent while loop in the AST. Derives from Statement
 class WhileLoop : public IterationStatement
@@ -774,7 +750,6 @@ public:
     /// @param cond entry condition for while loop
     WhileLoop(CompoundStatement *b, Expression *cond = NULL, YYLTYPE* location = NULL)
         :IterationStatement(b, cond, location, "WhileLoop"){}
-    void print(ostream& out_file, int indentation = 0);
 };
 
 /// @brief Class to represent for loop in the AST. Derives from Statement
@@ -788,7 +763,7 @@ protected:
 public:
     ForLoop(CompoundStatement *b, ExpressionStatement *init, ExpressionStatement *cond, Expression *update, YYLTYPE* location = NULL)
         :IterationStatement(b, NULL, location, "ForLoop"), initialization(init), condition(cond), counter_updation(update){} 
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 
 /*********************************************
@@ -804,7 +779,7 @@ protected:
 public:
     IfStatement(Expression *e, CompoundStatement *block, YYLTYPE* location = NULL)
         :Statement(location, "IfStatement"), condition(e), if_block(block){}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
     // llvm::Value *codegen() override;
 };
 class IfElseStatement : public Statement
@@ -816,7 +791,7 @@ protected:
 public:
     IfElseStatement(Expression *cond, CompoundStatement *block1, CompoundStatement *block2, YYLTYPE* location = NULL)
         :Statement(location, "IfElseStatement"), if_condition(cond), if_block(block1), else_block(block2){}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
     // llvm::Value *codegen() override;
 };
 /// @brief Class to represent switch case statement in the AST. Derives from Statement
@@ -829,7 +804,7 @@ protected:
 public:
     SwitchStatement(Expression *e, CompoundStatement *b, YYLTYPE* location = NULL)
         :Statement(location, "SwitchStatement"), exp(e), block(b){}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 
 /// @brief Provides base class for all jump statements
@@ -847,21 +822,19 @@ protected:
 
 public:
     ReturnStatement(Expression *val, YYLTYPE* location = NULL): JumpStatement(location, "ReturnStatement"), return_val(val){}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 /// @brief Class to represent 'break' in the AST. Derives from Statement
 class BreakStatement : public JumpStatement
 {
 public:
     BreakStatement(YYLTYPE* location = NULL): JumpStatement(location, "BreakStatement"){}
-    void print(ostream& out_file, int indentation = 0);
 };
 /// @brief Class to represent 'continue' in the AST. Derives from Statement
 class ContinueStatement : public JumpStatement
 {
 public:
     ContinueStatement(YYLTYPE* location = NULL): JumpStatement(location, "ContinueStatement"){}
-    void print(ostream& out_file, int indentation = 0);
 };
 
 /*------------------------------------------------------------------------
@@ -876,7 +849,7 @@ protected:
 public:
     Program(vector<Statement *> *stmts = new vector<Statement *>(), YYLTYPE* location = NULL)
         :ASTNode(location, "Program"), stmt_list(stmts){}
-    void print(ostream& out_file, int indentation = 0);
+    void printMembers(int indentation = 0);
 };
 
 // objects at the base of the tree

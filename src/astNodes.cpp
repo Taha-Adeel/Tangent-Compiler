@@ -12,10 +12,6 @@
 extern SymbolTable* cur_symbol_table;
 
 using namespace std;
-////////////////////////////////////////////////////
-//            AST traversal and evaluation      ////
-////////////////////////////////////////////////////
-
 typedef struct YYLTYPE{
 	int first_line;
 	int first_column;
@@ -29,17 +25,21 @@ std::string toString(const YYLTYPE* loc){
 	return ss.str();
 }
 extern int yyerror(const char *s);
-datatype throwError()
-{
+datatype throwError(){
     datatype e = new error();
     yyerror("Semantic Error: Type mismatch in eval function");
     return e;
 }
 
+/////////////////////////////////////////////////////////////////
+//       AST Constructors with semantic error handeling      ////
+/////////////////////////////////////////////////////////////////
+
 ASTNode::ASTNode(YYLTYPE* location, string node_name): location(location), node_name(node_name) {
     if(location != NULL) 
         this->location = new YYLTYPE(*location);
 }
+ostream* ASTNode::out_file = &cout;
 
 Identifier::Identifier(YYLTYPE* location, string name, bool class_member)
     :Variable(location, "Identifier"), id(name)
@@ -108,47 +108,14 @@ BinaryOperation::BinaryOperation(Expression *L, Expression *R, YYLTYPE* location
     typename_of_expression = LHS->get_type();
 }
 
+////////////////////////////////////////////////////
+//          AST expressions eval functions      ////
+////////////////////////////////////////////////////
+
 /* Evaluate and print functions for Literals*/
 datatype Literal::evaluate()
 {
     return value;
-}
-
-void indent(ostream &out, int indentation){ for (int i = 0; i < indentation; i++) out << "  "; }
-
-void IntegerLiteral::print(ostream& out, int indentation)
-{
-    indent(out, indentation); out <<"int literal" << toString(location) << "\n{";
-    indent(out, indentation+1); out << get<int>(value);
-    indent(out, indentation); out <<"\n}\n";
-}
-
-void FloatLiteral::print(ostream& out, int indentation)
-{
-    indent(out, indentation); out <<"float literal" << toString(location) << "\n{";
-    indent(out, indentation+1); out << get<float>(value);
-    indent(out, indentation); out <<"\n}\n"; 
-}
-
-void StringLiteral::print(ostream& out, int indentation)
-{
-    indent(out, indentation); out<<"string literal" << toString(location) << "\n{";
-    indent(out, indentation+1); out << get<string>(value);
-    indent(out, indentation); out<<"\n}\n";
-}
-
-void BooleanLiteral::print(ostream& out, int indentation) 
-{
-    indent(out, indentation); out<<"bool literal\n{";
-    indent(out, indentation); out << get<bool>(value);
-    indent(out, indentation); out<<"\n}\n";
-}
-
-void Identifier::print(ostream& out, int indentation)
-{
-    indent(out, indentation); out<<"Identifier" << toString(location) << "\n{";
-    indent(out, indentation+1); out << id;
-    indent(out, indentation); out<<"\n}\n";
 }
 
 string Identifier::ret_id()
@@ -161,55 +128,16 @@ datatype Identifier::evaluate()
     return value;
 }
 
-void ArrayAccess::print(ostream& out, int indentation)
-{
-    indent(out, indentation); out<<"int literal" << toString(location) << "\n{";
-    indent(out, indentation);     out<<"array name:\n{";
-                                     array_name->print(out, indentation+1);
-    indent(out, indentation);     out<<"\n}\n";
-    indent(out, indentation);     
-    indent(out, indentation);     out<<"index:\n{";
-                                     index->print(out, indentation+1);
-    indent(out, indentation);     out<<"\n}\n";
-    indent(out, indentation); out<<"\n}\n";
-}
 datatype ArrayAccess::evaluate()
 {
     return value;
 }
 
-void FunctionCall::print(ostream& out, int indentation)
-{
-    out<<"function call:" << toString(location) << "\n{";
-        func_name->print(out, indentation+1);
-        out << "\narguments{\n";
-        for (auto const &v : args_list)
-        {
-            out<<"(\n";
-                v->print(out, indentation+1);
-            out << "\n)\n";
-        }
-        out << "}";
-    out<<"\n}\n";
-    
-}
 datatype FunctionCall::evaluate()
 {
     return datatype(0);//temp
 }
 
-void AssignmentExp::print(ostream& out, int indentation)
-{
-    out<<"assignment expr" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-}
 datatype AssignmentExp::evaluate()
 {
     datatype result = RHS->evaluate();
@@ -219,236 +147,71 @@ datatype AssignmentExp::evaluate()
     return value;
 }
 
-void AddAssign::print(ostream& out, int indentation)
-{
-    out<<"add assign" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-}
 datatype AddAssign::evaluate()
 {
     return value;
 }
 
-void SubAssign::print(ostream& out, int indentation)
-{
-    out<<"subtract assign" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-
-}
 datatype SubAssign::evaluate()
 {
     return value;
 }
 
-void MulAssign::print(ostream& out, int indentation)
-{
-    out<<"multiply assign" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-
-}
 datatype MulAssign::evaluate()
 {
     return value;
 }
 
-void DivAssign::print(ostream& out, int indentation)
-{
-    out<<"div assign" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-
-}
 datatype DivAssign::evaluate()
 {
     return value;
 }
 
-void ModAssign::print(ostream& out, int indentation)
-{
-    out<<"modulus assign" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-
-}
 datatype ModAssign::evaluate()
 {
     return value;
 }
 
-void Addition::print(ostream& out, int indentation)
-{
-    out<<"addition" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-
-}
 datatype Addition::evaluate()
 {
     return value;
 }
 
-void Subtraction::print(ostream& out, int indentation)
-{
-    out<<"subtraction" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-
-}
 datatype Subtraction::evaluate()
 {
     return value;
 }
 
-void Multiplication::print(ostream& out, int indentation)
-{
-    out<<"multiplication" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-
-}
 datatype Multiplication::evaluate()
 {
     return value;
 }
 
-void Division::print(ostream& out, int indentation)
-{
-    out<<"division" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-
-}
 datatype Division::evaluate()
 {
     return value;
 }
 
-void ModularDiv::print(ostream& out, int indentation)
-{
-    out<<"modular division" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-
-}
 datatype ModularDiv::evaluate()
 {
     return value;
 }
 
-void UnaryPlus::print(ostream& out, int indentation)
-{
-    out<<"Unary +\n" << toString(location) << "{\n";
-    exp->print(out, indentation+1);
-    out<<"\n}\n";
-}
 datatype UnaryPlus::evaluate()
 {
     return value;
 }
 
-void UnaryMinus::print(ostream& out, int indentation)
-{
-    out<<"Unary -\n" << toString(location) << "{\n";
-    exp->print(out, indentation+1);
-    out<<"\n}\n";
-}
 datatype UnaryMinus::evaluate()
 {
     return value;
 }
 
-void LogicalAND::print(ostream& out, int indentation)
-{
-    out<<"logical and" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-}
 datatype LogicalAND::evaluate()
 {
     return value;
 }
 
-void LogicalOR::print(ostream& out, int indentation)
-{
-    out<<"logical or" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-}
 datatype LogicalOR::evaluate()
 {
     //ill come to this later
@@ -467,12 +230,6 @@ datatype LogicalOR::evaluate()
     return value;
 }
 
-void LogicalNOT::print(ostream& out, int indentation)
-{
-    out<<"logical not -\n" << toString(location) << "{\n";
-    exp->print(out, indentation+1);
-    out<<"\n}\n";
-}
 datatype LogicalNOT::evaluate()
 {
     // datatype temp;
@@ -503,21 +260,9 @@ datatype LogicalNOT::evaluate()
     return value;
 }
 
-void CompGT::print(ostream& out, int indentation)
-{
-    out<<"CompGT" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-}
 datatype CompGT::evaluate()
 {
-    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "error-type" || RHS->get_type() == "error-type" || LHS->get_type() != RHS->get_type())
         return throwError();
     if(cur_symbol_table->lookUp(LHS->get_type())->getKind() != KIND::INBUILT_PRIMITIVE_TYPE)
         return throwError(); // can't perform comparison for these types
@@ -525,41 +270,17 @@ datatype CompGT::evaluate()
     return value;
 }
 
-void CompLT::print(ostream& out, int indentation)
-{
-    out<<"CompLT" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-}
 datatype CompLT::evaluate()
 {
-    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "error-type" || RHS->get_type() == "error-type" || LHS->get_type() != RHS->get_type())
         return throwError();
     // value = (LHS < RHS);
     return value;
 }
 
-void CompGE::print(ostream& out, int indentation)
-{
-    out<<"CompGE" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-}
 datatype CompGE::evaluate()
 {
-    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "error-type" || RHS->get_type() == "error-type" || LHS->get_type() != RHS->get_type())
         return throwError();
     if(cur_symbol_table->lookUp(LHS->get_type())->getKind() != KIND::INBUILT_PRIMITIVE_TYPE)
         return throwError(); // can't perform comparison for these types
@@ -567,21 +288,9 @@ datatype CompGE::evaluate()
     return value;
 }
 
-void CompLE::print(ostream& out, int indentation)
-{
-    out<<"CompLE" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-}
 datatype CompLE::evaluate()
 {
-    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "error-type" || RHS->get_type() == "error-type" || LHS->get_type() != RHS->get_type())
         return throwError();
     if(cur_symbol_table->lookUp(LHS->get_type())->getKind() != KIND::INBUILT_PRIMITIVE_TYPE)
         return throwError(); // can't perform comparison for these types
@@ -589,21 +298,9 @@ datatype CompLE::evaluate()
     return value;
 }
 
-void CompEQ::print(ostream& out, int indentation)
-{
-    out<<"CompEQ" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-}
 datatype CompEQ::evaluate()
 {
-    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "error-type" || RHS->get_type() == "error-type" || LHS->get_type() != RHS->get_type())
         return throwError();
     if(cur_symbol_table->lookUp(LHS->get_type())->getKind() != KIND::INBUILT_PRIMITIVE_TYPE)
         return throwError(); // can't perform comparison for these types
@@ -611,21 +308,9 @@ datatype CompEQ::evaluate()
     return value;
 }
 
-void CompNEQ::print(ostream& out, int indentation)
-{
-    out<<"CompNEQ" << toString(location) << "\n{";
-        out<<"LHS\n{\n";
-            LHS->print(out, indentation+1);
-        out<<"\n}\n";
-
-        out<<"LHS\n{\n";
-            RHS->print(out, indentation+1);
-        out<<"\n}\n";        
-    out<<"\n}\n";
-}
 datatype CompNEQ::evaluate()
 {
-    if(LHS->get_type() == "Unknown" || RHS->get_type() == "Unknown" || LHS->get_type() != RHS->get_type())
+    if(LHS->get_type() == "error-type" || RHS->get_type() == "error-type" || LHS->get_type() != RHS->get_type())
         return throwError();
     if(cur_symbol_table->lookUp(LHS->get_type())->getKind() != KIND::INBUILT_PRIMITIVE_TYPE)
         return throwError(); // can't perform comparison for these types
@@ -633,84 +318,45 @@ datatype CompNEQ::evaluate()
     return value;
 }
 
-void MemberAccess::print(ostream& out, int indentation)
-{
-    out<<"Member Access:\n" << toString(location) << "{\n";
-    out<<"accessor name:\n";
-    object->print(out, indentation+1);
-    out<<"\n accessee name :\n";
-    member.print(out, indentation+1);
-    out<<"\n}\n";
-}
 datatype MemberAccess::evaluate()
 {
     return value;
 }
 
-
-void Arg::print(ostream& out, int indentation)
-{
-
-}
 datatype Arg::evaluate()
 {
     return value;
 }
 
-void UnaryIncrement::print(ostream& out, int indentation)
-{
-
-}
 datatype UnaryIncrement::evaluate()
 {
     return value;
 }
 
-void PostfixInc::print(ostream& out, int indentation)
-{
-
-}
 datatype PostfixInc::evaluate()
 {
     return value;
 }
 
-void PrefixInc::print(ostream& out, int indentation)
-{
-
-}
 datatype PrefixInc::evaluate()
 {
     return value;
 }
 
-void UnaryDecrement::print(ostream& out, int indentation)
-{
-
-}
 datatype UnaryDecrement::evaluate()
 {
     return value;
 }
 
-void PostfixDec::print(ostream& out, int indentation)
-{
-
-}
 datatype PostfixDec::evaluate()
 {
     return value;
 }
 
-void BinaryOperation::print(ostream& out, int indentation)
-{
-
-}
 datatype BinaryOperation::evaluate()
 {
     return value;
 }
-
 
 datatype BooleanLiteral::evaluate()
 {
@@ -734,270 +380,216 @@ datatype TernaryOperator::evaluate()
     return value;
 }
 
-/**************************************
- * STATEMENTS
- **************************************/
-
-void ExpressionStatement::print(ostream& out, int indentation)
-{
-    out << "Expression Statement:" << toString(location) << "n->{";
-    out<<"expressions:\n";
-    for(auto &i:*exp)
-    {
-        out<<"{\n";
-        i->print(out, indentation+1);
-        out<<"\n}\n";
-    }
-    out << "\n}\n";
-}
-
 vector<Expression *> ExpressionStatement::getValue()
 {
     return *exp;
 }
 
-void CompoundStatement::print(ostream& out, int indentation)
-{
-    out << "Compound Statement:" << toString(location) << "\n{";
-    for (auto ele : stmt_list)
-    {
-        out << "\n->";
-        ele->print(out, indentation+1);
-    }
-    out << "\n}\n";
+///////////////////////////////////////////////////////////
+////      Functions to traverse and print the AST      ////
+///////////////////////////////////////////////////////////
+
+void ASTNode::indent(int indentation){
+    for (int i = 0; i < indentation; i++)
+        *out_file << "  ";
 }
 
-void FunctionDeclaration::print(ostream& out, int indentation)
-{
-    out << "Function Definition:" << toString(location) << "\n{";
-    func_name->print(out, indentation+1);
-    
-    out << "\nReturn type : \n";
-    return_type.print(out, indentation+1);
-    
-    out << "\nlist of arguments\n";
-    for (auto &ele : arg_list)
-    {
-        out << "\n";
-        ele->print(out, indentation+1);
-    }
-    
-    out << "\nfunction body:\n";
-    func_body->print(out, indentation+1);
-    
-    out << "\n}\n";
+void ASTNode::print(int indentation, ostream& out){
+    out_file = &out;
+	if(indentation) 
+        indent(indentation-1), out << "  `-";
+    out << this->node_name << " " << this << " " << toString(location) << " ";
+
+    printData(); out << "\n";
+    printMembers(indentation+1);
 }
 
-void VariableDeclaration::print(ostream& out, int indentation)
-{
-    out << "Variable Declaration: " << toString(location) << "{\n";
-    out << "type : \n";
-    variable_type.print(out, indentation+1);
-
-    out << "\nlist of identifiers:\n";
-    for (auto &ele : variable_list)
-    {
-        ele->print(out, indentation+1);
-        out << "\n";
-    }
-    out<<"\n}\n";
+void Expression::printData(){
+    // *out_file << "value: " << value;
 }
 
-void DriverDefinition::print(ostream& out, int indentation)
-{
-    out << "Driver Definition:\n" << toString(location) << "{\n";
-    func_body->print(out, indentation+1);
-    out << "\n}\n";
+void IntegerLiteral::printData(){
+    *out_file << "value: " << get<int>(value);
 }
 
-void VariableInitialization::print(ostream& out, int indentation)
-{
-    out << "Variable Initialisation: \n" << toString(location) << "{\n";
-    out << "type: \n";
-    variable_type.print(out, indentation+1);
-    out<<"initialisation:\n";
-    exp->print(out, indentation+1);
-    out << "}\n";
+void FloatLiteral::printData(){
+    *out_file << "value: " << get<float>(value);
 }
 
-void LabeledStatement::print(ostream& out, int indentation)
-{
-    out << "Labelled Statement:\n" << toString(location) << "{\n";
-    label->print(out, indentation+1);
-    stmt->print(out, indentation+1);
-    out << "\n}\n";
+void StringLiteral::printData(){
+    *out_file << "value: " << get<string>(value);
 }
 
-void CaseLabel::print(ostream& out, int indentation)
-{
-    out << "Case Label " << toString(location) << "{\n";
-    label->print(out, indentation+1);
-    out << "statements:";
-    stmt->print(out, indentation+1);
-    out << "\n}\n";
+void BooleanLiteral::printData(){
+    *out_file << "value: " << get<bool>(value);
 }
 
-void DefaultLabel::print(ostream& out, int indentation)
-{
-    out << "Default Label \n" << toString(location) << "{\n";
-    out << "statements:";
-    out << "\n";
-    stmt->print(out, indentation+1);
-    out << "\n}\n";
+void Identifier::printData(){
+    *out_file << ret_id();
 }
 
-void IterationStatement::print(ostream& out, int indentation)
-{
-    out << "Default Label \n" << toString(location) << "{\n";
-    out << "body:\n";
-    body->print(out, indentation+1);
-    out << "condition:\n";
-    condition->print(out, indentation+1);
-    out << "\n}\n";
+void MemberAccess::printMembers(int indentation){
+    indent(indentation); *out_file << "object: " << "\n";
+    object->print(indentation+1);
+    indent(indentation); *out_file << "member: " << "\n";
+    member.print(indentation+1);
 }
 
-void WhileLoop::print(ostream& out, int indentation)
-{
-    out << "While loop:\n" << toString(location) << "{\n";
-    out << "condition:\n";
-    condition->print(out, indentation+1);
-    out << "body:\n";
-    body->print(out, indentation+1);
-    out << "\n}\n";
+void ArrayAccess::printMembers(int indentation){
+    indent(indentation); *out_file << "array name: " << "\n";
+    array_name->print(indentation+1);
+    indent(indentation); *out_file << "index: " << "\n";
+    index->print(indentation+1);
 }
 
-void ForLoop::print(ostream& out, int indentation)
-{
-    out << "For loop:\n" << toString(location) << "{\n";
-    out << "initialisation:\n";
-    if (initialization)
-        initialization->print(out, indentation+1);
-    else
-        out << "empty\n";
-    out << "condition:\n";
-    if (condition)
-        condition->print(out, indentation+1);
-    else
-        out << "empty\n";
-    out << "update:\n";
-    if (counter_updation)
-        counter_updation->print(out, indentation+1);
-    else
-        out << "empty\n";
-    out << "body:\n";
-    if (body)
-        body->print(out, indentation+1);
-    else
-        out << "no body\n";
-    out << "\n}\n";
+void Arg::printMembers(int indentation){
+    indent(indentation); *out_file << "type: "; t.print();
+    indent(indentation); *out_file << "name: "; id.print();
 }
 
-void IfStatement::print(ostream& out, int indentation)
-{
-    out << "If statement: \n" << toString(location) << "{\n";
-    out << "condition :\n";
-    condition->print(out, indentation+1);
-    if(if_block)
-    {
-        out << "If block:\n";
-        if_block->print(out, indentation+1);
-    }
-    out << "\n}\n";
+void FunctionCall::printMembers(int indentation){
+    indent(indentation); *out_file << "arguments: " << "\n";
+    for (auto &ele : args_list)
+        ele->print(indentation+1);
 }
 
-void IfElseStatement::print(ostream& out, int indentation)
-{
-    out << "If else block:\n" << toString(location) << "{\n";
-    
-    out << "condition :\n";
-    if_condition->print(out, indentation+1);
-
-    if(if_block)
-    {
-        out<<"If block:\n";
-        if_block->print(out, indentation+1);
-    }
-
-    if(else_block)
-    {
-        out<<"else block:\n";
-        else_block->print(out, indentation+1);
-    }
-    
-    out << "\n}\n";
+void AssignmentExp::printMembers(int indentation){
+    indent(indentation); *out_file << "lhs: " << "\n";
+    LHS->print(indentation+1);
+    indent(indentation); *out_file << "rhs: " << "\n";
+    RHS->print(indentation+1);
 }
 
-void SwitchStatement::print(ostream& out, int indentation)
-{
-    out << "switch block:\n" << toString(location) << "{\n";
-    out << "expression:\n";
-    exp->print(out, indentation+1);
-    out << "cases:\n";
-    if(block)block->print(out, indentation+1);
-    out << "\n}\n";
+void TernaryOperator::printMembers(int indentation){
+    indent(indentation); *out_file << "condition: " << "\n";
+    condition->print(indentation+1);
+    indent(indentation); *out_file << "if true: " << "\n";
+    true_eval->print(indentation+1);
+    indent(indentation); *out_file << "if false: " << "\n";
+    false_eval->print(indentation+1);
 }
 
-void TernaryOperator::print(ostream& out, int indentation)
-{
-    out << "ternary:\n" << toString(location) << "{\n";
-    out << "condition:\n";
-    condition->print(out, indentation+1);
-    out << "if true:\n";
-    true_eval->print(out, indentation+1);
-    out << "if false:\n";
-    false_eval->print(out, indentation+1);
-    out << "\n}\n";
+void BinaryOperation::printMembers(int indentation){
+    indent(indentation); *out_file << "lhs: " << "\n";
+    LHS->print(indentation+1);
+    indent(indentation); *out_file << "rhs: " << "\n";
+    RHS->print(indentation+1);
 }
 
-void ReturnStatement::print(ostream& out, int indentation)
-{
-    out << "ternary:\n{\nreturns" << toString(location) << ":\n";
-    return_val->print(out, indentation+1);
-    out << "\n}\n";
+void ExpressionStatement::printMembers(int indentation){
+    indent(indentation); *out_file << "expression list: " << "\n";
+    for(auto& ele : *exp)
+        ele->print(indentation+1);
 }
 
-void FamilyMembers::print(ostream& out, int indentation)
-{
-
-}
-void FamilyDecl::print(ostream& out, int indentation)
-{
-
-}
-void ContinueStatement::print(ostream& out, int indentation)
-{
-
-}
-void BreakStatement::print(ostream& out, int indentation)
-{
-
-}
-void ConstructorDeclaration::print(ostream& out, int indentation)
-{
-
+void CompoundStatement::printMembers(int indentation){
+    indent(indentation); *out_file << "statements: " << "\n";
+    for(auto& ele : stmt_list)
+        ele->print(indentation+1);
 }
 
-void Program::print(ostream& out, int indentation)
-{
-    out << "Program:\n" << toString(location) << "{\n";
-    out << "global declarations:\n";
-    for (auto &ele : *stmt_list)
-    {
-        ele->print(out, indentation+1);
-        out << "\n";
-    }
-    out << "\n}\n";
+void FamilyMembers::printMembers(int indentation){
+    indent(indentation); *out_file << "member: "; member->print();
 }
 
+void FamilyDecl::printData(){
+    *out_file << "name: "; fam_name.print();
+}
 
+void FamilyDecl::printMembers(int indentation){
+    indent(indentation); *out_file << "members: " << "\n";
+    for(auto& ele : members)
+        ele->print(indentation+1);
+}
 
-/*------------------------------------------------------------------------
- *  Functions to print the AST
- *------------------------------------------------------------------------*/
+void ConstructorDeclaration::printMembers(int indentation){
+    indent(indentation); *out_file << "arguments: " << "\n";
+    for(auto& ele : arg_list)
+        ele->print(indentation+1);
+    indent(indentation); *out_file << "body: " << "\n";
+    body->print(indentation+1);
+}
 
-void ASTNode::print(ostream& out, int indentation){
-    for(int i = 0; i < indentation-1; i++)
-		cout << '\t';
-	if(indentation) out << "  ->";
-    out << this->node_name << " " << this << " " << toString(location) << "\n";
+void FunctionDeclaration::printMembers(int indentation){
+    indent(indentation); *out_file << "name: "; func_name->print();
+    indent(indentation); *out_file << "arguments: " << "\n";
+    for(auto& ele : arg_list)
+        ele->print(indentation+1);
+    indent(indentation); *out_file << "body: " << "\n";
+    func_body->print(indentation+1);
+}
+
+void VariableDeclaration::printMembers(int indentation){
+    indent(indentation); *out_file << "Declaration typename: "; variable_type.print();
+    indent(indentation); *out_file << "New variables: " << "\n";
+    for(auto& ele : variable_list)
+        ele->print(indentation+1);
+}
+
+void DriverDefinition::printMembers(int indentation){
+    indent(indentation); *out_file << "body: " << "\n";
+    func_body->print(indentation+1);
+}
+
+void VariableInitialization::printMembers(int indentation){
+    indent(indentation); *out_file << "Declaration typename: "; variable_type.print();
+    exp->print(indentation+1);
+}
+
+void LabeledStatement::printMembers(int indentation){
+    indent(indentation); *out_file << "label: "; label->print();
+    indent(indentation); *out_file << "statement: " << "\n";
+    stmt->print(indentation+1);
+}
+
+void IterationStatement::printMembers(int indentation){
+    indent(indentation); *out_file << "condition: " << "\n";
+    condition->print(indentation+1);
+    indent(indentation); *out_file << "body: " << "\n";
+    body->print(indentation+1);
+}
+
+void ForLoop::printMembers(int indentation){
+    indent(indentation); *out_file << "initialization: " << "\n";
+    initialization->print(indentation+1);
+    indent(indentation); *out_file << "condition: " << "\n";
+    condition->print(indentation+1);
+    indent(indentation); *out_file << "counter updation: " << "\n";
+    counter_updation->print(indentation+1);
+    indent(indentation); *out_file << "body: " << "\n";
+    body->print(indentation+1);
+}
+
+void IfStatement::printMembers(int indentation){
+    indent(indentation); *out_file << "condition: " << "\n";
+    condition->print(indentation+1);
+    indent(indentation); *out_file << "if block: " << "\n";
+    if_block->print(indentation+1);
+}
+
+void IfElseStatement::printMembers(int indentation){
+    indent(indentation); *out_file << "condition: " << "\n";
+    if_condition->print(indentation+1);
+    indent(indentation); *out_file << "if block: " << "\n";
+    if_block->print(indentation+1);
+    indent(indentation); *out_file << "else block: " << "\n";
+    else_block->print(indentation+1);
+}
+
+void SwitchStatement::printMembers(int indentation){
+    indent(indentation); *out_file << "condition: " << "\n";
+    exp->print(indentation+1);
+    indent(indentation); *out_file << "body: " << "\n";
+    block->print(indentation+1);
+}
+
+void ReturnStatement::printMembers(int indentation){
+    indent(indentation); *out_file << "return expression: " << "\n";
+    return_val->print(indentation+1);
+}
+
+void Program::printMembers(int indentation){
+    *out_file << "declarations: " << "\n";
+    for(auto& ele : *stmt_list)
+        ele->print(indentation);
 }

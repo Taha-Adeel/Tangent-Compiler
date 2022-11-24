@@ -505,7 +505,7 @@ int main(int argc, char **argv){
 
 			#ifdef AST_DEBUG
 				ofstream ast_output_file(createOutputFile(argv[i], ".ast-dump"));
-				root->print(ast_output_file);
+				root->print(0, ast_output_file);
 			#endif
 
             fclose(file);
@@ -515,7 +515,7 @@ int main(int argc, char **argv){
 
 void yyerror(const char*s){
 	#ifndef SEMANTIC_ERROR_DEBUG
-	/* if(strstr(s, "Semantic Error:") != NULL) return; */
+	if(strstr(s, "Semantic Error:") != NULL) return;
 	#endif
 	fprintf(stdout, "%s: Line %d:\n\t%s\n", yylloc.filename.c_str(), yylloc.first_line, s);
 	fprintf(stderr, "%s: Line %d:\n\t%s\n", yylloc.filename.c_str(), yylloc.first_line, s);
