@@ -31,11 +31,11 @@ enum class KIND{
 	OBJECT_VAR,
 	FAMILY,
 	FUNCTION,
+	UNKNOWN,
 	INBUILT_PRIMITIVE_TYPE,
 	INBUILT_FAMILY,
 	INBUILT_FUNCTION,
-	ERROR,
-	UNKNOWN
+	ERROR
 };
 
 // Forward declaration of data type used to store location of symbol

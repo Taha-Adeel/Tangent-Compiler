@@ -202,7 +202,7 @@ void SymbolTable::addInbuiltFunctions(){
  * 
  */
 void SymbolTable::addInbuiltConstants(){
-	addSymbol("Pi", "float", NULL, KIND::PRIMITIVE_VAR);
+	// addSymbol("Pi", "float", NULL, KIND::PRIMITIVE_VAR);
 }
 
 
@@ -248,23 +248,30 @@ void printHeader(std::ostream& out, int indentation){
 	out << std::string(w1+w2+w3+w4+18, '-') << '\n';
 }
 
+extern SymbolTable global_symbol_table;
 /**
  * @brief Utility function to display the symbol table
  * Prints each symbol table with its namespace name, followed by its child symbol tables
  */
 void SymbolTable::printSymbolTable(std::ostream& out_file, int indentation){
+#ifndef INBUILT_SYMBOLS_DISPLAY
+	if(global_symbol_table.lookUp(namespace_name) != NULL && global_symbol_table.lookUp(namespace_name)->getKind() >= KIND::INBUILT_PRIMITIVE_TYPE) return;
+#endif
+
+	auto indent = [&out_file, indentation](bool one_less = false){ for(int i = 0; i < indentation - one_less; i++) out_file << '\t';};
+
 	out_file << '\n';
-	for(int i = 0; i < indentation-1; i++)
-		out_file << '\t';
-	if(indentation) out_file << "--->";
+	if(indentation) indent(true), out_file << "--->";
+
 	out_file << "(" << namespace_name << ")\n";
 	if(symbol_table.size())
 		printHeader(out_file, indentation);
 	for(auto& [name, symbol] : symbol_table){
-		for(int i = 0; i < indentation; i++) out_file << '\t';
-		out_file << symbol;
-		for(int i = 0; i < indentation; i++) out_file << '\t';
-		out_file << std::string(w1+w2+w3+w4+18, '-') << '\n';
+#ifndef INBUILT_SYMBOLS_DISPLAY
+		if(symbol.getKind() >= KIND::INBUILT_PRIMITIVE_TYPE) continue;
+#endif
+		indent(), out_file << symbol;
+		indent(), out_file << std::string(w1+w2+w3+w4+18, '-') << '\n';
 	}
 	for(auto child_symbol_table : child_symbol_tables){
 		child_symbol_table.second->printSymbolTable(out_file, indentation + 1);
